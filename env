@@ -1,0 +1,5 @@
+#!/bin/bash
+source ~/perl5/perlbrew/etc/bashrc
+DIR="$(dirname $(readlink -f $0))"
+cd $DIR
+exec carton exec -- "$@"

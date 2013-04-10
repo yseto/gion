@@ -1,0 +1,63 @@
+% layout 'default' ;
+<div class="container-fluid">
+  <div class="row-fluid">
+    <ul id="cat_list"></ul>
+    <hr/>
+  </div><!--/row-->
+
+  <div class="row-fluid">
+    <form class="form-horizontal" id="form">
+      <div class="control-group">
+        <label class="control-label" for="numentry">表示件数の上限</label>
+        <div class="controls">
+          <input type="number" id="numentry" placeholder="0で無制限">
+          <span class="help-block">一度に表示する件数の上限を設定できます。</span>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">その他の設定</label>
+        <div class="controls">
+          <label class="checkbox"><input type="checkbox" id="noreferrer" val="0"/>リファラを抑制する</label>
+          <a class="btn" id="btn_numentry">OK</a>
+          <span id="txt_numentry" class="hide">Thanks. Setting your values.</span>
+        </div>
+      </div>
+    </form>
+  </div><!--/row-->
+
+<%= include 'footer' %>
+</div><!--/.fluid-container-->
+ 
+
+<div class="modal hide" id="categoriesModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <h3>Change: Categories</h3>
+  </div>
+  <div class="modal-body">
+    <label class="control-label" for="selectCat">Categories</label>
+    <div class="controls">
+      <select id="selectCat" placeholder="Choose Category"></select>
+      <input type="hidden" id="target-id"/>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a class="btn btn-success"id="change-categories">OK</a>
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+  </div>
+</div>
+
+
+<div class="modal hide" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <h3>Subscription Management Help</h3>
+  </div>
+  <div class="modal-body">
+    <p>Change Cat. リンクはカテゴリの変更を行います。</p>
+    <p>Deleteリンクはカテゴリ、巡回先の削除を行います。カテゴリを削除した場合、カテゴリ以下に登録されている巡回先も同時に削除されます。必要な巡回先は削除しないカテゴリに移動してください。</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Close</button>
+  </div>
+</div>
+
+

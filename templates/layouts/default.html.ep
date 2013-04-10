@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Gion</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Gion">
+    <script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.2.min.js"></script>
+    <script>
+    window.jQuery || document.write('<script src="/mojo/jquery/jquery.js"><\/script>');
+    </script>
+    <%= jquery_ajax_csrf_protection %>
+
+    <!-- Le styles -->
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+      .sidebar-nav {
+        padding: 9px 0;
+      }
+      .tw {
+        margin:0 0 10px; padding:0 10px;  border: 2px solid #999; 
+      }
+    </style>
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+	  <span class="brand">Gion</span>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li<% if($active =~ '^/$'){%> class="active" <% }%>>
+              <a href="#home">Home</a></li>
+              <li<% if($active =~ '^/add'){%> class="active" <% }%>>
+              <a href="#addasite"><i class="icon-plus-sign"></i> Add a Site</a></li>
+              <li<% if($active =~ '^/subscription'){%> class="active" <% }%>>
+              <a href="#subscription"><i class="icon-tag"></i> Subscription</a></li>
+            </ul>
+            <ul class="nav pull-right">
+              <li><a style="cursor:pointer;" id="helpmodal"><i class="icon-question-sign"></i> Help</a></li>
+              <li><a href="#logout"><i class="icon-off"></i> Logout</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+<%= content %>
+
+    <div class="modal hide" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-header">
+        <h3 id="myModalLabel">Sorry</h3>
+      </div>
+      <div class="modal-body">
+        <p>申し訳ありません。エラーが発生しました。<br/>管理者にご連絡ください。</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <script src="/static/<%== $jspath %>"></script>
+    <script src="/static/c.js"></script>
+  </body>
+</html>
+

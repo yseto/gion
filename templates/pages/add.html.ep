@@ -1,0 +1,74 @@
+% layout 'default' ;
+<div class="container-fluid">
+<div class="row-fluid">
+<h4>Subscription</h4>
+<form class="form-horizontal" id="form">
+  <div class="control-group">
+    <label class="control-label" for="inputURL">URL(Web Page)</label>
+    <div class="controls">
+      <input type="text" id="inputURL" placeholder="URL">
+      <a class="btn btn-info" id="get_detail">Get Detail</a>
+    </div>
+  </div>
+  <div class="control-group">
+   <label class="control-label" for="inputTitle">Title</label>
+    <div class="controls">
+      <input type="text" id="inputTitle" placeholder="Title">
+    </div>
+  </div>
+  <div class="control-group">
+   <label class="control-label" for="inputRSS">URL(Subscription)</label>
+    <div class="controls">
+      <input type="text" id="inputRSS" placeholder="RSS">
+    </div>
+  </div>
+  <div class="control-group">
+   <label class="control-label" for="selectCat">Categories</label>
+    <div class="controls">
+      <select id="selectCat" placeholder="Choose Category"></select>
+    </div>
+  </div>
+  <div class="control-group">
+    <div class="controls">
+      <button type="button" id="submit" class="btn">Register</button>
+      <span id="return"></span>
+    </div>
+  </div>
+</form>
+<hr/>
+<h4>Categories</h4>
+<form class="form-horizontal" id="form">
+  <div class="control-group">
+    <label class="control-label" for="inputCategoryName">Name</label>
+    <div class="controls">
+      <input type="text" id="inputCategoryName" placeholder="Name">
+    </div>
+  </div>
+  <div class="control-group">
+    <div class="controls">
+      <button type="button" id="cat_submit" class="btn">Register</button>
+      <span id="return_cat"></span>
+    </div>
+  </div>
+</form>
+</div>
+
+<%= include 'footer' %>
+</div><!--/.fluid-container-->
+
+<div class="modal hide" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <h3>Add a Site Help</h3>
+  </div>
+  <div class="modal-body">
+    <p>URLに巡回したいWebサイトのアドレスを入力して、<a class="btn btn-info">Get Detail</a>をクリックすると、必要な情報を取得します。</p>
+    <p>この方法で取得できない場合は、Webページのデータを確認してください。RSSを配信していない可能性があります。</p>
+    <hr/>
+    <p>カテゴリを増やしたい場合は、下の入力欄にカテゴリの名前を入力してください。この時追加したカテゴリはすぐに、サイト登録でお使いになれます。</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Close</button>
+  </div>
+</div>
+
+

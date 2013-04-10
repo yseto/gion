@@ -1,0 +1,83 @@
+$('#get_detail').click(function() {
+    jQuery.ajax({
+        type: 'POST',
+        url: '/manage/examine_target',
+        data: {
+            'm': $('#inputURL').val()
+        },
+        datatype: 'json',
+        success: function(j) {
+            if (j == null) {
+                alert('Failure: Get information.\n please check url... :(');
+            } else {
+                $('#inputRSS').val(j.u);
+                $('#inputTitle').val(j.t);
+            }
+        },
+    });
+});
+
+
+$('#cat_submit').click(function() {
+    if ($('#inputCategoryName').val().length == 0) return false;
+    jQuery.ajax({
+        type: 'POST',
+        url: '/manage/register_categories',
+        data: {
+            'name': $('#inputCategoryName').val(),
+        },
+        datatype: 'json',
+        success: function(j) {
+            list();
+            $('#return_cat').text('Thanks! add your request.');
+        },
+    });
+});
+
+$('#submit').click(function() {
+
+    $('#return').empty();
+    jQuery.ajax({
+        type: 'POST',
+        url: '/manage/register_target',
+        data: {
+            'url': $('#inputURL').val(),
+            'rss': $('#inputRSS').val(),
+            'title': $('#inputTitle').val(),
+            'cat': $('#selectCat option:selected').val(),
+        },
+        datatype: 'json',
+        success: function(j) {
+            if (j == null) {
+                alert('Failure: Get information.\n please check url... :(');
+            } else {
+                $('#return').text('Thanks! add your request.');
+            }
+        },
+    });
+});
+
+$(window).on('load',function() {
+    jQuery.ajaxSetup({
+        cache: false,
+        error: function() {
+            $('#myModal').modal('show');
+        }
+    });
+    list();
+});
+
+function list() {
+
+    $('#selectCat').empty();
+    jQuery.ajax({
+        type: 'POST',
+        url: '/api/get_targetlist',
+        datatype: 'json',
+        success: function(b) {
+            jQuery.each(b.n, function() {
+                $('#selectCat').append($('<option>').val(this.i).text(this.n));
+            });
+        },
+    });
+}
