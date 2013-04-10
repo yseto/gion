@@ -1,0 +1,56 @@
+{
+    db => {
+        hostname => '',
+        database => '',
+        username => '',
+        password => '',
+    },
+
+    #パスワードのSalt
+    salt => '25a467b753ff0368d0dd4f4bd962914be2c790e3ddd74f048f80991bf8fc4f7a',
+
+    #リファラを秘匿にする際のリダイレクタ
+    redirector => 'https://www.google.com/url?sa=D&q=',
+
+    #認証系
+    url => {
+        login_ssl => 'off',
+        http      => 'http://example.com/',
+        https     => 'https://example.com/',
+    },
+
+    #Cookie
+    cookie => {
+        domain => '.example.com',
+        secret =>
+          '4736d75fa96ee66d95e0bbe4f5cb561590a6a7709de04278e5dcf1ea6291abb5',
+    },
+
+    #クローラの設定
+    crawler => {
+
+        #クローラのキャッシュ
+        cache => '/home/gion/cache/',
+
+        #クロールする時のターゲットサイト
+        #ごとにスリープする秒数
+        sleep => 0.25,
+
+        #HTTPクライアントのタイムアウト
+        timeout => 5,
+
+        #HTTPクライアントに設定するユーザーエージェント
+        ua =>
+          'Opera/9.80 (Windows NT 6.2; WOW64) Presto/2.12.388 Version/12.14',
+
+        # 0 の場合は、HTTPリターンコードが
+        # 304 Not Modifiedの場合は取り込まない
+        # 1 の場合は、すべての情報を取り込む
+        no304 => 1,
+
+        # 0 の場合は、DBに格納されている
+        # エントリーより古い情報は取り込まない
+        # 1 の場合は、すべての情報を取り込む
+        pubDatecheck => 0,
+    },
+};
