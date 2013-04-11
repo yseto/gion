@@ -99,9 +99,12 @@ sub examine_target {
     use Try::Tiny;
     my $enc = find_encoding("utf-8");
 
-    # UTF-8以外だと、まあできないので握りつぶす。
-    try { $enc->decode($title); } catch {};
-    $enc->encode($title);
+    try {
+        $enc->decode($title);
+        $enc->encode($title);
+    } catch {};
+    
+    $title = decode_utf8($title);
     $title =~ s/\r|\n//g;
 
     # http://blog.livedoor.jp/dankogai/archives/51568463.html
