@@ -181,7 +181,7 @@ foreach my $c ( $rs->hashes ) {
                 $item->link->href,
                 decode( 'utf-8', $item->title ),
                 decode( 'utf-8', $item->summary ),
-                $dt, '', $id
+                $dt, $item->link->href, $id
             );
         }
     }
