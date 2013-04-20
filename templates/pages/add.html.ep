@@ -8,6 +8,7 @@
     <div class="controls">
       <input type="text" id="inputURL" placeholder="URL">
       <a class="btn btn-info" id="get_detail">Get Detail</a>
+      <span id="url-search" class="hide"><i class="icon-pencil"></i></span>
     </div>
   </div>
   <div class="control-group">

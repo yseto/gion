@@ -1,20 +1,5 @@
 $('#get_detail').click(function() {
-    jQuery.ajax({
-        type: 'POST',
-        url: '/manage/examine_target',
-        data: {
-            'm': $('#inputURL').val()
-        },
-        datatype: 'json',
-        success: function(j) {
-            if (j == null) {
-                alert('Failure: Get information.\n please check url... :(');
-            } else {
-                $('#inputRSS').val(j.u);
-                $('#inputTitle').val(j.t);
-            }
-        },
-    });
+    get_detail();
 });
 
 
@@ -79,5 +64,33 @@ function list() {
                 $('#selectCat').append($('<option>').val(this.i).text(this.n));
             });
         },
+    });
+}
+
+$('#inputURL').focusout(function(){
+    get_detail();
+});
+
+function get_detail(){
+    if ($('#inputURL').val().match(/^http/g) == null ) return false;
+    $('#url-search').show();
+    jQuery.ajax({
+        type: 'POST',
+        url: '/manage/examine_target',
+        data: {
+            'm': $('#inputURL').val()
+        },
+        datatype: 'json',
+    })
+    .done( function(j) {
+        if (j == null) {
+            alert('Failure: Get information.\n please check url... :(');
+        } else {
+            $('#inputRSS').val(j.u);
+            $('#inputTitle').val(j.t);
+        }
+    })
+    .always( function(){
+        $('#url-search').delay(400).fadeOut();
     });
 }
