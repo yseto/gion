@@ -95,6 +95,17 @@ foreach my $c ( $rs->hashes ) {
         next;
     }
 
+    #301 Moved Permanentlyの場合
+    if ( defined $res->{http_response}->{_previous} ) {
+        my $preres = $res->{http_response}->{_previous};
+        if ( $preres->{_rc} == 301 ) {
+            $db->query( 'UPDATE target SET url = ? WHERE id = ?;',
+                $preres->{_headers}->{location}, $c->{id} );
+            $prog->message( sprintf "301 %s -> %s",
+                $c->{url}, $preres->{_headers}->{location} );
+        }
+    }
+
     #プログレスバー更新
     $prog->message( sprintf "%3d %4d %s",
         $res->http_status, $c->{id}, encode_utf8( $c->{title} ) );
