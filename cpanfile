@@ -10,6 +10,7 @@ requires 'DBIx::Simple';
 requires 'HTML::ExtractContent';
 requires 'HTML::Scrubber';
 requires 'LWP::UserAgent';
+requires 'LWP::Protocol::https';
 requires 'Mojolicious';
 requires 'Mojolicious::Plugin::CSRFProtect';
 requires 'Try::Tiny';
