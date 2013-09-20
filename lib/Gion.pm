@@ -12,18 +12,19 @@ $ENV{MOJO_REVERSE_PROXY} = 1;
 sub startup {
     my $self = shift;
 
-    # Documentation browser under "/perldoc"
     $self->plugin('Config');
     $self->plugin('CSRFProtect');
 
     $self->sessions->cookie_domain( $self->config->{cookie}->{domain} );
     $self->sessions->cookie_name('Gion');
 
+    # 認証
     push @{ $self->app->plugins->namespaces }, 'Gion::Plugin';
     $self->plugin('Auth');
 
     $self->secret($self->config->{cookie}->{secret});
 
+    # 1日はログインが有効
     $self->sessions->default_expiration(86400);
 
     # Router
