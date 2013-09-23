@@ -13,8 +13,12 @@ $('#cat_submit').click(function() {
         },
         datatype: 'json',
         success: function(j) {
-            list();
-            $('#return_cat').text('Thanks! add your request.');
+            if (j.r == "ERROR_ALREADY_REGISTER") {
+                alert("すでに登録されています。");
+            } else {
+                list();
+                $('#return_cat').text('Thanks! add your request.');
+            }
         },
     });
 });
@@ -36,13 +40,17 @@ $('#submit').click(function() {
             if (j == null) {
                 alert('Failure: Get information.\n please check url... :(');
             } else {
-                $('#return').text('Thanks! add your request.');
+                if (j.r == "ERROR_ALREADY_REGISTER") {
+                    alert("すでに登録されています。");
+                } else {
+                    $('#return').text('Thanks! add your request.');
+                }
             }
         },
     });
 });
 
-$(window).on('load',function() {
+$(window).on('load', function() {
     jQuery.ajaxSetup({
         cache: false,
         error: function() {
@@ -67,12 +75,12 @@ function list() {
     });
 }
 
-$('#inputURL').focusout(function(){
+$('#inputURL').focusout(function() {
     get_detail();
 });
 
-function get_detail(){
-    if ($('#inputURL').val().match(/^http/g) == null ) return false;
+function get_detail() {
+    if ($('#inputURL').val().match(/^http/g) == null) return false;
     $('#url-search').show();
     jQuery.ajax({
         type: 'POST',
@@ -82,7 +90,7 @@ function get_detail(){
         },
         datatype: 'json',
     })
-    .done( function(j) {
+        .done(function(j) {
         if (j == null) {
             alert('Failure: Get information.\n please check url... :(');
         } else {
@@ -90,7 +98,7 @@ function get_detail(){
             $('#inputTitle').val(j.t);
         }
     })
-    .always( function(){
+        .always(function() {
         $('#url-search').delay(400).fadeOut();
     });
 }

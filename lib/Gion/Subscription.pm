@@ -11,6 +11,17 @@ sub register_categories {
     exit() if $data->{name} eq '';
 
     my $rs = $db->execute(
+"SELECT COUNT(*) AS t FROM categories WHERE user = :userid AND name = :name;",
+        {
+            name   => $data->{name},
+            userid => $self->session('username'),
+        }
+    ) or die $db->error;
+
+    return $self->render( json => { r => "ERROR_ALREADY_REGISTER" } )
+      if $rs->fetch_hash->{t} > 0;
+
+    $rs = $db->execute(
         "INSERT INTO categories (id,user,name) VALUES (null,:userid,:name);",
         {
             name   => $data->{name},
@@ -49,7 +60,8 @@ WHERE c.user = :userid AND (url = :url OR siteurl = :siteurl);",
         }
     ) or die $db->error;
 
-    exit() if $rs->fetch_hash->{t} > 0;
+    return $self->render( json => { r => "ERROR_ALREADY_REGISTER" } )
+      if $rs->fetch_hash->{t} > 0;
 
     $rs = $db->execute(
 "SELECT COUNT(id) AS t FROM categories WHERE user = :userid AND id = :cat",
@@ -102,8 +114,9 @@ sub examine_target {
     try {
         $enc->decode($title);
         $enc->encode($title);
-    } catch {};
-    
+    }
+    catch {};
+
     $title = decode_utf8($title);
     $title =~ s/\r|\n//g;
 
