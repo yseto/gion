@@ -142,7 +142,14 @@ sub get_targetlist {
     my $self = shift;
     my $db   = $self->app->dbh;
 
-    my $rs = $db->execute(
+    my $rs;
+    $rs = $db->execute(
+        "SELECT noreferrer FROM user WHERE id = :userid;",
+        { userid => $self->session('username') }
+    )->fetch_hash;
+    my $noreferrer = $rs->{noreferrer};
+
+    $rs = $db->execute(
 "SELECT id, name FROM categories WHERE user = :userid ORDER BY name ASC;",
         { userid => $self->session('username') }
     ) or die $db->error;
@@ -157,18 +164,27 @@ sub get_targetlist {
     }
 
     $rs = $db->execute(
-"SELECT target.id, target.title, target._id_categories,target.http_status FROM target INNER JOIN categories AS c ON _id_categories = c.id 
+"SELECT target.id, target.title, target._id_categories, target.http_status, target.siteurl FROM target INNER JOIN categories AS c ON _id_categories = c.id 
 WHERE c.user = :userid ORDER BY title ASC;",
         { userid => $self->session('username') }
     ) or die $db->error;
 
     my $hash_c = [];
     foreach my $c ( @{ $rs->all } ) {
+
+        my $url = $c->{siteurl};
+        if ( $noreferrer == 1 ) {
+            my $str = encode( 'utf-8', $c->{siteurl} );
+            $str =~ s/([^0-9A-Za-z!'()*\-._~])/sprintf("%%%02X", ord($1))/eg;
+            $url = $self->config->{redirector} . $str;
+        }
+
         my $h = {
             i => $c->{id},
             n => $c->{title},
             c => $c->{_id_categories},
             r => $c->{http_status},
+            h => $url,
         };
         push( @$hash_c, $h );
     }

@@ -123,6 +123,13 @@ function list() {
                     li.append($('<span>').addClass('badge badge-inverse').text('Fail?'));
                 }
 
+                li.append($('<span>').text(' '));
+
+                li.append($('<a>').attr({
+                    href: this.h,
+                    target: 'blank'
+                }).text('Open'));
+
                 $('#child_' + this.c).append(li);
             });
         },
