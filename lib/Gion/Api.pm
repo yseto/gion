@@ -124,7 +124,9 @@ sub get_entries {
             "UPDATE entries
             INNER JOIN target AS t ON _id_target = t.id
             INNER JOIN categories AS c ON t._id_categories = c.id
-            SET readflag = 1
+            SET 
+            readflag = 1,
+            updatetime = CURRENT_TIMESTAMP
             WHERE t._id_categories = :id AND readflag = 0 AND c.user = :userid
             AND guid = :guid;",
             {
