@@ -36,15 +36,22 @@ foreach my $c ( $rs->hashes ) {
     my $id = $c->{id};
     $db->query( "
 DELETE FROM entries
-	WHERE _id_target = ? AND 
-	readflag = 1 AND 
-	pubdate NOT IN ( SELECT pubdate 
-		FROM 
-		(SELECT pubdate FROM entries
-			WHERE _id_target = ? AND
-			readflag = 1
-			ORDER BY pubdate DESC LIMIT 1
-		) x
+	WHERE 
+		_id_target = ?
+	AND
+		readflag = 1
+	AND 
+		updatetime < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -1 DAY)
+	AND 
+		pubdate NOT IN ( SELECT pubdate 
+			FROM 
+			(SELECT pubdate FROM entries
+				WHERE 
+					_id_target = ? 
+                	        AND
+					readflag = 1
+				ORDER BY pubdate DESC LIMIT 1
+			) x
 	);"
         , $id, $id ) or die $db->error;
 
@@ -52,7 +59,6 @@ DELETE FROM entries
 }
 
 $db->query('OPTIMIZE TABLE entries;');
-
 
 sub slurp {
     my $path = shift;

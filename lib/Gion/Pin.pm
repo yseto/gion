@@ -37,7 +37,9 @@ sub set_pin {
         "UPDATE entries AS e
                 INNER JOIN target AS t ON e._id_target = t.id
                 INNER JOIN categories AS c ON t._id_categories = c.id
-        SET e.readflag = :flag
+        SET
+                e.readflag = :flag,
+                updatetime = CURRENT_TIMESTAMP
                 WHERE c.user = :userid AND e.guid = :guid;
                 ",
         {
@@ -58,7 +60,9 @@ sub remove_all_pin {
         "UPDATE entries AS e
                 INNER JOIN target AS t ON e._id_target = t.id
                 INNER JOIN categories AS c ON t._id_categories = c.id
-                SET e.readflag = 1 
+        SET
+                e.readflag = 1,
+                updatetime = CURRENT_TIMESTAMP
                 WHERE c.user = :userid AND e.readflag = 2
                 ",
         { userid => $self->session('username'), }

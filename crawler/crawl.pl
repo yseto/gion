@@ -99,8 +99,11 @@ foreach my $c ( $rs->hashes ) {
     if ( defined $res->{http_response}->{_previous} ) {
         my $preres = $res->{http_response}->{_previous};
         if ( $preres->{_rc} == 301 ) {
-            $db->query( 'UPDATE target SET url = ? WHERE id = ?;',
-                $preres->{_headers}->{location}, $c->{id} );
+            $db->query(
+                'UPDATE target SET url = ? WHERE id = ?;',
+                $preres->{_headers}->{location},
+                $c->{id}
+            );
             $prog->message( sprintf "301 %s -> %s",
                 $c->{url}, $preres->{_headers}->{location} );
         }
@@ -245,8 +248,8 @@ sub entry_insert_db {
 
     $rs = $db->query(
         "INSERT IGNORE INTO `entries`
- (`guid`, `title`, `description`, `pubDate`, `url`, `readflag`, `_id_target`)
-VALUES ( ?, ?, ?, ?, ?, 0, ? );",
+ (`guid`, `title`, `description`, `pubDate`, `url`, `readflag`, `_id_target`, `updatetime`)
+VALUES ( ?, ?, ?, ?, ?, 0, ?, CURRENT_TIMESTAMP );",
         encode( 'utf-8', $r_guid ),
         encode( 'utf-8', $title ),
         encode( 'utf-8', $description ),
