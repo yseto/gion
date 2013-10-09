@@ -38,7 +38,8 @@ sub startup {
     $l->get('/subscription')
       ->to( controller => 'pages', action => 'subscription' );
 
-    $l->route('/')->to( controller => 'pages', action => 'normal' );
+    $l->route('/entries/')->to( controller => 'pages', action => 'normal' );
+    $l->route('/')->to( controller => 'pages', action => 'entrance' );
     $r->route('/')->to( controller => 'pages', action => 'welcome' );
 
     $self->app->hook(

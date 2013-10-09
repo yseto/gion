@@ -1,12 +1,20 @@
 package Gion::Pin;
 use Mojo::Base 'Mojolicious::Controller';
 use v5.12;
+use Encode;
 
 sub get_pinlist {
     my $self = shift;
     my $db   = $self->app->dbh;
-    my $rs   = $db->execute(
-        "SELECT e.title AS t, e.url AS u 
+
+    my $rs;
+    $rs   = $db->execute( 
+        "SELECT noreferrer FROM user WHERE id = :userid;",
+        { userid => $self->session('username') } )->fetch_hash;
+    my $noreferrer = $rs->{noreferrer};
+
+    $rs   = $db->execute(
+        "SELECT e.title AS t, e.url AS u, e.guid AS g, e.updatetime AS m
             FROM entries AS e 
             INNER JOIN target AS tt ON e._id_target = tt.id
             INNER JOIN categories AS c ON tt._id_categories = c.id
@@ -14,7 +22,29 @@ sub get_pinlist {
             ORDER BY pubDate DESC;",
         { userid => $self->session('username') }
     ) or die $db->error;
-    return $self->render( json => $rs->all );
+
+    return $self->render( json => $rs->all ) if $noreferrer == 0;
+
+    my $hash;
+    foreach my $c ( @{ $rs->all } ) {
+        my $url = $c->{u};
+        my $str = encode( 'utf-8', $url );
+        $str =~ s/([^0-9A-Za-z!'()*\-._~])/sprintf("%%%02X", ord($1))/eg;
+        $url = $self->config->{redirector} . $str;
+   
+        my $h = {
+            t => $c->{t},
+            g => $c->{g},
+            m => $c->{m},
+            u => $url,
+        };
+        push( @$hash, $h );
+ 
+    }
+    return $self->render( json => $hash ) if defined $hash;
+
+    return $self->render( json => {} );
+
 }
 
 sub set_pin {

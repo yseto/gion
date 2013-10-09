@@ -340,15 +340,6 @@ DISTRIBUTIONS
     requirements:
       DBI 1.21
       ExtUtils::MakeMaker 0
-  DB_File-1.827
-    pathname: P/PM/PMQS/DB_File-1.827.tar.gz
-    provides:
-      DB_File 1.827
-      DB_File::BTREEINFO 1.827
-      DB_File::HASHINFO 1.827
-      DB_File::RECNOINFO 1.827
-    requirements:
-      ExtUtils::MakeMaker 0
   Data-OptList-0.107
     pathname: R/RJ/RJBS/Data-OptList-0.107.tar.gz
     provides:
@@ -1465,40 +1456,40 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Test::More 0.34
-  ExtUtils-MakeMaker-6.72
-    pathname: B/BI/BINGOS/ExtUtils-MakeMaker-6.72.tar.gz
+  ExtUtils-MakeMaker-6.78
+    pathname: B/BI/BINGOS/ExtUtils-MakeMaker-6.78.tar.gz
     provides:
-      DynaLoader 6.72
-      ExtUtils::Command::MM 6.72
-      ExtUtils::Liblist 6.72
-      ExtUtils::Liblist::Kid 6.72
-      ExtUtils::MM 6.72
-      ExtUtils::MM_AIX 6.72
-      ExtUtils::MM_Any 6.72
-      ExtUtils::MM_BeOS 6.72
-      ExtUtils::MM_Cygwin 6.72
-      ExtUtils::MM_DOS 6.72
-      ExtUtils::MM_Darwin 6.72
-      ExtUtils::MM_MacOS 6.72
-      ExtUtils::MM_NW5 6.72
-      ExtUtils::MM_OS2 6.72
-      ExtUtils::MM_QNX 6.72
-      ExtUtils::MM_UWIN 6.72
-      ExtUtils::MM_Unix 6.72
-      ExtUtils::MM_VMS 6.72
-      ExtUtils::MM_VOS 6.72
-      ExtUtils::MM_Win32 6.72
-      ExtUtils::MM_Win95 6.72
-      ExtUtils::MY 6.72
-      ExtUtils::MakeMaker 6.72
-      ExtUtils::MakeMaker::Config 6.72
-      ExtUtils::MakeMaker::_version 6.72
-      ExtUtils::Mkbootstrap 6.72
-      ExtUtils::Mksymlists 6.72
-      ExtUtils::testlib 6.72
-      MM 6.72
-      MY 6.72
-      in 6.72
+      DynaLoader 6.78
+      ExtUtils::Command::MM 6.78
+      ExtUtils::Liblist 6.78
+      ExtUtils::Liblist::Kid 6.78
+      ExtUtils::MM 6.78
+      ExtUtils::MM_AIX 6.78
+      ExtUtils::MM_Any 6.78
+      ExtUtils::MM_BeOS 6.78
+      ExtUtils::MM_Cygwin 6.78
+      ExtUtils::MM_DOS 6.78
+      ExtUtils::MM_Darwin 6.78
+      ExtUtils::MM_MacOS 6.78
+      ExtUtils::MM_NW5 6.78
+      ExtUtils::MM_OS2 6.78
+      ExtUtils::MM_QNX 6.78
+      ExtUtils::MM_UWIN 6.78
+      ExtUtils::MM_Unix 6.78
+      ExtUtils::MM_VMS 6.78
+      ExtUtils::MM_VOS 6.78
+      ExtUtils::MM_Win32 6.78
+      ExtUtils::MM_Win95 6.78
+      ExtUtils::MY 6.78
+      ExtUtils::MakeMaker 6.78
+      ExtUtils::MakeMaker::Config 6.78
+      ExtUtils::MakeMaker::_version 6.78
+      ExtUtils::Mkbootstrap 6.78
+      ExtUtils::Mksymlists 6.78
+      ExtUtils::testlib 6.78
+      MM 6.78
+      MY 6.78
+      in 6.78
     requirements:
       Data::Dumper 0
       DirHandle 0
@@ -1572,7 +1563,7 @@ DISTRIBUTIONS
     requirements:
       Class::Accessor::Lvalue::Fast 0
       Exporter::Lite 0
-      ExtUtils::MakeMaker 6.72
+      ExtUtils::MakeMaker 6.78
       File::Slurp 0
       HTML::Entities 0
       List::Util 0
@@ -1893,7 +1884,7 @@ DISTRIBUTIONS
       Mojolicious::Command::generate::app undef
       Mojolicious::Command::generate::lite_app undef
       Mojolicious::Command::generate::makefile undef
-      Mojolicious::Command::generate::plugin undef
+      Mojolicious::Command::generate::plugin 0.01
       Mojolicious::Command::get undef
       Mojolicious::Command::inflate undef
       Mojolicious::Command::prefork undef
@@ -1931,6 +1922,7 @@ DISTRIBUTIONS
       ojo undef
     requirements:
       ExtUtils::MakeMaker 0
+      perl 5.010001
   Mojolicious-Plugin-CSRFProtect-0.13
     pathname: K/KO/KOORCHIK/Mojolicious-Plugin-CSRFProtect-0.13.tar.gz
     provides:
@@ -2239,14 +2231,15 @@ DISTRIBUTIONS
       Scope::Guard 0
       Test::TCP 0.11
       perl 5.008
-  Starlet-0.18
-    pathname: K/KA/KAZUHO/Starlet-0.18.tar.gz
+  Starlet-0.20
+    pathname: K/KA/KAZUHO/Starlet-0.20.tar.gz
     provides:
       Plack::Handler::Starlet undef
-      Starlet 0.18
+      Starlet 0.20
       Starlet::Server undef
     requirements:
       ExtUtils::MakeMaker 6.42
+      LWP::UserAgent 5.8
       Parallel::Prefork 0.13
       Plack 0.992
       Server::Starter 0.06

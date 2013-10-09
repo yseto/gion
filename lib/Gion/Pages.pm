@@ -25,4 +25,10 @@ sub welcome {
     $self->render();
 }
 
+sub entrance {
+    my $self = shift;
+    $self->stash( jspath => 'entrance.js' );
+    $self->render();
+}
+
 1;

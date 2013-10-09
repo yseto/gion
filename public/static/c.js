@@ -2,6 +2,9 @@ var nav = $('.nav');
 nav.on('click', 'a[href="#home"]', function() {
     location.href = "/";
 });
+nav.on('click', 'a[href="#entries"]', function() {
+    location.href = "/entries/";
+});
 nav.on('click', 'a[href="#addasite"]', function() {
     location.href = "/add/";
 });
