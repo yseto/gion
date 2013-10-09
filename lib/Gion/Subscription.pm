@@ -96,6 +96,8 @@ sub examine_target {
     use URI::Fetch;
     my $res = URI::Fetch->fetch( $data->{m} );
 
+    return $self->render( json => { t => '', u => '' } ) unless defined $res;
+
     use XML::LibXML;
     my $xml = XML::LibXML->new();
     $xml->recover_silently(1);
