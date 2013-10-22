@@ -20,6 +20,14 @@ $(window).on('load', function() {
                 $('#noreferrer').val(1);
             }
 
+            if (b.p == 0) {
+                $('#nopinlist').attr('checked', false);
+                $('#nopinlist').val(0);
+            } else {
+                $('#nopinlist').attr('checked', true);
+                $('#nopinlist').val(1);
+            }
+
         }
     });
     list();
@@ -144,6 +152,7 @@ $('#btn_numentry').click(function() {
         data: {
             'val': $('#numentry').val(),
             'noref': $('#noreferrer').val(),
+            'nopin': $('#nopinlist').val(),
         },
         success: function(b) {
             $('#txt_numentry').show();
@@ -157,5 +166,13 @@ $('#noreferrer').click(function() {
         $('#noreferrer').val(1);
     } else {
         $('#noreferrer').val(0);
+    }
+});
+
+$('#nopinlist').click(function() {
+    if ($('#nopinlist').attr('checked') == 'checked') {
+        $('#nopinlist').val(1);
+    } else {
+        $('#nopinlist').val(0);
     }
 });

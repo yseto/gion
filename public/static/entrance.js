@@ -5,7 +5,19 @@ $(window).on('load', function() {
             $('#myModal').modal('show');
         },
     });
-    refresh();
+
+    jQuery.ajax({
+        type: 'POST',
+        url: '/manage/get_numentry',
+        datatype: 'json',
+        success: function(b) {
+            if (b.p == 1) {
+                location.href = "/entries/";
+            } else {
+                refresh();
+            }
+        }
+    });
 });
 
 function refresh() {

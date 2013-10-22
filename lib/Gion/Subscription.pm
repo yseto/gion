@@ -210,14 +210,23 @@ sub get_numentry {
     my $self = shift;
     my $db   = $self->app->dbh;
     my $rs   = $db->execute(
-        "SELECT numentry, noreferrer FROM user WHERE id = :userid;",
+        "SELECT 
+        numentry,
+        noreferrer,
+        nopinlist
+        FROM user WHERE id = :userid;",
         {
             userid => $self->session('username'),
         }
       )->fetch_hash
       or die $db->error;
     return $self->render(
-        json => { r => $rs->{numentry}, n => $rs->{noreferrer} } );
+        json => {
+            r => $rs->{numentry},
+            n => $rs->{noreferrer},
+            p => $rs->{nopinlist},
+        }
+    );
 }
 
 sub set_numentry {
@@ -228,11 +237,16 @@ sub set_numentry {
     exit() unless $data->{val} =~ /^[0-9]*$/;
     exit() unless $data->{val} >= 0;
     my $rs = $db->execute(
-"UPDATE user SET numentry = :val, noreferrer = :noref WHERE id = :userid;",
+        "UPDATE user SET 
+        numentry = :val,
+        noreferrer = :noref,
+        nopinlist = :nopin
+        WHERE id = :userid;",
         {
             userid => $self->session('username'),
             val    => $data->{val},
             noref  => $data->{noref},
+            nopin  => $data->{nopin},
         }
     ) or die $db->error;
     return $self->render( json => { r => "OK" } );
