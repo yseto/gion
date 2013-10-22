@@ -18,6 +18,11 @@
         <label class="control-label">その他の設定</label>
         <div class="controls">
           <label class="checkbox"><input type="checkbox" id="noreferrer" val="0"/>リファラを抑制する</label>
+        </div>
+        <div class="controls">
+          <label class="checkbox"><input type="checkbox" id="nopinlist" val="0"/>Home画面で、ピンリストを表示しない</label>
+        </div>
+        <div class="controls">
           <a class="btn" id="btn_numentry">OK</a>
           <span id="txt_numentry" class="hide">Thanks. Setting your values.</span>
         </div>
