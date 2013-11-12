@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.1.67, for redhat-linux-gnu (i386)
+-- MySQL dump 10.14  Distrib 5.5.33a-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: gion
 -- ------------------------------------------------------
--- Server version	5.1.67
+-- Server version	5.5.33a-MariaDB-1~precise-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -47,6 +47,7 @@ CREATE TABLE `entries` (
   `url` tinytext NOT NULL,
   `readflag` tinyint(4) NOT NULL,
   `_id_target` int(11) NOT NULL,
+  `updatetime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY `guid_2` (`guid`,`_id_target`),
   KEY `_id_target` (`_id_target`),
   KEY `guid` (`guid`),
@@ -103,4 +104,4 @@ CREATE TABLE `user` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-04-10 21:35:43
+-- Dump completed on 2013-11-12 23:42:00
