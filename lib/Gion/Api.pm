@@ -72,12 +72,13 @@ sub get_entries {
 
     $rs = $db->execute(
         "SELECT 
-        guid, entries.title, description, 
+        e.guid, s.title, description, 
         DATE_FORMAT(pubDate,'%m/%d %H:%i') AS pd,
-        readflag, entries.url, _id_target 
-        FROM entries 
+        readflag, s.url, _id_target 
+        FROM entries AS e
         INNER JOIN target AS t ON _id_target = t.id
         INNER JOIN categories AS c ON t._id_categories = c.id 
+        INNER JOIN stories AS s ON s.guid = e.guid
         WHERE t._id_categories = :id AND readflag != 1 AND c.user = :userid
         ORDER BY pubDate DESC;",
         {
