@@ -41,8 +41,8 @@ DELETE FROM entries
 	AND
 		readflag = 1
 	AND 
-		updatetime < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -1 DAY)
-	AND 
+  		updatetime < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -1 DAY)
+  	AND 
 		pubdate NOT IN ( SELECT pubdate 
 			FROM 
 			(SELECT pubdate FROM entries
@@ -59,6 +59,35 @@ DELETE FROM entries
 }
 
 $db->query('OPTIMIZE TABLE entries;');
+
+#TODO: stories の削除
+
+# koredato hujubun.
+# $rs = $db->query('SELECT guid FROM entries') or die $db->error;
+# 
+# my $exists;
+# for ( $rs->hashes ) {
+#     push(@$exists, $_->{guid});
+# }
+# 
+# $rs = $db->query('SELECT guid FROM stories') or die $db->error;
+# 
+# for my $s ( $rs->hashes ) {
+#      my $g = $s->{guid};
+#      my $f = 0;
+#      for (@$exists){
+#         if ($_ eq $g){
+#             $f = 1;
+#             last;
+#         }
+#      }
+#      next if $f == 1;
+#      $db->query('DELETE FROM stories WHERE guid = ?', $g);
+# }
+
+$db->query('DELETE FROM stories WHERE guid NOT IN (SELECT guid FROM entries);');
+
+$db->query('OPTIMIZE TABLE stories;');
 
 sub slurp {
     my $path = shift;

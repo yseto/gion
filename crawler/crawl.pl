@@ -248,14 +248,21 @@ sub entry_insert_db {
 
     $rs = $db->query(
         "INSERT IGNORE INTO `entries`
- (`guid`, `title`, `description`, `pubDate`, `url`, `readflag`, `_id_target`, `updatetime`)
-VALUES ( ?, ?, ?, ?, ?, 0, ?, CURRENT_TIMESTAMP );",
+ (`guid`, `pubDate`, `readflag`, `_id_target`, `updatetime`)
+VALUES ( ?, ?, 0, ?, CURRENT_TIMESTAMP );",
+        encode( 'utf-8', $r_guid ),
+        $tf,
+        $id_target
+    );
+
+    $rs = $db->query(
+        "INSERT IGNORE INTO `stories`
+ (`guid`, `title`, `description`, `url` )
+VALUES ( ?, ?, ?, ? );",
         encode( 'utf-8', $r_guid ),
         encode( 'utf-8', $title ),
         encode( 'utf-8', $description ),
-        $tf,
         encode( 'utf-8', $r_url ),
-        $id_target
     );
 
 }

@@ -14,10 +14,11 @@ sub get_pinlist {
     my $noreferrer = $rs->{noreferrer};
 
     $rs   = $db->execute(
-        "SELECT e.title AS t, e.url AS u, e.guid AS g, e.updatetime AS m
+        "SELECT s.title AS t, s.url AS u, e.guid AS g, e.updatetime AS m
             FROM entries AS e 
             INNER JOIN target AS tt ON e._id_target = tt.id
             INNER JOIN categories AS c ON tt._id_categories = c.id
+            INNER JOIN stories AS s ON s.guid = e.guid
             WHERE c.user = :userid AND e.readflag = 2 
             ORDER BY pubDate DESC;",
         { userid => $self->session('username') }

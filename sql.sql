@@ -41,10 +41,8 @@ DROP TABLE IF EXISTS `entries`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `entries` (
   `guid` varchar(250) NOT NULL,
-  `title` varchar(80) NOT NULL,
-  `description` tinytext NOT NULL,
   `pubDate` datetime NOT NULL,
-  `url` tinytext NOT NULL,
+  `updatetime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `readflag` tinyint(4) NOT NULL,
   `_id_target` int(11) NOT NULL,
   UNIQUE KEY `guid_2` (`guid`,`_id_target`),
@@ -104,3 +102,16 @@ CREATE TABLE `user` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2013-04-10 21:35:43
+
+DROP TABLE IF EXISTS `stories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `stories` (
+  `guid` varchar(250) NOT NULL,
+  `title` varchar(80) NOT NULL,
+  `description` tinytext NOT NULL,
+  `url` tinytext NOT NULL,
+  PRIMARY KEY (`guid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
