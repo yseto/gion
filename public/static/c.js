@@ -11,6 +11,9 @@ nav.on('click', 'a[href="#addasite"]', function() {
 nav.on('click', 'a[href="#subscription"]', function() {
     location.href = "/subscription/";
 });
+nav.on('click', 'a[href="#settings"]', function() {
+    location.href = "/settings/";
+});
 nav.on('click', 'a[href="#logout"]', function() {
     location.href = "/?logout=1";
 });
@@ -20,5 +23,7 @@ $('#helpmodal').click(function() {
 });
 
 $('#returntop').click(function() {
-    $('html,body').animate({ scrollTop: 0 }, 'fast');
+    $('html,body').animate({
+        scrollTop: 0
+    }, 'fast');
 });

@@ -11,6 +11,7 @@ Feature
 - Redirector Support (eg. www.google.com/url?sa=D&q=xxxx )
 - Fast!?
 - Multi User ( Authentication Support )
+- To post Pocket (formerly Read it later)
 
 Requirement
 ----------

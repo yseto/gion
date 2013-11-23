@@ -1,6 +1,5 @@
-package Gion::Api;
+package Gion::Gion::Inf;
 use Mojo::Base 'Mojolicious::Controller';
-use v5.12;
 use HTML::Scrubber;
 use Encode;
 
@@ -35,8 +34,8 @@ sub get_entries {
     my $self = shift;
     my $db   = $self->app->dbh;
     my $data = $self->req->params->to_hash;
-    exit() unless defined $data->{cat};
-    exit() unless $data->{cat} =~ /[0-9]*/;
+    return unless defined $data->{cat};
+    return unless $data->{cat} =~ /[0-9]*/;
 
     my $rs;
     my $id;
@@ -111,6 +110,7 @@ sub get_entries {
             p => $c->{pd} . " - " . $rs2->fetch_hash->{title},
             r => $c->{readflag},
             u => $url,
+            s => $c->{url},
         };
         push( @$hash, $h );
         push( @$read, $c->{guid} );
@@ -121,6 +121,7 @@ sub get_entries {
     }
 
     foreach my $g (@$read) {
+#       next;
         $rs = $db->execute(
             "UPDATE entries
             INNER JOIN target AS t ON _id_target = t.id

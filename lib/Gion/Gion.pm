@@ -1,28 +1,24 @@
-package Gion;
+package Gion::Gion;
 use Mojo::Base 'Mojolicious';
 use v5.12;
 use DBIx::Custom;
 use DBIx::Connector;
 use Mojo::Util qw(encode);
 
-$ENV{MOJO_MODE}          = 'production';
-$ENV{MOJO_REVERSE_PROXY} = 1;
-
-# This method will run once at server start
 sub startup {
     my $self = shift;
 
-    $self->plugin('Config');
+    $self->plugin( 'Config', { file => 'gion.conf' } );
     $self->plugin('CSRFProtect');
 
     $self->sessions->cookie_domain( $self->config->{cookie}->{domain} );
     $self->sessions->cookie_name('Gion');
 
     # 認証
-    push @{ $self->app->plugins->namespaces }, 'Gion::Plugin';
+    push @{ $self->app->plugins->namespaces }, 'Gion::Gion::Plugin';
     $self->plugin('Auth');
 
-    $self->secret($self->config->{cookie}->{secret});
+    $self->secret( $self->config->{cookie}->{secret} );
 
     # 1日はログインが有効
     $self->sessions->default_expiration(86400);
@@ -31,14 +27,18 @@ sub startup {
     my $r = $self->routes;
     my $l = $r->bridge->to( cb => sub { &loginchk; } );
 
-    $l->post('/api/:action')->to( controller => 'api' );
+    $l->post('/inf/:action')->to( controller => 'inf' );
     $l->post('/pin/:action')->to( controller => 'pin' );
     $l->post('/manage/:action')->to( controller => 'subscription' );
-    $l->get('/add')->to( controller => 'pages', action => 'add' );
-    $l->get('/subscription')
-      ->to( controller => 'pages', action => 'subscription' );
 
-    $l->route('/entries/')->to( controller => 'pages', action => 'normal' );
+    $l->route('/api/:controller/:action')->to( namespace => 'Gion::Gion::Api' );
+
+    $l->get('/entries/')->to( controller => 'pages', action => 'normal' );
+    $l->get('/add/')->to( controller => 'pages', action => 'add' );
+    $l->get('/subscription/')
+      ->to( controller => 'pages', action => 'subscription' );
+    $l->get('/settings/')->to( controller => 'pages', action => 'settings' );
+
     $l->route('/')->to( controller => 'pages', action => 'entrance' );
     $r->route('/')->to( controller => 'pages', action => 'welcome' );
 
@@ -87,8 +87,7 @@ sub loginchk {
 
     #ログインフォーム
     if ( $self->config->{url}->{login_ssl} eq 'on' ) {
-	my $sslheaders =
-            $self->req->headers->header('X-Forwarded-HTTPS');
+        my $sslheaders = $self->req->headers->header('X-Forwarded-HTTPS');
         if ( defined $sslheaders and $sslheaders eq 'on' ) {
             $self->render( controller => 'pages', action => 'welcome' );
             return undef;

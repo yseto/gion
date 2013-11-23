@@ -58,6 +58,7 @@ $(window).on('load', function() {
         }
     });
     list();
+    $('#url-search').hide();
 });
 
 function list() {
@@ -65,7 +66,7 @@ function list() {
     $('#selectCat').empty();
     jQuery.ajax({
         type: 'POST',
-        url: '/api/get_targetlist',
+        url: '/inf/get_targetlist',
         datatype: 'json',
         success: function(b) {
             jQuery.each(b.n, function() {

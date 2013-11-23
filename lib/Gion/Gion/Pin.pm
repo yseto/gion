@@ -1,6 +1,5 @@
-package Gion::Pin;
+package Gion::Gion::Pin;
 use Mojo::Base 'Mojolicious::Controller';
-use v5.12;
 use Encode;
 
 sub get_pinlist {
@@ -53,8 +52,8 @@ sub set_pin {
     my $db   = $self->app->dbh;
 
     my $data = $self->req->params->to_hash;
-    exit() unless defined $data->{flag};
-    exit() unless defined $data->{pinid};
+    return unless defined $data->{flag};
+    return unless defined $data->{pinid};
 
     my $flag = $data->{flag};
     if ( $flag == 1 ) {

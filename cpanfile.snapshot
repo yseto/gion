@@ -97,11 +97,16 @@ DISTRIBUTIONS
       Class::Data::Inheritable 0.08
     requirements:
       ExtUtils::MakeMaker 0
-  Class-ErrorHandler-0.01
-    pathname: B/BT/BTROTT/Class-ErrorHandler-0.01.tar.gz
+  Class-ErrorHandler-0.03
+    pathname: T/TO/TOKUHIROM/Class-ErrorHandler-0.03.tar.gz
     provides:
-      Class::ErrorHandler 0.01
+      Class::ErrorHandler 0.03
     requirements:
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      ExtUtils::CBuilder 0
+      Module::Build 0.38
+      perl 5.008_001
   Class-Factory-Util-1.7
     pathname: D/DR/DROLSKY/Class-Factory-Util-1.7.tar.gz
     provides:
@@ -1456,40 +1461,40 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Test::More 0.34
-  ExtUtils-MakeMaker-6.78
-    pathname: B/BI/BINGOS/ExtUtils-MakeMaker-6.78.tar.gz
+  ExtUtils-MakeMaker-6.82
+    pathname: B/BI/BINGOS/ExtUtils-MakeMaker-6.82.tar.gz
     provides:
-      DynaLoader 6.78
-      ExtUtils::Command::MM 6.78
-      ExtUtils::Liblist 6.78
-      ExtUtils::Liblist::Kid 6.78
-      ExtUtils::MM 6.78
-      ExtUtils::MM_AIX 6.78
-      ExtUtils::MM_Any 6.78
-      ExtUtils::MM_BeOS 6.78
-      ExtUtils::MM_Cygwin 6.78
-      ExtUtils::MM_DOS 6.78
-      ExtUtils::MM_Darwin 6.78
-      ExtUtils::MM_MacOS 6.78
-      ExtUtils::MM_NW5 6.78
-      ExtUtils::MM_OS2 6.78
-      ExtUtils::MM_QNX 6.78
-      ExtUtils::MM_UWIN 6.78
-      ExtUtils::MM_Unix 6.78
-      ExtUtils::MM_VMS 6.78
-      ExtUtils::MM_VOS 6.78
-      ExtUtils::MM_Win32 6.78
-      ExtUtils::MM_Win95 6.78
-      ExtUtils::MY 6.78
-      ExtUtils::MakeMaker 6.78
-      ExtUtils::MakeMaker::Config 6.78
-      ExtUtils::MakeMaker::_version 6.78
-      ExtUtils::Mkbootstrap 6.78
-      ExtUtils::Mksymlists 6.78
-      ExtUtils::testlib 6.78
-      MM 6.78
-      MY 6.78
-      in 6.78
+      DynaLoader 6.82
+      ExtUtils::Command::MM 6.82
+      ExtUtils::Liblist 6.82
+      ExtUtils::Liblist::Kid 6.82
+      ExtUtils::MM 6.82
+      ExtUtils::MM_AIX 6.82
+      ExtUtils::MM_Any 6.82
+      ExtUtils::MM_BeOS 6.82
+      ExtUtils::MM_Cygwin 6.82
+      ExtUtils::MM_DOS 6.82
+      ExtUtils::MM_Darwin 6.82
+      ExtUtils::MM_MacOS 6.82
+      ExtUtils::MM_NW5 6.82
+      ExtUtils::MM_OS2 6.82
+      ExtUtils::MM_QNX 6.82
+      ExtUtils::MM_UWIN 6.82
+      ExtUtils::MM_Unix 6.82
+      ExtUtils::MM_VMS 6.82
+      ExtUtils::MM_VOS 6.82
+      ExtUtils::MM_Win32 6.82
+      ExtUtils::MM_Win95 6.82
+      ExtUtils::MY 6.82
+      ExtUtils::MakeMaker 6.82
+      ExtUtils::MakeMaker::Config 6.82
+      ExtUtils::MakeMaker::_version 6.82
+      ExtUtils::Mkbootstrap 6.82
+      ExtUtils::Mksymlists 6.82
+      ExtUtils::testlib 6.82
+      MM 6.82
+      MY 6.82
+      in 6.82
     requirements:
       Data::Dumper 0
       DirHandle 0
@@ -1812,8 +1817,8 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  Mojolicious-3.94
-    pathname: S/SR/SRI/Mojolicious-3.94.tar.gz
+  Mojolicious-4.58
+    pathname: S/SR/SRI/Mojolicious-4.58.tar.gz
     provides:
       Mojo undef
       Mojo::Asset undef
@@ -1872,9 +1877,11 @@ DISTRIBUTIONS
       Mojo::Upload undef
       Mojo::UserAgent undef
       Mojo::UserAgent::CookieJar undef
+      Mojo::UserAgent::Proxy undef
+      Mojo::UserAgent::Server undef
       Mojo::UserAgent::Transactor undef
       Mojo::Util undef
-      Mojolicious 3.94
+      Mojolicious 4.58
       Mojolicious::Command undef
       Mojolicious::Command::cgi undef
       Mojolicious::Command::cpanify undef
@@ -1906,8 +1913,6 @@ DISTRIBUTIONS
       Mojolicious::Plugin::JSONConfig undef
       Mojolicious::Plugin::Mount undef
       Mojolicious::Plugin::PODRenderer undef
-      Mojolicious::Plugin::PoweredBy undef
-      Mojolicious::Plugin::RequestTimer undef
       Mojolicious::Plugin::TagHelpers undef
       Mojolicious::Plugins undef
       Mojolicious::Renderer undef
@@ -1918,6 +1923,8 @@ DISTRIBUTIONS
       Mojolicious::Sessions undef
       Mojolicious::Static undef
       Mojolicious::Types undef
+      Mojolicious::Validator undef
+      Mojolicious::Validator::Validation undef
       Test::Mojo undef
       ojo undef
     requirements:

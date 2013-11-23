@@ -1,6 +1,6 @@
 % layout 'default' ;
-<div class="container-fluid">
-<div class="row-fluid">
+<div class="container">
+<div class="row">
 <h4>PinList <span class="badge badge-info" id="pincount"></span> </h4>
 <ul id="pinlist_ul">
 </ul>
@@ -8,14 +8,21 @@
 <%= include 'footer' %>
 </div><!--/.fluid-container-->
 
-<div class="modal hide" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-header">
-    <h3>Help</h3>
-  </div>
-  <div class="modal-body">
-    <p>Homeでは、PinListに追加したエントリの一覧が表示されます。<br/><i class="icon-check"></i> をクリックすると該当のエントリのピンを外すことができます。<br/><i class="icon-check"></i> のとなりに表示されている時間はピンを立てた時間です。</p>
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Close</button>
+<div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Help</h4>
+      </div>
+      <div class="modal-body">
+        <p>Homeでは、PinListに追加したエントリの一覧が表示されます。</p>
+        <p><span class="glyphicon glyphicon-check"></span> をクリックすると該当のエントリのピンを外すことができます。</p>
+        <p><span class="glyphicon glyphicon-check"></span> のとなりに表示されている時間はピンを立てた時間です。</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">Close</button>
+      </div>
+    </div>
   </div>
 </div>
