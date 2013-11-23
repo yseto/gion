@@ -40,7 +40,7 @@ $(window).on('load', function() {
         datatype: 'json',
         success: function(a) {
             jQuery.each(a.e, function() {
-                $('#connect' + this.service).text('連携されています。ユーザ名:' + this.username);
+                $('#connect' + this.service).text('連携しています。ユーザ名: ' + this.username);
                 $('#btn' + this.service).attr('disabled', 'disabled');
                 $('#' + this.service).show();
             });
