@@ -32,7 +32,7 @@ function refresh() {
             jQuery.each(a, function(a) {
                 var li = $('<a>').attr({
                     id: this.g
-                }).addClass('read icon-check').text('');
+                }).addClass('read glyphicon glyphicon-check').text('');
                 li.css('cursor', 'pointer');
                 var lic = $('<span>').text(' ')
                     .append($('<span>').text(this.m))
@@ -41,7 +41,7 @@ function refresh() {
                     href: this.u,
                     target: 'blank',
                 }).text(this.t));
-                $('#pinlist_ul').append($('<li>').append(li).append(lic));
+                $('#pinlist_ul').append($('<li>').append(li).append(lic).addClass('list-group-item'));
                 count++;
             });
             $('#pincount').text(count);

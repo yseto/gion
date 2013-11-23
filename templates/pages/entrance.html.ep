@@ -1,12 +1,16 @@
 % layout 'default' ;
 <div class="container">
 <div class="row">
-<h4>PinList <span class="badge badge-info" id="pincount"></span> </h4>
-<ul id="pinlist_ul">
-</ul>
+
+<div class="panel panel-info">
+  <div class="panel-heading">
+    PinList <span class="badge" id="pincount"></span>
+  </div>
+  
+  <ul id="pinlist_ul" class="list-group"></ul>
 </div>
 <%= include 'footer' %>
-</div><!--/.fluid-container-->
+</div><!--/.container-->
 
 <div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">

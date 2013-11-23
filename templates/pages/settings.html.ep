@@ -48,7 +48,7 @@
             <span class="disconnect btn btn-default" id="<%= $c->{id} %>">設定の初期化</span>
           </td>
           <td>
-            <span id="connect<%= $c->{id} %>">連携はまだされていません</span>
+            <span id="connect<%= $c->{id} %>">連携していません</span>
           </td>
         </tr>
 % }

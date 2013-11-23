@@ -55,7 +55,6 @@
   </div>
 </form>
 </div>
-</div>
 
 <%= include 'footer' %>
 </div><!--/.fluid-container-->
