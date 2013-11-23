@@ -1,6 +1,5 @@
-package Gion::Plugin::Auth;
+package Gion::Gion::Plugin::Auth;
 use Mojo::Base 'Mojolicious::Plugin';
-use v5.12;
 use Digest::SHA qw(sha512_hex);
 
 our $FIXEDSALT;

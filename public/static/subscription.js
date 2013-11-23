@@ -5,31 +5,6 @@ $(window).on('load', function() {
             $('#myModal').modal('show');
         }
     });
-
-    jQuery.ajax({
-        type: 'POST',
-        url: '/manage/get_numentry',
-        datatype: 'json',
-        success: function(b) {
-            $('#numentry').val(b.r);
-            if (b.n == 0) {
-                $('#noreferrer').attr('checked', false);
-                $('#noreferrer').val(0);
-            } else {
-                $('#noreferrer').attr('checked', true);
-                $('#noreferrer').val(1);
-            }
-
-            if (b.p == 0) {
-                $('#nopinlist').attr('checked', false);
-                $('#nopinlist').val(0);
-            } else {
-                $('#nopinlist').attr('checked', true);
-                $('#nopinlist').val(1);
-            }
-
-        }
-    });
     list();
 });
 
@@ -38,7 +13,7 @@ $(document).on('click', '#change-categories', function() {
         type: 'POST',
         url: '/manage/change_it',
         data: {
-            'target': $('#target-id').val(),
+            'id': $('#target-id').val(),
             'cat': $('#selectCat').val(),
         },
         datatype: 'json',
@@ -49,130 +24,78 @@ $(document).on('click', '#change-categories', function() {
     });
 });
 
+
+$(document).on('click', '.deletebtn', function() {
+    if (confirm($(this).data('name') + ' を削除しますか')) {
+        jQuery.ajax({
+            type: 'POST',
+            url: '/manage/delete_it',
+            data: {
+                'target': $(this).data('target'),
+                'id': $(this).data('id'),
+            },
+            datatype: 'json',
+            success: function(b) {
+                list();
+            }
+        });
+    }
+});
+
+
+$(document).on('click', '.categorybtn', function() {
+
+    $('#selectCat').val($(this).data('name'));
+    $('#target-id').val($(this).data('id'));
+    $('#categoriesModal').modal('show');
+});
+
+
+
+
 function list() {
-    $('#cat_list').empty();
+    $('.appendlist').remove();
     jQuery.ajax({
         type: 'POST',
-        url: '/api/get_targetlist',
+        url: '/inf/get_targetlist',
         datatype: 'json',
         success: function(b) {
             $('#selectCat').empty();
 
             jQuery.each(b.n, function() {
-                var li = $('<li>');
-                li.append($('<span>').text(this.n + ' '));
-                li.append($('<a>').attr({
-                    href: '#',
-                    id: 'c_' + this.i,
-                    name: this.n,
-                }).text('Delete').click(function() {
-                    if (confirm($(this).attr('name') + ' を削除しますか')) {
-                        jQuery.ajax({
-                            type: 'POST',
-                            url: '/manage/delete_it',
-                            data: {
-                                'target': $(this).attr('id'),
-                            },
-                            datatype: 'json',
-                            success: function(b) {
-                                list();
-                            }
-                        });
-                    }
-                }));
+                var tr = $('<tr>').attr('id', 'child_' + this.i).addClass('appendlist');
 
-                var ul = $('<ul>').attr({
-                    id: 'child_' + this.i
-                });
-                li.append(ul);
+                tr.append($('<td>').attr('colspan', 2).append($('<button>').addClass('deletebtn btn btn-danger btn-xs')
+                    .data('name', this.n).data('target', 'category').data('id', this.i).text('削除')));
+                tr.append($('<th>').text(this.n));
 
-                $('#cat_list').append(li);
+                $('#cat_list').append(tr);
 
                 $('#selectCat').append($('<option>').val(this.i).text(this.n));
             });
 
             jQuery.each(b.t, function() {
-                var li = $('<li>');
-                li.append($('<span>').text(this.n + ' '));
-                li.append($('<a>').attr({
-                    href: '#',
-                    id: 'ne_' + this.i,
-                    name: this.c,
-                }).text('Change Cat.').click(function() {
-                    $('#selectCat').val($(this).attr('name'));
-                    $('#target-id').val($(this).attr('id'));
-                    $('#categoriesModal').modal('show');
-                }));
-                li.append($('<span>').text(' '));
-                li.append($('<a>').attr({
-                    href: '#',
-                    id: 'e_' + this.i,
-                    name: this.n,
-                }).text('Delete').click(function() {
-                    if (confirm($(this).attr('name') + ' を削除しますか')) {
-                        jQuery.ajax({
-                            type: 'POST',
-                            url: '/manage/delete_it',
-                            data: {
-                                'target': $(this).attr('id'),
-                            },
-                            datatype: 'json',
-                            success: function(b) {
-                                list();
-                            }
-                        });
-                    }
-                }));
+                var tr = $('<tr>').addClass('appendlist');
 
-                if (this.r == 404) {
-                    li.append($('<span>').addClass('badge badge-inverse').text('404'));
-                }
-                if (this.r == -1) {
-                    li.append($('<span>').addClass('badge badge-inverse').text('Fail?'));
-                }
+                tr.append($('<td>').append($('<button>').addClass('deletebtn btn btn-danger btn-xs')
+                    .data('name', this.n).data('target', 'entry').data('id', this.i).text('削除')));
 
-                li.append($('<span>').text(' '));
+                tr.append($('<td>').append($('<button>').addClass('categorybtn btn btn-info btn-xs')
+                    .data('name', this.c).data('id', this.i).text('変更')));
 
-                li.append($('<a>').attr({
+                var linkage = $('<a>').addClass('btn btn-link btn-xs').attr({
                     href: this.h,
                     target: 'blank'
-                }).text('Open'));
+                }).text(this.n);
 
-                $('#child_' + this.c).append(li);
+                if (this.r == -1 || this.r == 404) {
+                    linkage.append($('<span>').addClass('badge ').text('取得に失敗しました'));
+                    tr.addClass('danger');
+                }
+                tr.append($('<td>').append(linkage));
+
+                $('#child_' + this.c).after(tr);
             });
         },
     });
 }
-
-$('#btn_numentry').click(function() {
-    jQuery.ajax({
-        type: 'POST',
-        url: '/manage/set_numentry',
-        datatype: 'json',
-        data: {
-            'val': $('#numentry').val(),
-            'noref': $('#noreferrer').val(),
-            'nopin': $('#nopinlist').val(),
-        },
-        success: function(b) {
-            $('#txt_numentry').show();
-        }
-    });
-
-});
-
-$('#noreferrer').click(function() {
-    if ($('#noreferrer').attr('checked') == 'checked') {
-        $('#noreferrer').val(1);
-    } else {
-        $('#noreferrer').val(0);
-    }
-});
-
-$('#nopinlist').click(function() {
-    if ($('#nopinlist').attr('checked') == 'checked') {
-        $('#nopinlist').val(1);
-    } else {
-        $('#nopinlist').val(0);
-    }
-});

@@ -4,6 +4,8 @@ var colour = '#999';
 var selection = 0;
 var prev_selection = 0;
 
+var service_state = {};
+
 $(window).on('load', function() {
     jQuery.ajaxSetup({
         cache: false,
@@ -12,10 +14,25 @@ $(window).on('load', function() {
         },
     });
 
+    service_state = {};
+    jQuery.ajax({
+        type: 'POST',
+        url: '/manage/get_connect',
+        datatype: 'json',
+        success: function(a) {
+            if (a.e == null) { return false; }
+            jQuery.each(a.e, function() {
+                service_state[this.service] = 1;
+            });
+        },
+        error: function() {},
+    });
+
     cat_list();
-    $('.cat_link').removeClass('active');
+    $('.categories_link').removeClass('active');
     get_contents(0);
-    $('.cat_link:first').addClass('active');
+    $('.categories_link:first').addClass('active');
+    $('#pinlist').hide();
     moveselector();
 });
 
@@ -29,12 +46,12 @@ function categories_link(q) {
     if (jQuery.isNumeric(q)) {
         cat_idx_selected = q;
         cat_list(q);
-        $('.cat_link').removeClass('active');
+        $('.categories_link').removeClass('active');
         get_contents(q);
-        if ( q == 0 ){
-            $('.cat_link:first').addClass('active');
-        }else{
-            $('#cat_link_' + q).addClass('active');
+        if (q == 0) {
+            $('.categories_link:first').addClass('active');
+        } else {
+            $('#categories_link_' + q).addClass('active');
         }
         selection = 0;
         moveselector();
@@ -44,6 +61,8 @@ function categories_link(q) {
 $(document).keypress(function(e) {
 
     e.preventDefault();
+
+    // http://www.programming-magic.com/file/20080205232140/keycode_table.html
 
     switch (e.keyCode) {
         case 97:
@@ -73,18 +92,23 @@ $(document).keypress(function(e) {
             break;
 
         case 107:
-            //K
+            // K
             item_prev_focus();
             break;
 
         case 106:
-            //J
+            // J
             item_next_focus();
             break;
 
         case 118:
-            //V
+            // V
             item_view();
+            break;
+
+        case 108:
+            // L
+            item_service('pocket');
             break;
     }
 });
@@ -102,9 +126,9 @@ $('#toggle_pinlist').click(function() {
                 var count = 0;
                 $('#pinlist_ul').empty();
                 jQuery.each(a, function(a) {
-                    $('#pinlist_ul').append($('<li>').append($('<a>').attr({
+                    $('#pinlist_ul').append($('<a>').attr({
                         href: this.u
-                    }).text(this.t)));
+                    }).text(this.t).addClass('list-group-item'));
                     count++;
                 });
                 $('#pincount').text(count);
@@ -125,9 +149,9 @@ $('#remove_all_pin').click(function() {
             datatype: 'json',
             success: function() {
                 cat_list();
-                $('.cat_link').removeClass('active');
+                $('.categories_link').removeClass('active');
                 get_contents(0);
-                $('.cat_link:first').addClass('active');
+                $('.categories_link:first').addClass('active');
                 selection = 0;
                 moveselector();
             },
@@ -145,7 +169,7 @@ function cat_list(q) {
     $('#cat_list').empty();
     jQuery.ajax({
         type: 'POST',
-        url: '/api/get_categories',
+        url: '/inf/get_categories',
         datatype: 'json',
         /* cache: true, */
         async: false,
@@ -154,12 +178,10 @@ function cat_list(q) {
             var i = 0;
             var j = undefined;
             jQuery.each(b, function() {
-                var li = $('<li>').addClass('cat_link').attr({
-                    id: 'cat_link_' + this.i
-                });
-                li.append($('<a>').attr({
+                var li = $('<a>').addClass('categories_link list-group-item').attr({
+                    id: 'categories_link_' + this.i,
                     href: '/#' + this.i
-                }).text(this.n).addClass('categories_link').append(' ').append($('<span>').addClass('badge').text(this.c)));
+                }).text(this.n).append($('<span>').addClass('badge hidden-sm').text(this.c));
                 $('#cat_list').append(li);
                 link[i] = '/#' + this.i;
                 i++;
@@ -203,7 +225,7 @@ function get_contents(id) {
 
     jQuery.ajax({
         type: 'POST',
-        url: '/api/get_entries',
+        url: '/inf/get_entries',
         data: {
             'cat': id
         },
@@ -224,7 +246,7 @@ function entries(b) {
     jQuery.each(b, function() {
 
         var div = $('<div>');
-        div.addClass('tw');
+        div.addClass('tw panel panel-default');
         div.attr({
             id: this.g
         });
@@ -246,13 +268,22 @@ function entries(b) {
 
         div.append($('<p>').text(this.d));
 
-        var pintarget = $('<p>').addClass('add pull-right').append($('<i>').addClass('icon-ok')).append(' Pin!');
+        var pintarget = $('<p>').addClass('add pull-right').append($('<span>').addClass('glyphicon glyphicon-ok')).append(' Pin!');
 
-        if (this.r == 2) {} else {
+        if (this.r != 2) {
             pintarget.hide();
         }
 
-        div.append($('<a>').addClass('pinlink btn btn-info hidden-desktop').text('Pin!'));
+        div.append($('<a>').addClass('pinlink hidden-md hidden-lg btn btn-info btn-sm').text('Pin!'));
+
+        var btn = $('<div>').addClass('text-right').prepend($('<br>').addClass('hidden-md hidden-lg'));
+        var service_link = this.s;
+        $.each(service_state, function(i) {
+            btn.append($('<span>').css('margin-left','1em'));
+            btn.append($('<button>').addClass('service btn btn-danger btn-sm').text(i).data('service', i).data('url', service_link));
+        });
+
+        div.append(btn);
         div.append(pintarget);
         div.append($('<p>').text(this.p));
 
@@ -260,7 +291,7 @@ function entries(b) {
     });
 
     if (b.length == 0) {
-        var div = $('<div>').addClass('tw');
+        var div = $('<div>').addClass('tw panel panel-default');
         div.append($('<h3>').text('Nothing Entries.'));
         $('#contents_view_box').append(div);
     }
@@ -371,3 +402,31 @@ function categories_prev() {
         categories_link(cat_idx_prev);
     }
 }
+
+function item_service(service_name) {
+    var it = $('.tw:eq(' + selection + ') * ');
+    var scope = it.children('.service');
+    for (var i = 0 ; i < scope.length; i++ ){
+        if ( scope.eq(i).text() == service_name ) {
+            scope.eq(i).click();
+        }
+    }
+}
+
+$(document).on('click', '.service', function() {
+    var r = $(this);
+    jQuery.ajax({
+        type: 'POST',
+        url: '/api/' + $(this).data('service') + '/post',
+        datatype: 'json',
+        data: {
+            'service': $(this).data('service'),
+            'url': $(this).data('url'),
+        },
+        success: function(a) {
+            if (a.e == 'ok') {
+                r.text('posted').attr('disabled', 'disabled');
+            }
+        },
+    });
+});

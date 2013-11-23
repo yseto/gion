@@ -1,10 +1,15 @@
-package Gion::Pages;
+package Gion::Gion::Pages;
 use Mojo::Base 'Mojolicious::Controller';
-use v5.12;
 
 sub add {
     my $self = shift;
     $self->stash( jspath => 'add.js' );
+    $self->render();
+}
+
+sub settings {
+    my $self = shift;
+    $self->stash( jspath => 'settings.js' );
     $self->render();
 }
 

@@ -53,4 +53,7 @@
         # 1 の場合は、すべての情報を取り込む
         pubDatecheck => 0,
     },
+    service => {
+        pocket => '',
+    },
 };
