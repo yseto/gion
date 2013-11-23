@@ -56,6 +56,7 @@ CREATE TABLE `stories` (
   PRIMARY KEY (`guid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `connection`;
 CREATE TABLE `connection` (
   `user` int(11) NOT NULL,
   `service` varchar(60) NOT NULL,
