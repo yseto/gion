@@ -83,10 +83,17 @@ function list() {
                 tr.append($('<td>').append($('<button>').addClass('categorybtn btn btn-info btn-xs')
                     .data('name', this.c).data('id', this.i).text('変更')));
 
+                var cutstr = this.n.substr(0,20);
+                if ( cutstr != this.n ) {
+                    cutstr = cutstr + '...';
+                }
+
                 var linkage = $('<a>').addClass('btn btn-link btn-xs').attr({
                     href: this.h,
-                    target: 'blank'
-                }).text(this.n);
+                    target: 'blank',
+                    title: this.n,
+                }).append($('<span>').addClass('visible-xs').text(cutstr))
+                .append($('<span>').addClass('visible-sm visible-md visible-lg').text(this.n));
 
                 if (this.r == -1 || this.r == 404) {
                     linkage.append($('<span>').addClass('badge ').text('取得に失敗しました'));

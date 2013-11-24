@@ -23,6 +23,11 @@
 
   </div><!--/row-->
 
+<p class="clearfix hidden-lg hidden-md">
+    <a onclick="javascript:categories_prev();" class="btn btn-default pull-left">&lt;&lt; Category Back</a>
+    <a onclick="javascript:categories_next();" class="btn btn-default pull-right">Category Next &gt;&gt;</a>
+</p>
+
 <%= include 'footer' %>
 </div><!--/.container-->
 
