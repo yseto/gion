@@ -92,7 +92,7 @@ sub get_entries {
                 INNER JOIN categories AS c ON t._id_categories = c.id
                 SET readflag = 1, updatetime = CURRENT_TIMESTAMP
                 WHERE t._id_categories = ? AND readflag = 0 AND c.user = ? AND guid = ?",
-                $id, $self->session('username'), $_->{guid}) if 1 == 0;    # TODO COMMENT OUT
+                $id, $self->session('username'), $_->{guid}) if 1 == 1;    # TODO COMMENT OUT
 
             if ( $cfg->{numentry} > 0 ) {
                 $count++;
