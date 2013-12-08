@@ -1,4 +1,4 @@
-package Gion::Gion::Pages;
+package Gion::Web::Pages;
 use Mojo::Base 'Mojolicious::Controller';
 
 sub add {

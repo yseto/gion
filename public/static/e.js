@@ -119,7 +119,7 @@ $('#toggle_pinlist').click(function() {
 
         jQuery.ajax({
             type: 'POST',
-            url: '/pin/get_pinlist',
+            url: '/inf/get_pinlist',
             datatype: 'json',
             async: false,
             success: function(a) {
@@ -145,7 +145,7 @@ $('#remove_all_pin').click(function() {
     if (confirm('Are you sure?')) {
         jQuery.ajax({
             type: 'POST',
-            url: '/pin/remove_all_pin',
+            url: '/inf/remove_all_pin',
             datatype: 'json',
             success: function() {
                 cat_list();
@@ -312,7 +312,7 @@ function item_pin() {
 function post_pin(id) {
     jQuery.ajax({
         type: 'POST',
-        url: '/pin/set_pin',
+        url: '/inf/set_pin',
         data: {
             'flag': is_toggle_pin(id),
             'pinid': encodeURI(id.attr('id'))

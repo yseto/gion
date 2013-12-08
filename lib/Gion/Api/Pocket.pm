@@ -1,4 +1,4 @@
-package Gion::Gion::Api::Pocket;
+package Gion::Web::Api::Pocket;
 use Mojo::Base 'Mojolicious::Controller';
 use Data::Dumper;
 use LWP::UserAgent;
@@ -8,7 +8,7 @@ use Try::Tiny;
 
 sub connect {
     my $self         = shift;
-    my $db           = $self->app->dbh;
+    my $db           = $self->app->dbh->dbh;
     my $data         = $self->req->params->to_hash;
     my $ua           = LWP::UserAgent->new;
     my $redirect_uri = $self->req->url->base . $self->req->url->path;
@@ -32,14 +32,9 @@ sub connect {
         }
 
         if ( defined $params->{access_token} and defined $params->{username} ) {
-            my $rs = $db->execute(
-"INSERT INTO connection (user,service,username,`key`) VALUES (:u,'pocket',:n,:t) ",
-                {
-                    u => $self->session('username'),
-                    n => $params->{username},
-                    t => $params->{access_token},
-                }
-            ) or die $db->error;
+            $db->query("INSERT INTO connection (user,service,username,`key`)
+            VALUES (?,'pocket',?,?)",
+                $self->session('username'), $params->{username}, $params->{access_token});
             return $self->redirect_to( $self->req->url->base . "/settings/" );
         }
         return $self->redirect_to( $self->req->url->base . "/settings/" );
@@ -71,14 +66,10 @@ sub connect {
 sub post {
     my $self = shift;
     my $data = $self->req->params->to_hash;
-    my $db   = $self->app->dbh;
-    my $rs   = $db->execute(
-        "SELECT `key` FROM connection WHERE user = :userid;",
-        {
-            userid  => $self->session('username'),
-            service => $data->{service},
-        }
-    )->fetch_hash;
+    my $db   = $self->app->dbh->dbh;
+    my $rs   = $db->select_row(
+        "SELECT `key` FROM connection WHERE user = ? AND service = ?",
+         $self->session('username'), $data->{service});
 
     return $self->render( json => "ng" ) unless $rs;
 

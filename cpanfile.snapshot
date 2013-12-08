@@ -297,54 +297,47 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 6.48
       Test::Simple 0.90
       perl 5.008
-  DBIx-Connector-0.53
-    pathname: D/DW/DWHEELER/DBIx-Connector-0.53.tar.gz
+  DBIx-Handler-0.07
+    pathname: N/NE/NEKOKAK/DBIx-Handler-0.07.tar.gz
     provides:
-      DBIx::Connector 0.53
-      DBIx::Connector::Driver 0.53
-      DBIx::Connector::Driver::MSSQL 0.53
-      DBIx::Connector::Driver::Oracle 0.53
-      DBIx::Connector::Driver::Pg 0.53
-      DBIx::Connector::Driver::SQLite 0.53
-      DBIx::Connector::Driver::mysql 0.53
+      DBIx::Handler 0.07
     requirements:
       DBI 1.605
-      Module::Build 0.30
-      Test::MockModule 0.05
-      Test::More 0.88
-      perl 5.006002
-  DBIx-Custom-0.28
-    pathname: K/KI/KIMOTO/DBIx-Custom-0.28.tar.gz
+      DBIx::TransactionManager 1.09
+      ExtUtils::MakeMaker 6.36
+      Test::More 0.94
+      Test::Requires 0
+      Test::SharedFork 0.16
+  DBIx-Sunny-0.21
+    pathname: K/KA/KAZEBURO/DBIx-Sunny-0.21.tar.gz
     provides:
-      DBIx::Custom 0.28
-      DBIx::Custom::Mapper undef
-      DBIx::Custom::Model undef
-      DBIx::Custom::NotExists undef
-      DBIx::Custom::Order undef
-      DBIx::Custom::Query undef
-      DBIx::Custom::QueryBuilder undef
-      DBIx::Custom::Result undef
-      DBIx::Custom::Tag undef
-      DBIx::Custom::Util undef
-      DBIx::Custom::Where undef
+      DBIx::Sunny 0.21
+      DBIx::Sunny::Schema undef
     requirements:
-      DBD::SQLite 1.25
-      DBI 1.605
-      ExtUtils::MakeMaker 0
-      Object::Simple 3.0621
-      Test::More 0
-  DBIx-Simple-1.35
-    pathname: J/JU/JUERD/DBIx-Simple-1.35.tar.gz
+      Capture::Tiny 0
+      Class::Accessor::Lite 0.05
+      Class::Data::Inheritable 0
+      DBD::SQLite 1.31
+      DBI 1.615
+      DBIx::TransactionManager 0
+      Data::Validator 0
+      Module::Build 0.38
+      Scalar::Util 0
+      Test::More 0.98
+      Test::Requires 0
+      Test::TCP 0
+      parent 0
+      perl 5.008005
+  DBIx-TransactionManager-1.12
+    pathname: N/NE/NEKOKAK/DBIx-TransactionManager-1.12.tar.gz
     provides:
-      DBIx::Simple 1.35
-      DBIx::Simple::DeadObject 1.35
-      DBIx::Simple::Dummy 1.35
-      DBIx::Simple::Result 1.35
-      DBIx::Simple::Result::RowObject undef
-      DBIx::Simple::Statement 1.35
+      DBIx::TransactionManager 1.12
+      DBIx::TransactionManager::ScopeGuard 1.12
     requirements:
-      DBI 1.21
-      ExtUtils::MakeMaker 0
+      DBI 0
+      ExtUtils::MakeMaker 6.36
+      Test::More 0.96
+      Try::Tiny 0
   Data-OptList-0.107
     pathname: R/RJ/RJBS/Data-OptList-0.107.tar.gz
     provides:
@@ -355,6 +348,25 @@ DISTRIBUTIONS
       Params::Util 0
       Sub::Install 0.921
       Test::More 0.96
+  Data-Validator-1.04
+    pathname: G/GF/GFUJI/Data-Validator-1.04.tar.gz
+    provides:
+      Data::Validator 1.04
+      Data::Validator::Role::AllowExtra undef
+      Data::Validator::Role::Croak undef
+      Data::Validator::Role::Method undef
+      Data::Validator::Role::NoRestricted undef
+      Data::Validator::Role::NoThrow undef
+      Data::Validator::Role::Sequenced undef
+      Data::Validator::Role::StrictSequenced undef
+    requirements:
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      ExtUtils::CBuilder 0
+      ExtUtils::MakeMaker 6.59
+      Module::Build 0.38
+      Mouse 0.93
+      perl 5.008001
   DateTime-1.01
     pathname: D/DR/DROLSKY/DateTime-1.01.tar.gz
     provides:
@@ -416,7 +428,6 @@ DISTRIBUTIONS
     requirements:
       DateTime 0.18
       DateTime::Format::Builder 0.77
-      Module::Build 0.38
   DateTime-Format-Mail-0.3001
     pathname: D/DR/DROLSKY/DateTime-Format-Mail-0.3001.tar.gz
     provides:
@@ -426,13 +437,6 @@ DISTRIBUTIONS
       Module::Build 0
       Params::Validate 0.67
       Test::More 0.47
-  DateTime-Format-MySQL-0.04
-    pathname: D/DR/DROLSKY/DateTime-Format-MySQL-0.04.tar.gz
-    provides:
-      DateTime::Format::MySQL 0.04
-    requirements:
-      DateTime 0
-      DateTime::Format::Builder 0.6
   DateTime-Format-Strptime-1.54
     pathname: D/DR/DROLSKY/DateTime-Format-Strptime-1.54.tar.gz
     provides:
@@ -929,7 +933,7 @@ DISTRIBUTIONS
       DateTime::Locale::zu_ZA undef
     requirements:
       List::MoreUtils 0
-      Module::Build 0.36
+      Module::Build 0
       Params::Validate 0.91
       perl 5.006
   DateTime-TimeZone-1.58
@@ -1381,6 +1385,22 @@ DISTRIBUTIONS
       strict 0
       vars 0
       warnings 0
+  Devel-CheckCompiler-0.04
+    pathname: S/SY/SYOHEX/Devel-CheckCompiler-0.04.tar.gz
+    provides:
+      Devel::AssertC99 undef
+      Devel::CheckCompiler 0.04
+    requirements:
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      Exporter 0
+      ExtUtils::CBuilder 0
+      File::Temp 0
+      Module::Build 0.38
+      Test::More 0.98
+      Test::Requires 0
+      parent 0
+      perl 5.008001
   Devel-StackTrace-1.30
     pathname: D/DR/DROLSKY/Devel-StackTrace-1.30.tar.gz
     provides:
@@ -1443,6 +1463,24 @@ DISTRIBUTIONS
       Sub::Exporter 0
       Test::Fatal 0
       Test::More 0.88
+  Email-Valid-1.192
+    pathname: R/RJ/RJBS/Email-Valid-1.192.tar.gz
+    provides:
+      Email::Valid 1.192
+    requirements:
+      ExtUtils::MakeMaker 0
+      Mail::Address 0
+      Scalar::Util 0
+      Test::More 0
+      perl 5.006
+  Email-Valid-Loose-0.05
+    pathname: M/MI/MIYAGAWA/Email-Valid-Loose-0.05.tar.gz
+    provides:
+      Email::Valid::Loose 0.05
+    requirements:
+      Email::Valid 0.17
+      ExtUtils::MakeMaker 0
+      Test::More 0.32
   Encode-Locale-1.03
     pathname: G/GA/GAAS/Encode-Locale-1.03.tar.gz
     provides:
@@ -1461,40 +1499,40 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Test::More 0.34
-  ExtUtils-MakeMaker-6.82
-    pathname: B/BI/BINGOS/ExtUtils-MakeMaker-6.82.tar.gz
+  ExtUtils-MakeMaker-6.84
+    pathname: B/BI/BINGOS/ExtUtils-MakeMaker-6.84.tar.gz
     provides:
-      DynaLoader 6.82
-      ExtUtils::Command::MM 6.82
-      ExtUtils::Liblist 6.82
-      ExtUtils::Liblist::Kid 6.82
-      ExtUtils::MM 6.82
-      ExtUtils::MM_AIX 6.82
-      ExtUtils::MM_Any 6.82
-      ExtUtils::MM_BeOS 6.82
-      ExtUtils::MM_Cygwin 6.82
-      ExtUtils::MM_DOS 6.82
-      ExtUtils::MM_Darwin 6.82
-      ExtUtils::MM_MacOS 6.82
-      ExtUtils::MM_NW5 6.82
-      ExtUtils::MM_OS2 6.82
-      ExtUtils::MM_QNX 6.82
-      ExtUtils::MM_UWIN 6.82
-      ExtUtils::MM_Unix 6.82
-      ExtUtils::MM_VMS 6.82
-      ExtUtils::MM_VOS 6.82
-      ExtUtils::MM_Win32 6.82
-      ExtUtils::MM_Win95 6.82
-      ExtUtils::MY 6.82
-      ExtUtils::MakeMaker 6.82
-      ExtUtils::MakeMaker::Config 6.82
-      ExtUtils::MakeMaker::_version 6.82
-      ExtUtils::Mkbootstrap 6.82
-      ExtUtils::Mksymlists 6.82
-      ExtUtils::testlib 6.82
-      MM 6.82
-      MY 6.82
-      in 6.82
+      DynaLoader 6.84
+      ExtUtils::Command::MM 6.84
+      ExtUtils::Liblist 6.84
+      ExtUtils::Liblist::Kid 6.84
+      ExtUtils::MM 6.84
+      ExtUtils::MM_AIX 6.84
+      ExtUtils::MM_Any 6.84
+      ExtUtils::MM_BeOS 6.84
+      ExtUtils::MM_Cygwin 6.84
+      ExtUtils::MM_DOS 6.84
+      ExtUtils::MM_Darwin 6.84
+      ExtUtils::MM_MacOS 6.84
+      ExtUtils::MM_NW5 6.84
+      ExtUtils::MM_OS2 6.84
+      ExtUtils::MM_QNX 6.84
+      ExtUtils::MM_UWIN 6.84
+      ExtUtils::MM_Unix 6.84
+      ExtUtils::MM_VMS 6.84
+      ExtUtils::MM_VOS 6.84
+      ExtUtils::MM_Win32 6.84
+      ExtUtils::MM_Win95 6.84
+      ExtUtils::MY 6.84
+      ExtUtils::MakeMaker 6.84
+      ExtUtils::MakeMaker::Config 6.84
+      ExtUtils::MakeMaker::_version 6.84
+      ExtUtils::Mkbootstrap 6.84
+      ExtUtils::Mksymlists 6.84
+      ExtUtils::testlib 6.84
+      MM 6.84
+      MY 6.84
+      in 6.84
     requirements:
       Data::Dumper 0
       DirHandle 0
@@ -1502,6 +1540,30 @@ DISTRIBUTIONS
       File::Spec 0.8
       Pod::Man 0
       perl 5.006
+  ExtUtils-ParseXS-3.22
+    pathname: S/SM/SMUELLER/ExtUtils-ParseXS-3.22.tar.gz
+    provides:
+      ExtUtils::ParseXS 3.22
+      ExtUtils::ParseXS::Constants 3.22
+      ExtUtils::ParseXS::CountLines 3.22
+      ExtUtils::ParseXS::Eval 3.22
+      ExtUtils::ParseXS::Utilities 3.22
+      ExtUtils::Typemaps 3.22
+      ExtUtils::Typemaps::Cmd 3.22
+      ExtUtils::Typemaps::InputMap 3.22
+      ExtUtils::Typemaps::OutputMap 3.22
+      ExtUtils::Typemaps::Type 3.22
+    requirements:
+      Carp 0
+      Cwd 0
+      DynaLoader 0
+      Exporter 5.57
+      ExtUtils::CBuilder 0
+      ExtUtils::MakeMaker 6.46
+      File::Basename 0
+      File::Spec 0
+      Symbol 0
+      Test::More 0.47
   File-Listing-6.04
     pathname: G/GA/GAAS/File-Listing-6.04.tar.gz
     provides:
@@ -1560,6 +1622,39 @@ DISTRIBUTIONS
       Test::More 0
       Test::SharedFork 0
       perl 5.008001
+  FormValidator-Lite-0.37
+    pathname: T/TO/TOKUHIROM/FormValidator-Lite-0.37.tar.gz
+    provides:
+      FormValidator::Lite 0.37
+      FormValidator::Lite::Constraint undef
+      FormValidator::Lite::Constraint::Date undef
+      FormValidator::Lite::Constraint::Default undef
+      FormValidator::Lite::Constraint::Email undef
+      FormValidator::Lite::Constraint::File undef
+      FormValidator::Lite::Constraint::Japanese undef
+      FormValidator::Lite::Constraint::Number undef
+      FormValidator::Lite::Constraint::Time undef
+      FormValidator::Lite::Constraint::URL undef
+      FormValidator::Lite::Hash undef
+      FormValidator::Lite::Messages::en undef
+      FormValidator::Lite::Messages::ja undef
+      FormValidator::Lite::Upload undef
+      FormValidator::Lite::Upload::CGI undef
+      FormValidator::Lite::Upload::HTTPEngine undef
+      FormValidator::Lite::Upload::PlackRequest undef
+    requirements:
+      CGI 3.31
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      Class::Accessor::Lite 0.05
+      Class::Load 0.11
+      Email::Valid 0
+      Email::Valid::Loose 0
+      ExtUtils::CBuilder 0
+      Filter::Util::Call 0
+      Module::Build 0.38
+      Scalar::Util 1.19
+      perl 5.008001
   HTML-ExtractContent-0.10
     pathname: T/TA/TARAO/HTML-ExtractContent-0.10.tar.gz
     provides:
@@ -1568,7 +1663,7 @@ DISTRIBUTIONS
     requirements:
       Class::Accessor::Lvalue::Fast 0
       Exporter::Lite 0
-      ExtUtils::MakeMaker 6.78
+      ExtUtils::MakeMaker 6.84
       File::Slurp 0
       HTML::Entities 0
       List::Util 0
@@ -1789,6 +1884,111 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 6.52
       Test::More 0.82
       perl 5.00503
+  MailTools-2.12
+    pathname: M/MA/MARKOV/MailTools-2.12.tar.gz
+    provides:
+      Mail undef
+      Mail::Address 2.12
+      Mail::Cap 2.12
+      Mail::Field 2.12
+      Mail::Field::AddrList 2.12
+      Mail::Field::Date 2.12
+      Mail::Field::Generic 2.12
+      Mail::Filter 2.12
+      Mail::Header 2.12
+      Mail::Internet 2.12
+      Mail::Mailer 2.12
+      Mail::Mailer::qmail 2.12
+      Mail::Mailer::rfc822 2.12
+      Mail::Mailer::sendmail 2.12
+      Mail::Mailer::smtp 2.12
+      Mail::Mailer::smtp::pipe 2.12
+      Mail::Mailer::smtps 2.12
+      Mail::Mailer::smtps::pipe 2.12
+      Mail::Mailer::testfile 2.12
+      Mail::Mailer::testfile::pipe 2.12
+      Mail::Send 2.12
+      Mail::Util 2.12
+    requirements:
+      Date::Format 0
+      Date::Parse 0
+      ExtUtils::MakeMaker 0
+      IO::Handle 0
+      Net::Domain 1.05
+      Net::SMTP 1.03
+      Test::More 0
+  Module-Build-0.4203
+    pathname: L/LE/LEONT/Module-Build-0.4203.tar.gz
+    provides:
+      Module::Build 0.4203
+      Module::Build::Base 0.4203
+      Module::Build::Compat 0.4203
+      Module::Build::Config 0.4203
+      Module::Build::Cookbook 0.4203
+      Module::Build::Dumper 0.4203
+      Module::Build::ModuleInfo 0.4203
+      Module::Build::Notes 0.4203
+      Module::Build::PPMMaker 0.4203
+      Module::Build::Platform::Default 0.4203
+      Module::Build::Platform::MacOS 0.4203
+      Module::Build::Platform::Unix 0.4203
+      Module::Build::Platform::VMS 0.4203
+      Module::Build::Platform::VOS 0.4203
+      Module::Build::Platform::Windows 0.4203
+      Module::Build::Platform::aix 0.4203
+      Module::Build::Platform::cygwin 0.4203
+      Module::Build::Platform::darwin 0.4203
+      Module::Build::Platform::os2 0.4203
+      Module::Build::PodParser 0.4203
+      Module::Build::Version 0.87
+      Module::Build::YAML 1.41
+      inc::latest 0.4203
+      inc::latest::private 0.4203
+    requirements:
+      CPAN::Meta 2.110420
+      CPAN::Meta::YAML 0.003
+      Cwd 0
+      Data::Dumper 0
+      ExtUtils::CBuilder 0.27
+      ExtUtils::Install 0
+      ExtUtils::Manifest 0
+      ExtUtils::Mkbootstrap 0
+      ExtUtils::ParseXS 2.21
+      File::Basename 0
+      File::Compare 0
+      File::Copy 0
+      File::Find 0
+      File::Path 0
+      File::Spec 0.82
+      File::Temp 0.15
+      Getopt::Long 0
+      Module::Metadata 1.000002
+      Parse::CPAN::Meta 1.4401
+      Perl::OSType 1
+      Pod::Man 2.17
+      Test::Harness 3.16
+      Test::More 0.49
+      Text::Abbrev 0
+      Text::ParseWords 0
+      perl 5.006001
+      version 0.87
+  Module-Build-XSUtil-0.05
+    pathname: H/HI/HIDEAKIO/Module-Build-XSUtil-0.05.tar.gz
+    provides:
+      Module::Build::XSUtil 0.05
+    requirements:
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      Devel::CheckCompiler 0.02
+      Devel::PPPort 3.19
+      Exporter 0
+      ExtUtils::CBuilder 0
+      File::Basename 0
+      File::Path 0
+      Module::Build 0.4005
+      XSLoader 0.02
+      parent 0
+      perl 5.008005
   Module-Implementation-0.06
     pathname: D/DR/DROLSKY/Module-Implementation-0.06.tar.gz
     provides:
@@ -1938,6 +2138,47 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Mojolicious 3.85
       perl 5.01
+  Mouse-2.1.0
+    pathname: G/GF/GFUJI/Mouse-2.1.0.tar.gz
+    provides:
+      Mouse 2.001000
+      Mouse::Exporter undef
+      Mouse::Meta::Attribute undef
+      Mouse::Meta::Class undef
+      Mouse::Meta::Method undef
+      Mouse::Meta::Method::Accessor undef
+      Mouse::Meta::Method::Constructor undef
+      Mouse::Meta::Method::Delegation undef
+      Mouse::Meta::Method::Destructor undef
+      Mouse::Meta::Module undef
+      Mouse::Meta::Role undef
+      Mouse::Meta::Role::Application undef
+      Mouse::Meta::Role::Composite undef
+      Mouse::Meta::Role::Method undef
+      Mouse::Meta::TypeConstraint undef
+      Mouse::Object undef
+      Mouse::PurePerl undef
+      Mouse::Role 2.001000
+      Mouse::Spec 2.001000
+      Mouse::TypeRegistry undef
+      Mouse::Util 2.001000
+      Mouse::Util::MetaRole undef
+      Mouse::Util::TypeConstraints undef
+      Squirrel undef
+      Squirrel::Role undef
+      Test::Mouse undef
+      ouse undef
+    requirements:
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      Devel::PPPort 3.19
+      ExtUtils::CBuilder 0
+      ExtUtils::ParseXS 3.22
+      Module::Build 0.38
+      Module::Build::XSUtil 0.05
+      Scalar::Util 1.14
+      XSLoader 0.02
+      perl v5.8.1
   Mozilla-CA-20130114
     pathname: A/AB/ABH/Mozilla-CA-20130114.tar.gz
     provides:
@@ -1970,20 +2211,6 @@ DISTRIBUTIONS
       MIME::Base64 0
       Test::More 0.60_01
       perl 5.005
-  Object-Simple-3.09
-    pathname: K/KI/KIMOTO/Object-Simple-3.09.tar.gz
-    provides:
-      Object::Simple 3.09
-      Object::Simple::Accessor undef
-      T1 undef
-      T1_2 undef
-      T1_3 undef
-      T2 undef
-      T3 undef
-      T3_2 undef
-    requirements:
-      ExtUtils::MakeMaker 0
-      Test::More 0
   Package-DeprecationManager-0.13
     pathname: D/DR/DROLSKY/Package-DeprecationManager-0.13.tar.gz
     provides:
@@ -2396,7 +2623,6 @@ DISTRIBUTIONS
     provides:
       Test::Exception 0.31
     requirements:
-      Module::Build 0.36
       Sub::Uplevel 0.18
       Test::Builder 0.7
       Test::Builder::Tester 1.07
@@ -2425,14 +2651,6 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 6.03
       Test::More 0
-  Test-MockModule-0.05
-    pathname: S/SI/SIMONFLK/Test-MockModule-0.05.tar.gz
-    provides:
-      Test::MockModule 0.05
-    requirements:
-      ExtUtils::MakeMaker 0
-      Scalar::Util 0
-      Test::More 0.45
   Test-NoWarnings-1.04
     pathname: A/AD/ADAMK/Test-NoWarnings-1.04.tar.gz
     provides:

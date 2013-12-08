@@ -23,7 +23,7 @@ $(window).on('load', function() {
 function refresh() {
     jQuery.ajax({
         type: 'POST',
-        url: '/pin/get_pinlist',
+        url: '/inf/get_pinlist',
         datatype: 'json',
         async: false,
         success: function(a) {
@@ -53,7 +53,7 @@ function refresh() {
 $(document).on('click', '.read', function() {
     jQuery.ajax({
         type: 'POST',
-        url: '/pin/set_pin',
+        url: '/inf/set_pin',
         data: {
             'flag': 0,
             'pinid': encodeURI($(this).attr('id'))

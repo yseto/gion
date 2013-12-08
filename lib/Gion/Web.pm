@@ -1,9 +1,8 @@
-package Gion::Gion;
+package Gion::Web;
 use Mojo::Base 'Mojolicious';
-use v5.12;
-use DBIx::Custom;
-use DBIx::Connector;
 use Mojo::Util qw(encode);
+use Gion::DB;
+use Gion::Util::Auth;
 
 sub startup {
     my $self = shift;
@@ -13,12 +12,8 @@ sub startup {
 
     $self->sessions->cookie_domain( $self->config->{cookie}->{domain} );
     $self->sessions->cookie_name('Gion');
-
-    # 認証
-    push @{ $self->app->plugins->namespaces }, 'Gion::Gion::Plugin';
-    $self->plugin('Auth');
-
     $self->secret( $self->config->{cookie}->{secret} );
+    $self->attr( dbh => sub { Gion::DB->new; });
 
     # 1日はログインが有効
     $self->sessions->default_expiration(86400);
@@ -31,7 +26,7 @@ sub startup {
     $l->post('/pin/:action')->to( controller => 'pin' );
     $l->post('/manage/:action')->to( controller => 'subscription' );
 
-    $l->route('/api/:controller/:action')->to( namespace => 'Gion::Gion::Api' );
+    $l->route('/api/:controller/:action')->to( namespace => 'Gion::Api' );
 
     $l->get('/entries/')->to( controller => 'pages', action => 'normal' );
     $l->get('/add/')->to( controller => 'pages', action => 'add' );
@@ -56,7 +51,7 @@ sub startup {
 sub loginchk {
     my $self = shift;
     my $data = $self->req->params->to_hash;
-
+    my $db = $self->app->dbh;
     $self->stash( active => $self->req->url );
 
     # ログアウト
@@ -68,11 +63,17 @@ sub loginchk {
 
     #ログインのトライ
     if ( defined $data->{login} and $data->{login} == 1 ) {
-        my $did = encode 'UTF-8', $data->{id};
-        my $dpw = encode 'UTF-8', $data->{pw};
-        my $c = $self->app->authenticate( $did, $dpw );
+        my $a = Gion::Util::Auth->new(
+            strech => $self->config->{strech},
+            salt   => $self->config->{salt},
+            id     => encode( 'UTF-8', $data->{id} ),
+            passwd => encode( 'UTF-8', $data->{pw} ),
+        );
+
+        my $c = $db->dbh->select_row('SELECT * FROM user WHERE pw = ?', $a->get_hash);
         if ( defined $c ) {
-            $self->session( username => $c->{id} );
+            $self->session(username => $c->{id});
+            $db->dbh->query('UPDATE user SET last_login = CURRENT_TIMESTAMP WHERE id = ?', $c->{id});
             if ( $self->config->{url}->{login_ssl} eq 'on' ) {
                 $self->redirect_to( $self->config->{url}->{http} );
             }
@@ -100,21 +101,5 @@ sub loginchk {
     $self->render( controller => 'pages', action => 'welcome' );
     return undef;
 }
-
-has dbh => sub {
-    my $self = shift;
-
-    my $connector = DBIx::Connector->new(
-        'dbi:mysql:host='
-          . $self->config->{db}->{hostname}
-          . ';database='
-          . $self->config->{db}->{database},
-        $self->config->{db}->{username},
-        $self->config->{db}->{password},
-        { %{ DBIx::Custom->new->default_option }, mysql_enable_utf8 => 1 }
-    );
-    my $db = DBIx::Custom->connect( connector => $connector );
-    return $db;
-};
 
 1;
