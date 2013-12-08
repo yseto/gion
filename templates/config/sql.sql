@@ -30,6 +30,7 @@ CREATE TABLE `target` (
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `http_status` varchar(3) NOT NULL,
   `_id_categories` int(11) NOT NULL,
+  `parser` varchar(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `_id_categories` (`_id_categories`),
   CONSTRAINT `target_ibfk` FOREIGN KEY (`_id_categories`) REFERENCES `categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -43,6 +44,7 @@ CREATE TABLE `user` (
   `numentry` int(11) NOT NULL DEFAULT '0',
   `noreferrer` int(11) NOT NULL DEFAULT '0',
   `nopinlist` int(11) NOT NULL DEFAULT '0',
+  `last_login` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
