@@ -95,7 +95,7 @@ function list() {
                 }).append($('<span>').addClass('visible-xs').text(cutstr))
                 .append($('<span>').addClass('visible-sm visible-md visible-lg').text(this.n));
 
-                if (this.r == -1 || this.r == 404) {
+                if (this.r < -5 || this.r == 404) {
                     linkage.append($('<span>').addClass('badge ').text('取得に失敗しました'));
                     tr.addClass('danger');
                 }

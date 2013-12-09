@@ -26,3 +26,4 @@ requires 'Starlet';
 requires 'DBD::mysql';
 requires 'Term::ProgressBar';
 requires 'FormValidator::Lite';
+requires 'Date::Parse';

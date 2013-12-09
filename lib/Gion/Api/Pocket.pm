@@ -1,4 +1,4 @@
-package Gion::Web::Api::Pocket;
+package Gion::Api::Pocket;
 use Mojo::Base 'Mojolicious::Controller';
 use Data::Dumper;
 use LWP::UserAgent;
