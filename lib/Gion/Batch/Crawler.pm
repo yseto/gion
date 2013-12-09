@@ -22,6 +22,7 @@ use DateTime::Format::Mail;
 use DateTime::Format::W3CDTF;
 use DateTime::Format::ISO8601;
 use HTTP::Date;
+use Date::Parse;
 
 sub run {
     my $self = shift;
@@ -31,7 +32,8 @@ sub run {
     # 指定取得かどうか
     my $eid;
     my $silent;
-    GetOptionsFromArray(\@_, "e=i{,}" => \@$eid, "silent" => \$silent );
+    my $fail;
+    GetOptionsFromArray(\@_, "e=i{,}" => \@$eid, "silent" => \$silent, "fail" => \$fail );
 
     # DBへ接続
     my $db = Gion::DB->new;
@@ -44,6 +46,9 @@ sub run {
     if (@$eid){
         $rs = $db->dbh->select_all('SELECT * FROM target WHERE id IN (?)', $eid);
         $count = @$eid;
+    }elsif(defined $fail){
+        $rs = $db->dbh->select_all('SELECT * FROM target WHERE http_status < 0');
+        $count = $db->dbh->select_row('SELECT COUNT(*) AS t FROM target WHERE http_status < 0')->{t};
     }else{
         $rs = $db->dbh->select_all('SELECT * FROM target');
         $count = $db->dbh->select_row('SELECT COUNT(*) AS t FROM target')->{t};
@@ -106,12 +111,12 @@ sub run {
         next if $cfg->{crawler}->{no304} == 0 and $res->http_status == 304;
 
         #クロール対象のエントリーの最新の情報の日付を取得する
-        my $pd = $db->dbh->select_row("SELECT * FROM entries WHERE _id_target = ? ORDER BY pubDate DESC LIMIT 1", $c->{id});
+        my $pd = $db->dbh->select_row("SELECT pubDate FROM entries WHERE _id_target = ? ORDER BY pubDate DESC LIMIT 1", $c->{id});
 
         my $latest = Time::Piece->strptime( '2010-01-01', '%Y-%m-%d' );
         #最新の日付があれば、活用する。
         if (defined $pd) {
-            $latest = from_mysql_datetime($pd->{pubdate});
+            $latest = from_mysql_datetime($pd->{pubDate});
         }
 
         my $errorcount = 0;
@@ -130,9 +135,6 @@ sub run {
                 $data = &parser_atom($res->content, $latest, $c->{id}, $cfg->{crawler}->{pubDatecheck});
             }
         }catch{
-            # 全うにエラー
-            $db->dbh->query('UPDATE target SET http_status = ?, parser = 0 WHERE id = ?', -1, $c->{id});
-            next;
         };
 
         unless (defined $data){
@@ -140,7 +142,8 @@ sub run {
             unless(defined $silent){
                 $prog->message(sprintf "ERR %4d %s", $c->{id}, encode_utf8($c->{title}));
             }
-            $db->dbh->query('UPDATE target SET http_status = ?, parser = 0 WHERE id = ?', -1, $c->{id});
+            my $errflg = $c->{http_status} < 0 ? $c->{http_status} - 1 : -1 ;
+            $db->dbh->query('UPDATE target SET http_status = ?, parser = 0 WHERE id = ?', $errflg, $c->{id});
             next;
         }else{
             # パーサ種類を保存
@@ -216,6 +219,10 @@ sub from_feed_datetime{
         $dt = DateTime->from_epoch(epoch => HTTP::Date::str2time($t)) unless defined $dt;
     };
 
+    eval {
+        $dt = DateTime->from_epoch(epoch => Date::Parse::str2time($t)) unless defined $dt;
+    };
+
     return Time::Piece->new( $dt->epoch() ) if defined $dt;
 
     croak("ERROR:Time Parse");
@@ -228,6 +235,8 @@ sub parser_rss {
     my $pcheck = shift;
 
     my $data;
+
+    my $lateststr = $latest->ymd('') . $latest->hms('');
 
     #RSSの場合
     my $rss = new XML::RSS::LibXML;
@@ -245,7 +254,10 @@ sub parser_rss {
 
         #DBに格納されているエントリーより古い情報は
         #取り込まない設定の場合、次の情報を処理する
-        next if $pcheck == 0 and ($dt <= $latest);
+        my $dtstr = $dt->ymd('') . $dt->hms('');
+        unless ($dtstr == $lateststr or not defined $data) { 
+            next if $pcheck == 0 and ($dtstr <= $lateststr);
+        }
 
         my $h = {
             guid        => $ref->{guid},
@@ -269,6 +281,8 @@ sub parser_atom {
 
     my $data;
 
+    my $lateststr = $latest->ymd('') . $latest->hms('');
+
     #Atomの場合
     my $atom    = XML::Atom::Feed->new(\$str);
     my @entries = $atom->entries;
@@ -277,7 +291,10 @@ sub parser_atom {
 
         #DBに格納されているエントリーより古い情報は
         #取り込まない設定の場合、次の情報を処理する
-        next if $pcheck == 0 and ($dt <= $latest);
+        my $dtstr = $dt->ymd('') . $dt->hms('');
+        unless ($dtstr == $lateststr or not defined $data) { 
+            next if $pcheck == 0 and ($dtstr <= $lateststr);
+        }
 
         my $h = {
             guid        => $item->link->href,
