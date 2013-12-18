@@ -1,7 +1,6 @@
 {
     db => {
-        hostname => '',
-        database => '',
+        dsn => '',
         username => '',
         password => '',
     },

@@ -23,9 +23,7 @@ BEGIN {
 }
 
 sub new {
-    my $dsn  = sprintf( 'dbi:mysql:host=%s;database=%s',
-        $conf->{hostname}, $conf->{database} );
-    my $h = DBIx::Handler->new($dsn, $conf->{username}, $conf->{password}, 
+    my $h = DBIx::Handler->new($conf->{dsn}, $conf->{username}, $conf->{password}, 
         {RootClass => 'DBIx::Sunny',});
     return $h;
 }
