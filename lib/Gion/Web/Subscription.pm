@@ -60,11 +60,11 @@ sub register_target {
     return $self->render( json => { r => "ERROR_ALREADY_REGISTER" } )
       if $rs->{t} > 0;
 
-    $rs = $db->seelct_row(
-        "SELECT COUNT(id) AS t FROM categories WHERE user = ? AND id = ?",
+    $rs = $db->select_row(
+        "SELECT COUNT(*) AS t FROM categories WHERE user = ? AND id = ?",
         $self->session('username'), $data->{cat});
 
-    return if $rs->fetch_hash->{t} == 0;
+    return if $rs->{t} == 0;
 
     $db->query(
         "INSERT INTO target (url,siteurl,title,_id_categories) VALUES (?,?,?,?);",
