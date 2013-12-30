@@ -135,20 +135,16 @@ sub run {
                 $data = &parser_atom($res->content, $latest, $c->{id}, $cfg->{crawler}->{pubDatecheck});
             }
         }catch{
-        };
-
-        unless (defined $data){
-            # データの件数が0だとエラーとする
             unless(defined $silent){
                 $prog->message(sprintf "ERR %4d %s", $c->{id}, encode_utf8($c->{title}));
             }
             my $errflg = $c->{http_status} < 0 ? $c->{http_status} - 1 : -1 ;
             $db->dbh->query('UPDATE target SET http_status = ?, parser = 0 WHERE id = ?', $errflg, $c->{id});
             next;
-        }else{
-            # パーサ種類を保存
-            $db->dbh->query('UPDATE target SET parser = ? WHERE id = ?', ($errorcount+1), $c->{id});
-        }
+        };
+
+        # パーサ種類を保存
+        $db->dbh->query('UPDATE target SET parser = ? WHERE id = ?', ($errorcount+1), $c->{id});
 
         for (@$data) {
 
@@ -235,6 +231,7 @@ sub parser_rss {
     my $pcheck = shift;
 
     my $data;
+    my $errorcheck = 0;
 
     my $lateststr = $latest->ymd('') . $latest->hms('');
 
@@ -255,9 +252,8 @@ sub parser_rss {
         #DBに格納されているエントリーより古い情報は
         #取り込まない設定の場合、次の情報を処理する
         my $dtstr = $dt->ymd('') . $dt->hms('');
-        unless ($dtstr == $lateststr or not defined $data) { 
-            next if $pcheck == 0 and ($dtstr <= $lateststr);
-        }
+        $errorcheck++;
+        next if $pcheck == 0 and ($dtstr <= $lateststr);
 
         my $h = {
             guid        => $ref->{guid},
@@ -269,7 +265,7 @@ sub parser_rss {
         };
         push(@$data, $h);
     }
-    croak("error") unless defined $data;
+    croak("error") if $errorcheck == 0;
     $data;
 }
 
@@ -280,6 +276,7 @@ sub parser_atom {
     my $pcheck = shift;
 
     my $data;
+    my $errorcheck = 0;
 
     my $lateststr = $latest->ymd('') . $latest->hms('');
 
@@ -292,9 +289,8 @@ sub parser_atom {
         #DBに格納されているエントリーより古い情報は
         #取り込まない設定の場合、次の情報を処理する
         my $dtstr = $dt->ymd('') . $dt->hms('');
-        unless ($dtstr == $lateststr or not defined $data) { 
-            next if $pcheck == 0 and ($dtstr <= $lateststr);
-        }
+        $errorcheck++;
+        next if $pcheck == 0 and ($dtstr <= $lateststr);
 
         my $h = {
             guid        => $item->link->href,
@@ -306,7 +302,7 @@ sub parser_atom {
         };
         push( @$data, $h );
     }
-    croak("error") unless defined $data;
+    croak("error") if $errorcheck == 0;
     $data;
 }
 
