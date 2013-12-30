@@ -376,7 +376,7 @@ function moveselector() {
     }
 
     //移動
-    $($.browser.msie || $.browser.mozilla || $.browser.opera ? 'html' : 'body').animate({
+    $($.browser.msie || $.browser.mozilla || ($.browser.opera && !$.browser.webkit) ? 'html' : 'body').animate({
         scrollTop: $(selector).offset().top + topoffset,
     }, 0);
 }
