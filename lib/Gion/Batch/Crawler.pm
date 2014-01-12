@@ -37,6 +37,12 @@ sub run {
 
     # DBへ接続
     my $db = Gion::DB->new;
+    my $engine;
+    if ($cfg->{db}->{dsn} =~ /^(?i:dbi):SQLite:/){
+        $engine = "SQLite";
+    }else{
+        $engine = "mysql";
+    }
     # キャッシュの設定
     my $ca = Cache::File->new(cache_root => $cfg->{crawler}->{cache});
 
@@ -161,7 +167,9 @@ sub run {
                 $_->{url} = URI->new_abs($_->{url}, $rsuri->{url})->as_string;
             }
 
-            $db->dbh->query("INSERT IGNORE INTO entries 
+            my $engine_str = $engine eq "SQLite" ? "OR" : "";
+
+            $db->dbh->query("INSERT $engine_str IGNORE INTO entries 
                 (guid, pubDate, readflag, _id_target, updatetime, user)
                 VALUES (?,?,0,?,CURRENT_TIMESTAMP,?)",
                 $_->{guid},
@@ -170,7 +178,7 @@ sub run {
                 $_->{user}
             );
 
-            $db->dbh->query("INSERT IGNORE INTO stories
+            $db->dbh->query("INSERT $engine_str IGNORE INTO stories
                 (guid, title, description, url)
                 VALUES (?,?,?,?)",
                 $_->{guid},
