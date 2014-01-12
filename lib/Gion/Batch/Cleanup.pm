@@ -15,6 +15,12 @@ sub run {
     my $cmp;
 
     my $db = Gion::DB->new;
+    my $engine;
+    if ($self->config->{db}->{dsn} =~ /^(?i:dbi):SQLite:/){
+        $engine = "SQLite";
+    }else{
+        $engine = "mysql";
+    }
 
     $count = $db->dbh->select_row('SELECT COUNT(guid) AS t FROM entries');
     $cmp->{olde} = $count->{t};
@@ -25,21 +31,33 @@ sub run {
 
     for (@$rs){
         my $id = $_->{id};
-        $db->dbh->query("DELETE FROM entries WHERE _id_target = ? AND readflag = 1
-            AND updatetime < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -1 DAY)
-            AND 
-    		pubdate NOT IN (SELECT pubdate FROM 
-    			(SELECT pubdate FROM entries
-    				WHERE _id_target = ?  AND readflag = 1
-    				ORDER BY pubdate DESC LIMIT 1
-    			) x )"
-            , $id, $id );
+        if ($engine eq 'mysql'){
+            $db->dbh->query("DELETE FROM entries WHERE _id_target = ? AND readflag = 1
+                AND updatetime < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -1 DAY)
+                AND 
+    	    	pubdate NOT IN (SELECT pubdate FROM 
+    	    		(SELECT pubdate FROM entries
+    	    			WHERE _id_target = ?  AND readflag = 1
+    	    			ORDER BY pubdate DESC LIMIT 1
+    	    		) x )"
+                , $id, $id );
+        }else{
+            $db->dbh->query("DELETE FROM entries WHERE _id_target = ? AND readflag = 1
+                AND updatetime < date('now','-1 day')
+                AND 
+    	    	pubdate NOT IN (SELECT pubdate FROM 
+    	    		(SELECT pubdate FROM entries
+    	    			WHERE _id_target = ? AND readflag = 1
+    	    			ORDER BY pubdate DESC LIMIT 1
+    	    		) x )"
+                , $id, $id );
+        }
 #       print $id . "\n";
     }
 
-    $db->dbh->query('OPTIMIZE TABLE entries;');
+    $db->dbh->query('OPTIMIZE TABLE entries;') if $engine eq "mysql";
     $db->dbh->query('DELETE FROM stories WHERE guid NOT IN (SELECT guid FROM entries);');
-    $db->dbh->query('OPTIMIZE TABLE stories;');
+    $db->dbh->query('OPTIMIZE TABLE stories;') if $engine eq "mysql";
 
     $count = $db->dbh->select_row('SELECT COUNT(guid) AS t FROM entries');
     $cmp->{e} = $count->{t};
