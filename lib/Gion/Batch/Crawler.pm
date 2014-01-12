@@ -124,7 +124,7 @@ sub run {
 
         try{
             if($c->{parser} == 0 or $c->{parser} == 1){
-                $data = &parser_rss($res->content, $latest, $c->{id}, $cfg->{crawler}->{pubDatecheck});
+                $data = &parser_rss($res->content, $latest, $c->{id}, $cfg->{crawler}->{pubDatecheck}, $c->{user});
             }
         }catch{
             $errorcount++;
@@ -132,7 +132,7 @@ sub run {
 
         try{
             if( ($c->{parser} == 0 and $errorcount == 1) or $c->{parser} == 2 ){
-                $data = &parser_atom($res->content, $latest, $c->{id}, $cfg->{crawler}->{pubDatecheck});
+                $data = &parser_atom($res->content, $latest, $c->{id}, $cfg->{crawler}->{pubDatecheck}, $c->{user});
             }
         }catch{
             unless(defined $silent){
@@ -162,20 +162,21 @@ sub run {
             }
 
             $db->dbh->query("INSERT IGNORE INTO entries 
-                (guid, pubDate, readflag, _id_target, updatetime)
-                VALUES (?,?,0,?,CURRENT_TIMESTAMP)",
-                encode( 'utf-8', $_->{guid} ),
+                (guid, pubDate, readflag, _id_target, updatetime, user)
+                VALUES (?,?,0,?,CURRENT_TIMESTAMP,?)",
+                $_->{guid},
                 to_mysql_datetime( $_->{pubDate} ),
-                $_->{id_target}
+                $_->{id_target},
+                $_->{user}
             );
 
             $db->dbh->query("INSERT IGNORE INTO stories
                 (guid, title, description, url)
                 VALUES (?,?,?,?)",
-                encode( 'utf-8', $_->{guid} ),
-                encode( 'utf-8', $_->{title} ),
-                encode( 'utf-8', $_->{description} ),
-                encode( 'utf-8', $_->{url} ),
+                $_->{guid},
+                $_->{title},
+                $_->{description},
+                $_->{url},
             );
 
         }
@@ -229,6 +230,7 @@ sub parser_rss {
     my $latest = shift;
     my $id     = shift;
     my $pcheck = shift;
+    my $user   = shift;
 
     my $data;
     my $errorcheck = 0;
@@ -261,7 +263,8 @@ sub parser_rss {
             description => $ref->{description},
             pubDate     => $dt,
             url         => $ref->{link},
-            id_target   => $id
+            id_target   => $id,
+            user        => $user,
         };
         push(@$data, $h);
     }
@@ -274,6 +277,7 @@ sub parser_atom {
     my $latest = shift;
     my $id     = shift;
     my $pcheck = shift;
+    my $user   = shift;
 
     my $data;
     my $errorcheck = 0;
@@ -298,7 +302,8 @@ sub parser_atom {
             description => decode('utf-8', $item->summary),
             pubDate     => $dt,
             url         => $item->link->href,
-            id_target   => $id
+            id_target   => $id,
+            user        => $user,
         };
         push( @$data, $h );
     }

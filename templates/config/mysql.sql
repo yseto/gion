@@ -15,6 +15,7 @@ CREATE TABLE `entries` (
   `updatetime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `readflag` tinyint(4) NOT NULL,
   `_id_target` int(11) NOT NULL,
+  `user` int(11) NOT NULL,
   UNIQUE KEY `guid_2` (`guid`,`_id_target`),
   KEY `_id_target` (`_id_target`),
   KEY `guid` (`guid`),
@@ -31,6 +32,7 @@ CREATE TABLE `target` (
   `http_status` varchar(3) NOT NULL,
   `_id_categories` int(11) NOT NULL,
   `parser` varchar(1) NOT NULL DEFAULT 0,
+  `user` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `_id_categories` (`_id_categories`),
   CONSTRAINT `target_ibfk` FOREIGN KEY (`_id_categories`) REFERENCES `categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
