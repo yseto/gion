@@ -88,11 +88,9 @@ sub get_entries {
 
             $db->query(
                 "UPDATE entries
-                INNER JOIN target AS t ON _id_target = t.id
-                INNER JOIN categories AS c ON t._id_categories = c.id
                 SET readflag = 1, updatetime = CURRENT_TIMESTAMP
-                WHERE t._id_categories = ? AND readflag = 0 AND c.user = ? AND guid = ?",
-                $id, $self->session('username'), $_->{guid}) if 1 == 1;    # TODO COMMENT OUT
+                WHERE readflag = 0 AND user = ? AND guid = ?",
+                $self->session('username'), $_->{guid}) if 1 == 1;    # TODO COMMENT OUT
 
             if ( $cfg->{numentry} > 0 ) {
                 $count++;
@@ -191,11 +189,9 @@ sub set_pin {
     my $flag = 1;
     $flag = 2 if $data->{flag} == 1;
 
-    $db->dbh->query("UPDATE entries AS e
-        INNER JOIN target AS t ON e._id_target = t.id
-        INNER JOIN categories AS c ON t._id_categories = c.id
-        SET e.readflag = ?, updatetime = CURRENT_TIMESTAMP
-        WHERE c.user = ? AND e.guid = ?", 
+    $db->dbh->query("UPDATE entries
+        SET readflag = ?, updatetime = CURRENT_TIMESTAMP
+        WHERE user = ? AND guid = ?", 
         $flag, $self->session('username'), $data->{pinid} );
 
     $self->render( text => "OK" );
@@ -205,11 +201,9 @@ sub remove_all_pin {
     my $self = shift;
     my $db   = $self->app->dbh;
 
-    $db->dbh->query("UPDATE entries AS e
-        INNER JOIN target AS t ON e._id_target = t.id
-        INNER JOIN categories AS c ON t._id_categories = c.id
-        SET e.readflag = 1, updatetime = CURRENT_TIMESTAMP
-        WHERE e.readflag = 2 AND c.user = ?",
+    $db->dbh->query("UPDATE entries
+        SET readflag = 1, updatetime = CURRENT_TIMESTAMP
+        WHERE readflag = 2 AND user = ?",
         $self->session('username'));
     $self->render( text => "OK" );
 }

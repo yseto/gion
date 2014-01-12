@@ -67,8 +67,8 @@ sub register_target {
     return if $rs->{t} == 0;
 
     $db->query(
-        "INSERT INTO target (url,siteurl,title,_id_categories) VALUES (?,?,?,?);",
-         $data->{rss}, $data->{url}, $data->{title}, $data->{cat});
+        "INSERT INTO target (url,siteurl,title,_id_categories,http_status,user) VALUES (?,?,?,?,0,?);",
+         $data->{rss}, $data->{url}, $data->{title}, $data->{cat}, $self->session('username'));
 
     $self->render( json => { r => "OK" } );
 }
@@ -162,9 +162,10 @@ sub delete_it {
         $data->{id}, $self->session('username'));
     }
     elsif ( $data->{target} eq 'entry' ) {
-        $db->query("DELETE target FROM target 
+        $db->query("DELETE FROM target 
+        WHERE id = (SELECT target.id FROM target
         INNER JOIN categories AS c ON _id_categories = c.id 
-        WHERE target.id = ? AND c.user = ?",
+        WHERE target.id = ? AND c.user = ?);",
         $data->{id}, $self->session('username'));
     }
     $self->render( json => { r => "OK" } );
@@ -184,10 +185,10 @@ sub change_it {
     my $data = $self->req->params->to_hash;
 
     $db->query("UPDATE target
-    INNER JOIN categories AS c ON _id_categories = c.id
-    SET target._id_categories = ?
-    WHERE target.id = ? AND c.user = ?",
-    $data->{cat}, $data->{id}, $self->session('username'));
+    SET _id_categories =
+    (SELECT id FROM categories WHERE id = ? AND user = ?)
+    WHERE target.id = ?",
+    $data->{cat}, $self->session('username'), $data->{id});
 
     return $self->render( json => { r => "OK" } );
 }
