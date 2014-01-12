@@ -221,7 +221,7 @@ function cat_list(q) {
 // Get Contents From Server
 
 function get_contents(id) {
-    $('#contents_view_box').prepend($('<p>').text('Please Wait...'));
+    $('#contents_view_box').prepend($('<p>').text('Please Wait...').addClass('alert alert-info'));
 
     jQuery.ajax({
         type: 'POST',
