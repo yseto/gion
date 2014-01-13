@@ -178,12 +178,15 @@ sub run {
                 $_->{user}
             );
 
+            my $st_title = $_->{title} ? $_->{title} : '';
+            my $st_description = $_->{description} ? $_->{description} : '';
+
             $db->dbh->query("INSERT $engine_str IGNORE INTO stories
                 (guid, title, description, url)
                 VALUES (?,?,?,?)",
                 $_->{guid},
-                $_->{title},
-                $_->{description},
+                $st_title,
+                $st_description,
                 $_->{url},
             );
 
