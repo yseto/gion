@@ -46,6 +46,7 @@ CREATE TABLE `user` (
   `numentry` int(11) NOT NULL DEFAULT '0',
   `noreferrer` int(11) NOT NULL DEFAULT '0',
   `nopinlist` int(11) NOT NULL DEFAULT '0',
+  `numsubstr` int(11) NOT NULL DEFAULT '0',
   `last_login` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)

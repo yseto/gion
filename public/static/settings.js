@@ -12,6 +12,7 @@ $(window).on('load', function() {
         datatype: 'json',
         success: function(b) {
             $('#numentry').val(b.r);
+            $('#numsubstr').val(b.s);
             if (b.n == 0) {
                 $('#noreferrer').attr('checked', false);
                 $('#noreferrer').val(0);
@@ -72,6 +73,7 @@ $('#btn_numentry').click(function() {
             'val': $('#numentry').val(),
             'noref': $('#noreferrer').val(),
             'nopin': $('#nopinlist').val(),
+            'substr': $('#numsubstr').val()
         },
         success: function(b) {
             $('#txt_numentry').show();

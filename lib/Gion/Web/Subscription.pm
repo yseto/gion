@@ -197,7 +197,7 @@ sub get_numentry {
     my $self = shift;
     my $db   = $self->app->dbh->dbh;
     my $rs   = $db->select_row(
-    "SELECT numentry, noreferrer, nopinlist FROM user WHERE id = ?",
+    "SELECT numentry, noreferrer, nopinlist, numsubstr FROM user WHERE id = ?",
     $self->session('username'));
 
     $self->render(
@@ -205,6 +205,7 @@ sub get_numentry {
             r => $rs->{numentry},
             n => $rs->{noreferrer},
             p => $rs->{nopinlist},
+            s => $rs->{numsubstr},
         }
     );
 }
@@ -219,11 +220,12 @@ sub set_numentry {
         val   => [ 'UINT', 'NOT_NULL' ],
         noref => [ 'UINT', 'NOT_NULL' ],
         nopin => [ 'UINT', 'NOT_NULL' ],
+        substr => [ 'UINT', 'NOT_NULL' ],
     ); 
     return $self->render(json => [] ) if $validator->has_error;
  
-    $db->query("UPDATE user SET numentry = ?, noreferrer = ?, nopinlist = ?  WHERE id = ?",
-        $data->{val}, $data->{noref}, $data->{nopin}, $self->session('username'));
+    $db->query("UPDATE user SET numentry = ?, noreferrer = ?, nopinlist = ?, numsubstr = ? WHERE id = ?",
+        $data->{val}, $data->{noref}, $data->{nopin}, $data->{substr}, $self->session('username'));
 
     $self->render( json => { r => "OK" } );
 }
