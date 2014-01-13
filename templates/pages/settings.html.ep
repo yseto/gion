@@ -10,6 +10,13 @@
         </div>
       </div>
       <div class="form-group">
+        <label class="control-label col-sm-2" for="numsubstr">概要の文字数制限</label>
+        <div class="col-sm-10">
+          <input type="number" id="numsubstr" placeholder="0で無制限">
+          <span class="help-block">概要の文字数の上限を設定できます。</span>
+        </div>
+      </div>
+      <div class="form-group">
         <label class="control-label col-sm-2">その他の設定</label>
         <div class="col-sm-10">
           <div class="checkbox noreferrer">

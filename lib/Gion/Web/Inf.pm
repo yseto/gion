@@ -57,9 +57,8 @@ sub get_entries {
             "SELECT e.guid, s.title, description, 
             pubDate, readflag, s.url, _id_target FROM entries AS e
             INNER JOIN target AS t ON _id_target = t.id
-            INNER JOIN categories AS c ON t._id_categories = c.id 
             INNER JOIN stories AS s ON s.guid = e.guid
-            WHERE t._id_categories = ? AND readflag != 1 AND c.user = ?
+            WHERE t._id_categories = ? AND readflag != 1 AND e.user = ?
             ORDER BY pubDate DESC", $id, $self->session('username'));
 
         for (@$rs) {
@@ -74,11 +73,13 @@ sub get_entries {
             }
 
             my $pd = Time::Piece->strptime($_->{pubDate}, '%Y-%m-%d %H:%M:%S')->strftime('%m/%d %H:%M');
+            my $desc = $scrubber->scrub( $_->{description} );
+            $desc = substr($desc,0,$cfg->{numsubstr}) if $cfg->{numsubstr} > 0;
 
             my $h = {
                 g => $_->{guid},
                 t => $_->{title},
-                d => $scrubber->scrub( $_->{description} ),
+                d => $desc,
                 p => $pd . " - " . $rs2->{title},
                 r => $_->{readflag},
                 u => $url,
