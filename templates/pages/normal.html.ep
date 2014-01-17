@@ -23,10 +23,10 @@
 
   </div><!--/row-->
 
-<p class="clearfix hidden-lg hidden-md">
-    <a onclick="javascript:categories_prev();" class="btn btn-default pull-left">&lt;&lt; Category Back</a>
-    <a onclick="javascript:categories_next();" class="btn btn-default pull-right">Category Next &gt;&gt;</a>
-</p>
+<ul class="pager hidden-lg hidden-md">
+    <li class="previous"><a onclick="javascript:categories_prev();" class="btn btn-default">&lt;&lt; Category Back</a></li>
+    <li class="next"><a onclick="javascript:categories_next();" class="btn btn-default">Category Next &gt;&gt;</a></li>
+</ul>
 
 <%= include 'footer' %>
 </div><!--/.container-->

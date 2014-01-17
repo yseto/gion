@@ -50,12 +50,12 @@
 %
 % for my $c ( @$rs ) {
         <tr>
-          <td>
-            <a class="btn btn-default" href="/api/<%= $c->{id} %>/connect" id="btn<%= $c->{id} %>"><%= $c->{name} %></a>
-            <span class="disconnect btn btn-default" id="<%= $c->{id} %>">設定の初期化</span>
+          <td><%= $c->{name} %><br/>
+            <span id="connect<%= $c->{id} %>"></span>
+            <a href="#" class="disconnect" id="<%= $c->{id} %>"><span class="glyphicon glyphicon-remove"></span>設定の初期化</a>
           </td>
           <td>
-            <span id="connect<%= $c->{id} %>">連携していません</span>
+            <a class="btn btn-default" href="/api/<%= $c->{id} %>/connect" id="btn<%= $c->{id} %>"><span class="glyphicon glyphicon-link">連携する</span></a>
           </td>
         </tr>
 % }
