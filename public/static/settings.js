@@ -41,8 +41,8 @@ $(window).on('load', function() {
         datatype: 'json',
         success: function(a) {
             jQuery.each(a.e, function() {
-                $('#connect' + this.service).text('連携しています。ユーザ名: ' + this.username);
-                $('#btn' + this.service).attr('disabled', 'disabled');
+                $('#connect' + this.service).text('ユーザ名: ' + this.username);
+                $('#btn' + this.service).attr('disabled', 'disabled').text('連携中');
                 $('#' + this.service).show();
             });
         },
@@ -51,17 +51,21 @@ $(window).on('load', function() {
 });
 
 $('.disconnect').click(function() {
-    jQuery.ajax({
-        type: 'POST',
-        url: '/manage/set_connect',
-        datatype: 'json',
-        data: {
-            'service': $(this).attr('id'),
-        },
-        success: function() {
-            location.reload();
-        }
-    });
+    if (confirm('続行しますか?')){
+        jQuery.ajax({
+            type: 'POST',
+            url: '/manage/set_connect',
+            datatype: 'json',
+            data: {
+                'service': $(this).attr('id'),
+            },
+            success: function() {
+                location.reload();
+            }
+        });
+    }else{
+        return false;
+    }
 });
 
 $('#btn_numentry').click(function() {
