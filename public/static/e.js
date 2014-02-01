@@ -251,11 +251,13 @@ function entries(b) {
             id: this.g
         });
 
+        var texttitle = '[nothing title...]';
+        if (this.t.length > 0){ texttitle = this.t; }
         var titleh4 = $('<h4>').addClass('viewpage').append($('<a>').attr({
             href: this.u,
             target: 'blank',
             rel: 'noreferrer',
-        }).text(this.t).click(function() {
+        }).text(texttitle).click(function() {
             window.open(this.href);
             return false;
         }).css('color', '#333'));
