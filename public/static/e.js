@@ -64,7 +64,7 @@ $(document).keypress(function(e) {
 
     // http://www.programming-magic.com/file/20080205232140/keycode_table.html
 
-    switch (e.keyCode) {
+    switch (e.keyCode || e.which) {
         case 97:
             // A
             categories_prev();
@@ -344,7 +344,7 @@ function item_prev_focus() {
 function item_next_focus() {
 
     //最終端を指定している場合、次はないので抑制
-    if (selection == $('.tw').length - 1) {
+    if (selection == $('.tw').length - 1 && $('.tw').length - 1 > 0) {
         selection--;
     }
 
