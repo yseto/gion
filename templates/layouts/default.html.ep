@@ -49,13 +49,13 @@
       <div class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
           <li<% if($active =~ '^/$'){%> class="active" <% }%>>
-          <a href="#home"><span class="glyphicon glyphicon-home"></span>Home</a></li>
+          <a href="#home"><span class="glyphicon glyphicon-home"></span> Home</a></li>
           <li<% if($active =~ '^/entries'){%> class="active" <% }%>>
           <a href="#entries"><span class="glyphicon glyphicon-inbox"></span> Read</a></li>
           <li<% if($active =~ '^/add'){%> class="active" <% }%>>
-          <a href="#addasite"><span class="glyphicon glyphicon-plus-sign"></span>Add a Site</a></li>
+          <a href="#addasite"><span class="glyphicon glyphicon-plus-sign"></span> Add a Site</a></li>
           <li<% if($active =~ '^/subscription'){%> class="active" <% }%>>
-          <a href="#subscription"><span class="glyphicon glyphicon-list"></span>Subscription</a></li>
+          <a href="#subscription"><span class="glyphicon glyphicon-list"></span> Subscription</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li<% if($active =~ '^/settings'){%> class="active" <% }%>>
