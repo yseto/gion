@@ -92,7 +92,6 @@
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
     <script src="/dists/jbp/dist/jquery.browser.min.js"></script>
     <script src="/static/<%== $jspath %>"></script>
-    <script src="/static/c.js"></script>
   </body>
 </html>
 

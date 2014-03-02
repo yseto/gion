@@ -2,3 +2,5 @@ gion.conf
 local/
 env
 .carton/
+node_modules/
+.tmp/
