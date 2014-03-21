@@ -40,25 +40,11 @@
     <div class="form-group">
       <label class="control-label col-sm-2">連携設定</label>
       <div class="col-sm-10">
-        <table class="table table-condenced">
+        <table class="table table-condenced" id="service_list">
         <tr>
           <th>サービス</th>
           <th>状態</th>
         </tr>
-% my $rs; 
-% push(@$rs,{ name => 'Pocket (formerly read it later)', id => 'pocket' });
-%
-% for my $c ( @$rs ) {
-        <tr>
-          <td><%= $c->{name} %><br/>
-            <span id="connect<%= $c->{id} %>"></span>
-            <a href="#" class="disconnect" id="<%= $c->{id} %>"><span class="glyphicon glyphicon-remove"></span>設定の初期化</a>
-          </td>
-          <td>
-            <a class="btn btn-default" href="/api/<%= $c->{id} %>/connect" id="btn<%= $c->{id} %>"><span class="glyphicon glyphicon-link">連携する</span></a>
-          </td>
-        </tr>
-% }
         </table>
       </div>
     </div>

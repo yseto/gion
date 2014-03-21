@@ -1,0 +1,10 @@
+{
+    "curly": true,
+    "trailing": true,
+    "undef": true,
+    "unused": true,
+    "browser": true,
+    "jquery": true,
+    "devel": true,
+    "debug": true
+}
