@@ -68,8 +68,8 @@ sub post {
     my $data = $self->req->params->to_hash;
     my $db   = $self->app->dbh->dbh;
     my $rs   = $db->select_row(
-        "SELECT `key` FROM connection WHERE user = ? AND service = ?",
-         $self->session('username'), $data->{service});
+        "SELECT `key` FROM connection WHERE user = ? AND service = 'pocket'",
+         $self->session('username'));
 
     return $self->render( json => "ng" ) unless $rs;
 
@@ -93,4 +93,15 @@ sub post {
         return $self->render( json => { e => "ng" } );
     };
 }
+
+sub disconnect {
+    my $self = shift;
+    my $db   = $self->app->dbh->dbh;
+    my $data = $self->req->params->to_hash;
+    $db->query("DELETE FROM connection WHERE user = ? AND service = 'pocket'",
+    $self->session('username'));
+
+    $self->redirect_to( $self->req->url->base . "/settings/" );
+}
+
 1;

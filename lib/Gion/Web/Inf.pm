@@ -51,55 +51,71 @@ sub get_entries {
     my $hash     = [];
     my $count    = 0;
 
-    $db->txn( sub {
-        my $db = shift;
-        my $rs = $db->select_all(
-            "SELECT e.guid, s.title, description, 
-            pubDate, readflag, s.url, _id_target FROM entries AS e
-            INNER JOIN target AS t ON _id_target = t.id
-            INNER JOIN stories AS s ON s.guid = e.guid
-            WHERE t._id_categories = ? AND readflag != 1 AND e.user = ?
-            ORDER BY pubDate DESC", $id, $self->session('username'));
+    my $rs = $db->dbh->select_all(
+        "SELECT e.guid, s.title, description, 
+        pubDate, readflag, s.url, _id_target FROM entries AS e
+        INNER JOIN target AS t ON _id_target = t.id
+        INNER JOIN stories AS s ON s.guid = e.guid
+        WHERE t._id_categories = ? AND readflag != 1 AND e.user = ?
+        ORDER BY pubDate DESC", $id, $self->session('username'));
 
-        for (@$rs) {
-            my $rs2 = $db->select_row(
-                "SELECT title FROM target WHERE id = ?", $_->{_id_target});
-            my $url = $_->{url};
+    for (@$rs) {
+        my $rs2 = $db->dbh->select_row(
+            "SELECT title FROM target WHERE id = ?", $_->{_id_target});
+        my $url = $_->{url};
 
-            if ( $cfg->{noreferrer} == 1 ) {
-                my $str = encode( 'utf-8', $url );
-                $str =~ s/([^0-9A-Za-z!'()*\-._~])/sprintf("%%%02X", ord($1))/eg;
-                $url = $self->config->{redirector} . $str;
-            }
-
-            my $pd = Time::Piece->strptime($_->{pubDate}, '%Y-%m-%d %H:%M:%S')->strftime('%m/%d %H:%M');
-            my $desc = $scrubber->scrub( $_->{description} );
-            $desc = substr($desc,0,$cfg->{numsubstr}) if $cfg->{numsubstr} > 0;
-
-            my $h = {
-                g => $_->{guid},
-                t => $_->{title},
-                d => $desc,
-                p => $pd . " - " . $rs2->{title},
-                r => $_->{readflag},
-                u => $url,
-                s => $_->{url},
-            };
-            push( @$hash, $h );
-
-            $db->query(
-                "UPDATE entries
-                SET readflag = 1, updatetime = CURRENT_TIMESTAMP
-                WHERE readflag = 0 AND user = ? AND guid = ?",
-                $self->session('username'), $_->{guid}) if 1 == 1;    # TODO COMMENT OUT
-
-            if ( $cfg->{numentry} > 0 ) {
-                $count++;
-                last if $cfg->{numentry} == $count;
-            }
+        if ( $cfg->{noreferrer} == 1 ) {
+            my $str = encode( 'utf-8', $url );
+            $str =~ s/([^0-9A-Za-z!'()*\-._~])/sprintf("%%%02X", ord($1))/eg;
+            $url = $self->config->{redirector} . $str;
         }
-    });
-    $self->render( json => $hash );
+
+        my $pd = Time::Piece->strptime($_->{pubDate}, '%Y-%m-%d %H:%M:%S')->strftime('%m/%d %H:%M');
+        my $desc = $scrubber->scrub( $_->{description} );
+        $desc = substr($desc,0,$cfg->{numsubstr}) if $cfg->{numsubstr} > 0;
+
+        my $h = {
+            g => $_->{guid},
+            t => $_->{title},
+            d => $desc,
+            p => $pd . " - " . $rs2->{title},
+            r => $_->{readflag},
+            u => $url,
+            s => $_->{url},
+        };
+        push( @$hash, $h );
+
+        if ( $cfg->{numentry} > 0 ) {
+            $count++;
+            last if $cfg->{numentry} == $count;
+        }
+    }
+    $self->render( json => { c => $hash, id => $id } );
+}
+
+sub set_asread {
+    my $self = shift;
+    my $db   = $self->app->dbh;
+    my $data = $self->req->params->to_hash;
+    my $array = [];
+
+    if(ref($data->{'g[]'}) eq 'ARRAY'){
+        for(@{$data->{'g[]'}}) {
+            push(@$array,$_);
+        }
+    }else{
+        push(@$array,$data->{'g[]'});
+    }
+
+    for(@$array){
+        $self->app->log->info(sprintf("ASREAD %s\t%s", $self->session('username'), $_));
+        $db->query(
+            "UPDATE entries
+            SET readflag = 1, updatetime = CURRENT_TIMESTAMP
+            WHERE readflag = 0 AND user = ? AND guid = ?",
+            $self->session('username'), $_) if 1 == 1;    # TODO COMMENT OUT
+    }
+    $self->render( text => "OK" );
 }
 
 sub get_targetlist {
@@ -189,6 +205,8 @@ sub set_pin {
 
     my $flag = 1;
     $flag = 2 if $data->{flag} == 1;
+
+    $self->app->log->info(sprintf("PIN %s\t%s", $self->session('username'), $data->{pinid}));
 
     $db->dbh->query("UPDATE entries
         SET readflag = ?, updatetime = CURRENT_TIMESTAMP

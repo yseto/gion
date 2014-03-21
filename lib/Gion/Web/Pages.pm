@@ -3,25 +3,25 @@ use Mojo::Base 'Mojolicious::Controller';
 
 sub add {
     my $self = shift;
-    $self->stash( jspath => 'add.js' );
+    $self->stash(jsfunc => 'register');
     $self->render();
 }
 
 sub settings {
     my $self = shift;
-    $self->stash( jspath => 'settings.js' );
+    $self->stash(jsfunc => 'settings');
     $self->render();
 }
 
 sub subscription {
     my $self = shift;
-    $self->stash( jspath => 'subscription.js' );
+    $self->stash(jsfunc => 'subscription');
     $self->render();
 }
 
 sub normal {
     my $self = shift;
-    $self->stash( jspath => 'e.js' );
+    $self->stash(jsfunc => 'reader');
     $self->render();
 }
 
@@ -32,7 +32,7 @@ sub welcome {
 
 sub entrance {
     my $self = shift;
-    $self->stash( jspath => 'entrance.js' );
+    $self->stash(jsfunc => 'welcome');
     $self->render();
 }
 
