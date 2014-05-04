@@ -61,7 +61,7 @@
         <ul class="nav navbar-nav navbar-right">
           <li<% if($active =~ '^/settings'){%> class="active" <% }%>>
           <a href="#settings"><span class="glyphicon glyphicon-wrench"></span> Settings</a></li>
-          <li><a style="cursor:pointer;" id="helpmodal"><i class="glyphicon glyphicon-question-sign"></i> Help</a></li>
+          <li class="hidden-sm"><a style="cursor:pointer;" id="helpmodal"><i class="glyphicon glyphicon-question-sign"></i> Help</a></li>
           <li><a href="#logout"><span class="glyphicon glyphicon-off"></span> Logout</a></li>
         </ul>
       </div><!--/.navbar-collapse -->
