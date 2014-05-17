@@ -36,6 +36,7 @@ sub startup {
 
     $l->route('/')->to( controller => 'pages', action => 'entrance' );
     $r->route('/')->to( controller => 'pages', action => 'welcome' );
+    $r->route('/robots.txt')->to( controller => 'pages', action => 'robots' );
 
     $self->app->hook(
         after_dispatch => sub {
