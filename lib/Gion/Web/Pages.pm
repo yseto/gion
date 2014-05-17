@@ -36,4 +36,9 @@ sub entrance {
     $self->render();
 }
 
+sub robots {
+    my $self = shift;
+    $self->render(text => "User-agent: *\nDisallow: /\n\n", format => "txt");
+}
+
 1;
