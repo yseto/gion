@@ -1,0 +1,59 @@
+{
+    db => {
+        dsn      => 'dbi:mysql:database=heroku_******:host=***************.cleardb.net',
+        username => '**************',
+        password => '********',
+    },
+
+    #パスワードのSalt
+    salt => '****************************************************************',
+    strech => 500,
+
+    #リファラを秘匿にする際のリダイレクタ
+    redirector => 'https://www.google.com/url?sa=D&q=',
+
+    #認証系
+    url => {
+        login_ssl => 'off',
+        http      => 'http://**********.herokuapp.com/',
+        https     => 'https://example.net/',
+    },
+
+    #Cookie
+    cookie => {
+        domain => '**********.herokuapp.com',
+        secret =>
+          '****************************************************************',
+    },
+
+    #クローラの設定
+    crawler => {
+
+        #クローラのキャッシュ
+        cache => '/tmp/gion',
+
+        #クロールする時のターゲットサイト
+        #ごとにスリープする秒数
+        sleep => 0.25,
+
+        #HTTPクライアントのタイムアウト
+        timeout => 10,
+
+        #HTTPクライアントに設定するユーザーエージェント
+        ua =>
+          'Opera/9.80 (Windows NT 6.2; WOW64) Presto/2.12.388 Version/12.14',
+
+        # 0 の場合は、HTTPリターンコードが
+        # 304 Not Modifiedの場合は取り込まない
+        # 1 の場合は、すべての情報を取り込む
+        no304 => 0,
+
+        # 0 の場合は、DBに格納されている
+        # エントリーより古い情報は取り込まない
+        # 1 の場合は、すべての情報を取り込む
+        pubDatecheck => 0,
+    },
+    service => {
+        pocket => '******************************',
+    },
+};

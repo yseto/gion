@@ -1,5 +1,18 @@
 # carton snapshot format: version 1.0
 DISTRIBUTIONS
+  Apache-LogFormat-Compiler-0.32
+    pathname: K/KA/KAZEBURO/Apache-LogFormat-Compiler-0.32.tar.gz
+    provides:
+      Apache::LogFormat::Compiler 0.32
+    requirements:
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      ExtUtils::CBuilder 0
+      Module::Build 0.38
+      POSIX 0
+      POSIX::strftime::Compiler 0.30
+      Time::Local 0
+      perl 5.008001
   Cache-2.04
     pathname: C/CL/CLEISHMAN/Cache-2.04.tar.gz
     provides:
@@ -101,6 +114,16 @@ DISTRIBUTIONS
     provides:
       Class::Factory::Util 1.7
     requirements:
+  Class-Inspector-1.28
+    pathname: A/AD/ADAMK/Class-Inspector-1.28.tar.gz
+    provides:
+      Class::Inspector 1.28
+      Class::Inspector::Functions 1.28
+    requirements:
+      ExtUtils::MakeMaker 6.59
+      File::Spec 0.80
+      Test::More 0.47
+      perl 5.006
   Class-Load-0.20
     pathname: D/DR/DROLSKY/Class-Load-0.20.tar.gz
     provides:
@@ -1380,6 +1403,39 @@ DISTRIBUTIONS
       Test::Requires 0
       parent 0
       perl 5.008001
+  Devel-StackTrace-1.34
+    pathname: D/DR/DROLSKY/Devel-StackTrace-1.34.tar.gz
+    provides:
+      Devel::StackTrace 1.34
+      Devel::StackTrace::Frame 1.34
+    requirements:
+      ExtUtils::MakeMaker 6.30
+      File::Spec 0
+      Scalar::Util 0
+      overload 0
+      strict 0
+      warnings 0
+  Devel-StackTrace-AsHTML-0.14
+    pathname: M/MI/MIYAGAWA/Devel-StackTrace-AsHTML-0.14.tar.gz
+    provides:
+      Devel::StackTrace::AsHTML 0.14
+    requirements:
+      Devel::StackTrace 0
+      ExtUtils::MakeMaker 6.59
+      Filter::Util::Call 0
+      Test::More 0
+      perl 5.008001
+  Digest-HMAC-1.03
+    pathname: G/GA/GAAS/Digest-HMAC-1.03.tar.gz
+    provides:
+      Digest::HMAC 1.03
+      Digest::HMAC_MD5 1.01
+      Digest::HMAC_SHA1 1.03
+    requirements:
+      Digest::MD5 2
+      Digest::SHA 1
+      ExtUtils::MakeMaker 0
+      perl 5.004
   Digest-SHA1-2.13
     pathname: G/GA/GAAS/Digest-SHA1-2.13.tar.gz
     provides:
@@ -1424,6 +1480,7 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Mail::Address 0
+      Net::DNS 0
       Scalar::Util 0
       Test::More 0
       perl 5.006
@@ -1453,47 +1510,6 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Test::More 0.34
-  ExtUtils-MakeMaker-6.84
-    pathname: B/BI/BINGOS/ExtUtils-MakeMaker-6.84.tar.gz
-    provides:
-      DynaLoader 6.84
-      ExtUtils::Command::MM 6.84
-      ExtUtils::Liblist 6.84
-      ExtUtils::Liblist::Kid 6.84
-      ExtUtils::MM 6.84
-      ExtUtils::MM_AIX 6.84
-      ExtUtils::MM_Any 6.84
-      ExtUtils::MM_BeOS 6.84
-      ExtUtils::MM_Cygwin 6.84
-      ExtUtils::MM_DOS 6.84
-      ExtUtils::MM_Darwin 6.84
-      ExtUtils::MM_MacOS 6.84
-      ExtUtils::MM_NW5 6.84
-      ExtUtils::MM_OS2 6.84
-      ExtUtils::MM_QNX 6.84
-      ExtUtils::MM_UWIN 6.84
-      ExtUtils::MM_Unix 6.84
-      ExtUtils::MM_VMS 6.84
-      ExtUtils::MM_VOS 6.84
-      ExtUtils::MM_Win32 6.84
-      ExtUtils::MM_Win95 6.84
-      ExtUtils::MY 6.84
-      ExtUtils::MakeMaker 6.84
-      ExtUtils::MakeMaker::Config 6.84
-      ExtUtils::MakeMaker::_version 6.84
-      ExtUtils::Mkbootstrap 6.84
-      ExtUtils::Mksymlists 6.84
-      ExtUtils::testlib 6.84
-      MM 6.84
-      MY 6.84
-      in 6.84
-    requirements:
-      Data::Dumper 0
-      DirHandle 0
-      File::Basename 0
-      File::Spec 0.8
-      Pod::Man 0
-      perl 5.006
   ExtUtils-ParseXS-3.22
     pathname: S/SM/SMUELLER/ExtUtils-ParseXS-3.22.tar.gz
     provides:
@@ -1537,6 +1553,26 @@ DISTRIBUTIONS
       File::NFSLock 1.21
     requirements:
       ExtUtils::MakeMaker 0
+  File-ShareDir-1.102
+    pathname: R/RE/REHSACK/File-ShareDir-1.102.tar.gz
+    provides:
+      File::ShareDir 1.102
+    requirements:
+      Carp 0
+      Class::Inspector 1.12
+      ExtUtils::MakeMaker 0
+      File::ShareDir::Install 0.03
+      File::Spec 0.80
+      perl 5.008001
+      warnings 0
+  File-ShareDir-Install-0.08
+    pathname: G/GW/GWYN/File-ShareDir-Install-0.08.tar.gz
+    provides:
+      File::ShareDir::Install 0.08
+    requirements:
+      ExtUtils::MakeMaker 6.11
+      File::Spec 0
+      IO::Dir 0
   File-Slurp-9999.19
     pathname: U/UR/URI/File-Slurp-9999.19.tar.gz
     provides:
@@ -1548,6 +1584,23 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Fcntl 0
       POSIX 0
+  File-Which-1.09
+    pathname: A/AD/ADAMK/File-Which-1.09.tar.gz
+    provides:
+      File::Which 1.09
+    requirements:
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      File::Spec 0.60
+      Getopt::Std 0
+      Test::More 0.80
+      Test::Script 1.05
+  Filesys-Notify-Simple-0.12
+    pathname: M/MI/MIYAGAWA/Filesys-Notify-Simple-0.12.tar.gz
+    provides:
+      Filesys::Notify::Simple 0.12
+    requirements:
+      ExtUtils::MakeMaker 6.30
   FormValidator-Lite-0.37
     pathname: T/TO/TOKUHIROM/FormValidator-Lite-0.37.tar.gz
     provides:
@@ -1581,6 +1634,22 @@ DISTRIBUTIONS
       Module::Build 0.38
       Scalar::Util 1.19
       perl 5.008001
+  Getopt-Compact-WithCmd-0.22
+    pathname: X/XA/XAICRON/Getopt-Compact-WithCmd-0.22.tar.gz
+    provides:
+      Getopt::Compact::WithCmd 0.22
+    requirements:
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      ExtUtils::CBuilder 0
+      ExtUtils::MakeMaker 6.59
+      Getopt::Long 2.38
+      Module::Build 0.38
+      Test::More 0.96
+      Test::Output 0
+      Test::Requires 0
+      Text::Table 0
+      perl 5.008001
   HTML-ExtractContent-0.10
     pathname: T/TA/TARAO/HTML-ExtractContent-0.10.tar.gz
     provides:
@@ -1589,7 +1658,7 @@ DISTRIBUTIONS
     requirements:
       Class::Accessor::Lvalue::Fast 0
       Exporter::Lite 0
-      ExtUtils::MakeMaker 6.84
+      ExtUtils::MakeMaker 6.66
       File::Slurp 0
       HTML::Entities 0
       List::Util 0
@@ -1633,6 +1702,23 @@ DISTRIBUTIONS
       HTML::Tagset 3.20
     requirements:
       ExtUtils::MakeMaker 0
+  HTTP-Body-1.19
+    pathname: G/GE/GETTY/HTTP-Body-1.19.tar.gz
+    provides:
+      HTTP::Body 1.19
+      HTTP::Body::MultiPart 1.19
+      HTTP::Body::OctetStream 1.19
+      HTTP::Body::UrlEncoded 1.19
+      HTTP::Body::XForms 1.19
+      HTTP::Body::XFormsMultipart 1.19
+      PAML undef
+    requirements:
+      Carp 0
+      Digest::MD5 0
+      ExtUtils::MakeMaker 6.30
+      File::Temp 0.14
+      HTTP::Headers 0
+      IO::File 1.14
   HTTP-Cookies-6.01
     pathname: G/GA/GAAS/HTTP-Cookies-6.01.tar.gz
     provides:
@@ -1708,6 +1794,26 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       HTTP::Headers 6
       perl 5.008001
+  HTTP-Tiny-0.043
+    pathname: D/DA/DAGOLDEN/HTTP-Tiny-0.043.tar.gz
+    provides:
+      HTTP::Tiny 0.043
+    requirements:
+      Carp 0
+      ExtUtils::MakeMaker 6.17
+      Fcntl 0
+      IO::Socket 0
+      MIME::Base64 0
+      Time::Local 0
+      bytes 0
+      strict 0
+      warnings 0
+  Hash-MultiValue-0.15
+    pathname: M/MI/MIYAGAWA/Hash-MultiValue-0.15.tar.gz
+    provides:
+      Hash::MultiValue 0.15
+    requirements:
+      ExtUtils::MakeMaker 6.30
   Heap-0.80
     pathname: J/JM/JMM/Heap-0.80.tar.gz
     provides:
@@ -1754,6 +1860,20 @@ DISTRIBUTIONS
       IO::String 1.08
     requirements:
       ExtUtils::MakeMaker 0
+  IPC-Run3-0.048
+    pathname: R/RJ/RJBS/IPC-Run3-0.048.tar.gz
+    provides:
+      IPC::Run3 0.048
+    requirements:
+      ExtUtils::MakeMaker 0
+      Test::More 0.31
+      Time::HiRes 0
+  IPC-Signal-1.00
+    pathname: R/RO/ROSCH/IPC-Signal-1.00.tar.gz
+    provides:
+      IPC::Signal 1.00
+    requirements:
+      ExtUtils::MakeMaker 0
   LWP-MediaTypes-6.02
     pathname: G/GA/GAAS/LWP-MediaTypes-6.02.tar.gz
     provides:
@@ -1782,6 +1902,18 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 6.52
       Test::More 0.82
       perl 5.00503
+  Log-Minimal-0.19
+    pathname: K/KA/KAZEBURO/Log-Minimal-0.19.tar.gz
+    provides:
+      Log::Minimal 0.19
+    requirements:
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      Data::Dumper 0
+      ExtUtils::CBuilder 0
+      Module::Build 0.38
+      Scalar::Util 0
+      Term::ANSIColor 0
   MailTools-2.12
     pathname: M/MA/MARKOV/MailTools-2.12.tar.gz
     provides:
@@ -2027,7 +2159,6 @@ DISTRIBUTIONS
       ojo undef
     requirements:
       ExtUtils::MakeMaker 0
-      perl 5.010001
   Mojolicious-Plugin-CSRFProtect-0.13
     pathname: K/KO/KOORCHIK/Mojolicious-Plugin-CSRFProtect-0.13.tar.gz
     provides:
@@ -2085,6 +2216,89 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Test 0
       perl 5.006
+  Net-DNS-0.77
+    pathname: N/NL/NLNETLABS/Net-DNS-0.77.tar.gz
+    provides:
+      Net::DNS 0.77
+      Net::DNS::Domain 1195
+      Net::DNS::DomainName 1177
+      Net::DNS::DomainName1035 1177
+      Net::DNS::DomainName2535 1177
+      Net::DNS::Header 1101
+      Net::DNS::Mailbox 1155
+      Net::DNS::Mailbox1035 1155
+      Net::DNS::Mailbox2535 1155
+      Net::DNS::Nameserver 1186
+      Net::DNS::Packet 1210
+      Net::DNS::Parameters 1194
+      Net::DNS::Question 1098
+      Net::DNS::RR 1212
+      Net::DNS::RR::A 1188
+      Net::DNS::RR::AAAA 1188
+      Net::DNS::RR::AFSDB 1188
+      Net::DNS::RR::APL 1188
+      Net::DNS::RR::APL::Item 1188
+      Net::DNS::RR::CAA 1188
+      Net::DNS::RR::CERT 1188
+      Net::DNS::RR::CNAME 1188
+      Net::DNS::RR::DHCID 1188
+      Net::DNS::RR::DNAME 1188
+      Net::DNS::RR::EUI48 1188
+      Net::DNS::RR::EUI64 1188
+      Net::DNS::RR::GPOS 1188
+      Net::DNS::RR::HINFO 1188
+      Net::DNS::RR::HIP 1188
+      Net::DNS::RR::IPSECKEY 1188
+      Net::DNS::RR::ISDN 1188
+      Net::DNS::RR::KX 1188
+      Net::DNS::RR::L32 1188
+      Net::DNS::RR::L64 1188
+      Net::DNS::RR::LOC 1188
+      Net::DNS::RR::LP 1188
+      Net::DNS::RR::MB 1182
+      Net::DNS::RR::MG 1182
+      Net::DNS::RR::MINFO 1188
+      Net::DNS::RR::MR 1182
+      Net::DNS::RR::MX 1188
+      Net::DNS::RR::NAPTR 1188
+      Net::DNS::RR::NID 1188
+      Net::DNS::RR::NS 1188
+      Net::DNS::RR::NULL 1188
+      Net::DNS::RR::OPT 1212
+      Net::DNS::RR::PTR 1188
+      Net::DNS::RR::PX 1188
+      Net::DNS::RR::RP 1189
+      Net::DNS::RR::RT 1188
+      Net::DNS::RR::SOA 1188
+      Net::DNS::RR::SPF 1188
+      Net::DNS::RR::SRV 1188
+      Net::DNS::RR::SSHFP 1188
+      Net::DNS::RR::TKEY 1188
+      Net::DNS::RR::TLSA 1188
+      Net::DNS::RR::TSIG 1188
+      Net::DNS::RR::TXT 1206
+      Net::DNS::RR::X25 1188
+      Net::DNS::Resolver 1218
+      Net::DNS::Resolver::Base 1219
+      Net::DNS::Resolver::MSWin32 1202
+      Net::DNS::Resolver::Recurse 1185
+      Net::DNS::Resolver::UNIX 1185
+      Net::DNS::Resolver::cygwin 1215
+      Net::DNS::Resolver::os2 1185
+      Net::DNS::Text 1206
+      Net::DNS::Update 1171
+      Net::DNS::ZoneFile 1218
+      Net::DNS::ZoneFile::Generator 1218
+      Net::DNS::ZoneFile::Text 1218
+    requirements:
+      Digest::HMAC 1.01
+      Digest::MD5 2.13
+      Digest::SHA 5.23
+      ExtUtils::MakeMaker 0
+      IO::Socket 1.24
+      MIME::Base64 2.11
+      Test::More 0.52
+      perl 5.00404
   Net-HTTP-6.06
     pathname: G/GA/GAAS/Net-HTTP-6.06.tar.gz
     provides:
@@ -2109,6 +2323,20 @@ DISTRIBUTIONS
       MIME::Base64 0
       Test::More 0.60_01
       perl 5.005
+  POSIX-strftime-Compiler-0.32
+    pathname: K/KA/KAZEBURO/POSIX-strftime-Compiler-0.32.tar.gz
+    provides:
+      POSIX::strftime::Compiler 0.32
+    requirements:
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      Carp 0
+      Exporter 0
+      ExtUtils::CBuilder 0
+      Module::Build 0.38
+      POSIX 0
+      Time::Local 0
+      perl 5.008001
   Package-DeprecationManager-0.13
     pathname: D/DR/DROLSKY/Package-DeprecationManager-0.13.tar.gz
     provides:
@@ -2151,26 +2379,32 @@ DISTRIBUTIONS
       constant 0
       strict 0
       warnings 0
-  Package-Stash-XS-0.26
-    pathname: D/DO/DOY/Package-Stash-XS-0.26.tar.gz
+  Package-Stash-XS-0.28
+    pathname: D/DO/DOY/Package-Stash-XS-0.28.tar.gz
     provides:
       CompileTime undef
-      Package::Stash::XS 0.26
+      Package::Stash::XS 0.28
     requirements:
-      B 0
       ExtUtils::MakeMaker 6.30
-      File::Find 0
-      File::Temp 0
-      Scalar::Util 0
-      Symbol 0
-      Test::Fatal 0
-      Test::More 0.88
-      Test::Requires 0
       XSLoader 0
-      base 0
-      constant 0
       strict 0
       warnings 0
+  Parallel-Prefork-0.15
+    pathname: K/KA/KAZUHO/Parallel-Prefork-0.15.tar.gz
+    provides:
+      Parallel::Prefork 0.15
+      Parallel::Prefork::SpareWorkers undef
+      Parallel::Prefork::SpareWorkers::Scoreboard undef
+    requirements:
+      Class::Accessor::Lite 0.04
+      ExtUtils::MakeMaker 6.42
+      List::MoreUtils 0
+      Proc::Wait3 0.03
+      Scope::Guard 0
+      Signal::Mask 0
+      Test::Requires 0
+      Test::SharedFork 0
+      perl 5.008001
   Params-Util-1.07
     pathname: A/AD/ADAMK/Params-Util-1.07.tar.gz
     provides:
@@ -2226,6 +2460,208 @@ DISTRIBUTIONS
       strict 0
       vars 0
       warnings 0
+  Plack-1.0030
+    pathname: M/MI/MIYAGAWA/Plack-1.0030.tar.gz
+    provides:
+      HTTP::Message::PSGI undef
+      HTTP::Server::PSGI undef
+      Plack 1.0030
+      Plack::App::CGIBin undef
+      Plack::App::Cascade undef
+      Plack::App::Directory undef
+      Plack::App::File undef
+      Plack::App::PSGIBin undef
+      Plack::App::URLMap undef
+      Plack::App::WrapCGI undef
+      Plack::Builder undef
+      Plack::Component undef
+      Plack::HTTPParser undef
+      Plack::HTTPParser::PP undef
+      Plack::Handler undef
+      Plack::Handler::Apache1 undef
+      Plack::Handler::Apache2 undef
+      Plack::Handler::Apache2::Registry undef
+      Plack::Handler::CGI undef
+      Plack::Handler::CGI::Writer undef
+      Plack::Handler::FCGI undef
+      Plack::Handler::HTTP::Server::PSGI undef
+      Plack::Handler::Standalone undef
+      Plack::LWPish undef
+      Plack::Loader undef
+      Plack::Loader::Delayed undef
+      Plack::Loader::Restarter undef
+      Plack::Loader::Shotgun undef
+      Plack::MIME undef
+      Plack::Middleware undef
+      Plack::Middleware::AccessLog undef
+      Plack::Middleware::AccessLog::Timed undef
+      Plack::Middleware::Auth::Basic undef
+      Plack::Middleware::BufferedStreaming undef
+      Plack::Middleware::Chunked undef
+      Plack::Middleware::Conditional undef
+      Plack::Middleware::ConditionalGET undef
+      Plack::Middleware::ContentLength undef
+      Plack::Middleware::ContentMD5 undef
+      Plack::Middleware::ErrorDocument undef
+      Plack::Middleware::HTTPExceptions undef
+      Plack::Middleware::Head undef
+      Plack::Middleware::IIS6ScriptNameFix undef
+      Plack::Middleware::IIS7KeepAliveFix undef
+      Plack::Middleware::JSONP undef
+      Plack::Middleware::LighttpdScriptNameFix undef
+      Plack::Middleware::Lint undef
+      Plack::Middleware::Log4perl undef
+      Plack::Middleware::LogDispatch undef
+      Plack::Middleware::NullLogger undef
+      Plack::Middleware::RearrangeHeaders undef
+      Plack::Middleware::Recursive undef
+      Plack::Middleware::Refresh undef
+      Plack::Middleware::Runtime undef
+      Plack::Middleware::SimpleContentFilter undef
+      Plack::Middleware::SimpleLogger undef
+      Plack::Middleware::StackTrace undef
+      Plack::Middleware::Static undef
+      Plack::Middleware::XFramework undef
+      Plack::Middleware::XSendfile undef
+      Plack::Recursive::ForwardRequest undef
+      Plack::Request 1.0030
+      Plack::Request::Upload undef
+      Plack::Response 1.0030
+      Plack::Runner undef
+      Plack::TempBuffer undef
+      Plack::Test undef
+      Plack::Test::MockHTTP undef
+      Plack::Test::Server undef
+      Plack::Test::Suite undef
+      Plack::Util undef
+      Plack::Util::Accessor undef
+      Plack::Util::IOWithPath undef
+      Plack::Util::Prototype undef
+    requirements:
+      Apache::LogFormat::Compiler 0.12
+      Devel::StackTrace 1.23
+      Devel::StackTrace::AsHTML 0.11
+      ExtUtils::MakeMaker 6.30
+      File::ShareDir 1.00
+      File::ShareDir::Install 0.03
+      Filesys::Notify::Simple 0
+      HTTP::Body 1.06
+      HTTP::Message 5.814
+      HTTP::Tiny 0.034
+      Hash::MultiValue 0.05
+      Pod::Usage 1.36
+      Stream::Buffered 0.02
+      Test::TCP 2.00
+      Try::Tiny 0
+      URI 1.59
+      parent 0
+  Probe-Perl-0.03
+    pathname: K/KW/KWILLIAMS/Probe-Perl-0.03.tar.gz
+    provides:
+      Probe::Perl 0.03
+    requirements:
+      Config 0
+      ExtUtils::MakeMaker 6.30
+      File::Spec 0
+      strict 0
+  Proc-Wait3-0.04
+    pathname: C/CT/CTILMES/Proc-Wait3-0.04.tar.gz
+    provides:
+      Proc::Wait3 0.04
+    requirements:
+      ExtUtils::MakeMaker 0
+  Proclet-0.34
+    pathname: K/KA/KAZEBURO/Proclet-0.34.tar.gz
+    provides:
+      Proclet 0.34
+      Proclet::Declare undef
+    requirements:
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      Data::Validator 0
+      ExtUtils::CBuilder 0
+      File::Which 1.09
+      Getopt::Compact::WithCmd 0.20
+      Log::Minimal 0.14
+      Module::Build 0.38
+      Mouse 0
+      Parallel::Prefork 0.13
+      String::ShellQuote 0
+      Term::ANSIColor 0
+      Time::Crontab 0.01
+      YAML::XS 0.38
+      parent 0
+      perl 5.008001
+  Scope-Guard-0.20
+    pathname: C/CH/CHOCOLATE/Scope-Guard-0.20.tar.gz
+    provides:
+      Scope::Guard 0.20
+    requirements:
+      ExtUtils::MakeMaker 0
+      Test::More 0
+      perl 5.006001
+  Server-Starter-0.17
+    pathname: K/KA/KAZUHO/Server-Starter-0.17.tar.gz
+    provides:
+      Server::Starter 0.17
+    requirements:
+      ExtUtils::MakeMaker 6.42
+      Getopt::Long 0
+      List::MoreUtils 0
+      Proc::Wait3 0
+      Scope::Guard 0
+      Test::TCP 2.00
+      perl 5.008
+  Set-Crontab-1.03
+    pathname: A/AM/AMS/Set-Crontab-1.03.tar.gz
+    provides:
+      Set::Crontab 1.03
+    requirements:
+      ExtUtils::MakeMaker 0
+  Signal-Mask-0.007
+    pathname: L/LE/LEONT/Signal-Mask-0.007.tar.gz
+    provides:
+      Signal::Mask 0.007
+      Signal::Pending 0.007
+    requirements:
+      Carp 0
+      ExtUtils::MakeMaker 6.30
+      IPC::Signal 0
+      POSIX 0
+      Thread::SigMask 0
+      strict 0
+      warnings 0
+  Starlet-0.24
+    pathname: K/KA/KAZUHO/Starlet-0.24.tar.gz
+    provides:
+      Plack::Handler::Starlet undef
+      Starlet 0.24
+      Starlet::Server undef
+    requirements:
+      ExtUtils::MakeMaker 6.42
+      LWP::UserAgent 5.8
+      Parallel::Prefork 0.13
+      Plack 0.992
+      Server::Starter 0.06
+      Test::More 0.88
+      Test::TCP 0.15
+      perl 5.008001
+  Stream-Buffered-0.03
+    pathname: D/DO/DOY/Stream-Buffered-0.03.tar.gz
+    provides:
+      Stream::Buffered 0.03
+      Stream::Buffered::Auto undef
+      Stream::Buffered::File undef
+      Stream::Buffered::PerlIO undef
+    requirements:
+      ExtUtils::MakeMaker 6.30
+      IO::File 1.14
+  String-ShellQuote-1.04
+    pathname: R/RO/ROSCH/String-ShellQuote-1.04.tar.gz
+    provides:
+      String::ShellQuote 1.04
+    requirements:
+      ExtUtils::MakeMaker 0
   Sub-Exporter-0.985
     pathname: R/RJ/RJBS/Sub-Exporter-0.985.tar.gz
     provides:
@@ -2350,6 +2786,19 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 6.42
       Test::More 0.61
       perl 5.006
+  Test-Script-1.07
+    pathname: A/AD/ADAMK/Test-Script-1.07.tar.gz
+    provides:
+      Test::Script 1.07
+    requirements:
+      ExtUtils::MakeMaker 6.42
+      File::Spec 0.80
+      IPC::Run3 0.034
+      Probe::Perl 0.01
+      Test::Builder 0.32
+      Test::Builder::Tester 1.02
+      Test::More 0.62
+      blib 0
   Test-SharedFork-0.21
     pathname: T/TO/TOKUHIROM/Test-SharedFork-0.21.tar.gz
     provides:
@@ -2364,19 +2813,19 @@ DISTRIBUTIONS
       Test::Requires 0
       Time::HiRes 0
       perl 5.008
-  Test-TCP-1.26
-    pathname: T/TO/TOKUHIROM/Test-TCP-1.26.tar.gz
+  Test-TCP-2.06
+    pathname: T/TO/TOKUHIROM/Test-TCP-2.06.tar.gz
     provides:
       Net::EmptyPort undef
-      Test::TCP 1.26
+      Test::TCP 2.06
       Test::TCP::CheckPort undef
     requirements:
-      CPAN::Meta 0
+      ExtUtils::MakeMaker 6.64
       IO::Socket::INET 0
-      Module::Build 0.38
-      Test::More 0.98
+      Test::More 0
       Test::SharedFork 0.19
-      perl 5.00800
+      Time::HiRes 0
+      perl 5.008001
   Test-Tester-0.108
     pathname: F/FD/FDALY/Test-Tester-0.108.tar.gz
     provides:
@@ -2389,6 +2838,55 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Test::Builder 0
+  Text-Aligner-0.10
+    pathname: S/SH/SHLOMIF/Text-Aligner-0.10.tar.gz
+    provides:
+      Text::Aligner 0.10
+    requirements:
+      Exporter 0
+      ExtUtils::MakeMaker 6.30
+      Module::Build 0.3601
+      Term::ANSIColor 2.02
+      perl 5.008
+      strict 0
+      vars 0
+      warnings 0
+  Text-Table-1.130
+    pathname: S/SH/SHLOMIF/Text-Table-1.130.tar.gz
+    provides:
+      Text::Table 1.130
+    requirements:
+      List::Util 0
+      Module::Build 0.36
+      Test::More 0
+      Text::Aligner 0.05
+      perl 5.008
+      strict 0
+      warnings 0
+  Thread-SigMask-0.004
+    pathname: L/LE/LEONT/Thread-SigMask-0.004.tar.gz
+    provides:
+      Thread::SigMask 0.004
+    requirements:
+      Exporter 5.57
+      ExtUtils::CBuilder 0
+      Module::Build 0.3601
+      XSLoader 0
+      perl 5.006
+      strict 0
+      warnings 0
+  Time-Crontab-0.02
+    pathname: K/KA/KAZEBURO/Time-Crontab-0.02.tar.gz
+    provides:
+      Time::Crontab 0.02
+    requirements:
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      ExtUtils::CBuilder 0
+      List::MoreUtils 0
+      Module::Build 0.38
+      Set::Crontab 1.03
+      perl 5.008005
   TimeDate-2.30
     pathname: G/GB/GBARR/TimeDate-2.30.tar.gz
     provides:
@@ -2746,6 +3244,15 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       XML::Parser 2.23
+  YAML-LibYAML-0.41
+    pathname: I/IN/INGY/YAML-LibYAML-0.41.tar.gz
+    provides:
+      YAML::LibYAML 0.18
+      YAML::XS 0.41
+      YAML::XS::LibYAML undef
+    requirements:
+      ExtUtils::MakeMaker 6.59
+      perl 5.008001
   libwww-perl-6.05
     pathname: G/GA/GAAS/libwww-perl-6.05.tar.gz
     provides:
