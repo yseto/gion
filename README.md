@@ -17,3 +17,12 @@ Requirement
 - Perl
 - mysql (of course MariaDB ok) or SQLite
 
+On Heroku
+----------
+- BuildPack
+
+  https://github.com/kazeburo/heroku-buildpack-perl-procfile.git
+
+- addon
+
+  cleardb
