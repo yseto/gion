@@ -571,48 +571,33 @@ $(function(Gion) {
                 async: false,
                 success: function(b) {
                     var link = [];
-                    var i = 0;
-                    var j;
-                    jQuery.each(b, function() {
+                    jQuery.each(b, function(i, data) {
                         var li = $('<a>').addClass('categories_link list-group-item').attr({
-                            id: 'categories_link_' + this.i,
-                            href: '/#' + this.i
-                        }).text(this.n).append($('<span>').addClass('badge hidden-sm').text(this.c));
-
+                            id: 'categories_link_' + data.i,
+                            href: '/#' + data.i
+                        }).text(data.n).append($('<span>').addClass('badge hidden-sm').text(data.c));
                         frag.appendChild(li[0]);
-
-                        link[i] = '/#' + this.i;
-                        i++;
-                        if (q === this.i) { // selected category
-                            j = i;
-                        }
+                        link[i] = '/#' + data.i;
                     });
                     $('#cat_list').empty().append(frag);
-                    var tmp;
-                    if (j === undefined) { /* First Access:Pointer Top*/
-                        tmp = i - 1;
-                        self.cat_idx_prev = link[tmp];
-                        if (i === 1) { /* item count is one ? */
-                            self.cat_idx_next = link[0]; /* yes! */
-                        } else {
-                            self.cat_idx_next = link[1]; /* no!! there is next item */
-                        }
-                    } else { /* Not First Access : Pointer Variable */
-                        tmp = j - 2; /* j = i ... After i is increment*/
-                        if (link[tmp] === undefined) { /* undefined maybe pointer head */
-                            tmp = i - 1; /* pointer set tail */
-                            self.cat_idx_prev = link[tmp];
-                        } else {
-                            self.cat_idx_prev = link[tmp];
-                        }
 
-                        tmp = j + 0; /* j = i ... After i is increment*/
-                        if (link[tmp] === undefined) { /* undefined maybe pointer tail */
-                            self.cat_idx_next = link[0]; /* pointer set head */
-                        } else {
-                            self.cat_idx_next = link[tmp];
+                    jQuery.each(b, function(i, data) {
+                        if (q === undefined) { // not selected (first)
+                            self.cat_idx_prev = link[b.length - 1];
+                            self.cat_idx_next = link[1];
+                        }else if(q === parseInt(data.i)) { // selected
+                            if(link[i-1] !== undefined){ 
+                                self.cat_idx_prev = link[i-1];
+                            }else{ // when nothing previous
+                                self.cat_idx_prev = link[b.length - 1];
+                            }
+                            if(link[i+1] !== undefined){ 
+                                self.cat_idx_next = link[i+1];
+                            }else{ // when nothing next
+                                self.cat_idx_next = link[0];
+                            }
                         }
-                    }
+                    });
                 }
             });
         };
@@ -622,7 +607,7 @@ $(function(Gion) {
          */
         var entries = function(b) {
 
-            if (b.length === 0) {
+            if (typeof b === 'undefined' || b.length === 0 ) {
                 var div = $('<div>').addClass('tw panel panel-default');
                 div.append($('<h3>').text('Nothing Entries.'));
                 $('#contents_view_box').empty().append(div);
@@ -714,6 +699,9 @@ $(function(Gion) {
          * フィードのアイテム既読リストを作成をする
          */
         var send_read_register = function(content, id) {
+            if ( content === undefined ) {
+                return false;
+            }
             var param = [];
             jQuery.each(content, function() {
                 if (this.r === "0") { // 未読ステータスのものだけ送る
