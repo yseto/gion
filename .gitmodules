@@ -1,3 +1,0 @@
-[submodule "public/dists/jbp"]
-	path = public/dists/jbp
-	url = git://github.com/gabceb/jquery-browser-plugin.git
