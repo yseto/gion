@@ -23,6 +23,7 @@ use DateTime::Format::W3CDTF;
 use DateTime::Format::ISO8601;
 use HTTP::Date;
 use Date::Parse;
+use File::Spec;
 
 sub run {
     my $self = shift;
@@ -43,8 +44,6 @@ sub run {
     }else{
         $engine = "mysql";
     }
-    # キャッシュの設定
-    my $ca = Cache::File->new(cache_root => $cfg->{crawler}->{cache});
 
     # 取得先を取得
     my $rs;
@@ -79,6 +78,10 @@ sub run {
 
         #プログレスバーの件数更新
         $progcount++;
+
+        # キャッシュの設定
+        my $dir = File::Spec->catdir($cfg->{crawler}->{cache}, $c->{id});
+        my $ca = Cache::File->new(cache_root => $dir);
 
         #取得する
         my $res = URI::Fetch->fetch($c->{url}, Cache => $ca, UserAgent => $ua);
@@ -135,7 +138,6 @@ sub run {
         }catch{
             $errorcount++;
         };
-
         try{
             if( ($c->{parser} == 0 and $errorcount == 1) or $c->{parser} == 2 ){
                 $data = &parser_atom($res->content, $latest, $c->{id}, $cfg->{crawler}->{pubDatecheck}, $c->{user});
@@ -233,7 +235,8 @@ sub from_feed_datetime{
 
     return Time::Piece->new( $dt->epoch() ) if defined $dt;
 
-    croak("ERROR:Time Parse");
+    return Time::Piece->new();
+#   croak("ERROR:Time Parse");
 }
 
 sub parser_rss {
