@@ -162,10 +162,7 @@ sub delete_it {
         $data->{id}, $self->session('username'));
     }
     elsif ( $data->{target} eq 'entry' ) {
-        $db->query("DELETE FROM target 
-        WHERE id = (SELECT target.id FROM target
-        INNER JOIN categories AS c ON _id_categories = c.id 
-        WHERE target.id = ? AND c.user = ?);",
+        $db->query("DELETE FROM target WHERE id = ? AND user = ?;",
         $data->{id}, $self->session('username'));
     }
     $self->render( json => { r => "OK" } );
@@ -184,10 +181,7 @@ sub change_it {
  
     my $data = $self->req->params->to_hash;
 
-    $db->query("UPDATE target
-    SET _id_categories =
-    (SELECT id FROM categories WHERE id = ? AND user = ?)
-    WHERE target.id = ?",
+    $db->query("UPDATE target SET _id_categories = ? WHERE target.id = ? AND user = ?",
     $data->{cat}, $self->session('username'), $data->{id});
 
     return $self->render( json => { r => "OK" } );
