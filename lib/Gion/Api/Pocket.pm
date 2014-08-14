@@ -12,7 +12,7 @@ sub connect {
     my $data         = $self->req->params->to_hash;
     my $ua           = LWP::UserAgent->new;
     my $redirect_uri = $self->req->url->base . $self->req->url->path;
-    my $app_id       = $self->config->{service}->{pocket};
+    my $app_id       = $self->config->{service}->{pocket} || $ENV{API_POCKET};
 
     if ( my $code = $data->{r} ) {
         my $req =

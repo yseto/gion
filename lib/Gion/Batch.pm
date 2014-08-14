@@ -7,7 +7,12 @@ our $conf, $dir;
 
 BEGIN {
     $d = File::Spec->catdir(dirname((caller 0)[1]) , '..','..');
-    $c = eval slurp(File::Spec->catfile($d, 'gion.conf'));
+    my $c;
+    if ( -e File::Spec->catfile($d, 'gion.conf') ) {
+        $c = eval slurp(File::Spec->catfile($d, 'gion.conf'));
+    }else{
+        $c->{__nothing_files} = 1;
+    }
 
     sub slurp {
         my $p = shift;

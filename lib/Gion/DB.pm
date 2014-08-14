@@ -10,7 +10,21 @@ our $engine;
 
 BEGIN {
     my $d = File::Spec->catdir(dirname((caller 0)[1]) , '..','..');
-    my $c = eval slurp(File::Spec->catfile($d, 'gion.conf'));
+    my $c;
+    if ( -e File::Spec->catfile($d, 'gion.conf')) {
+        $c = eval slurp(File::Spec->catfile($d, 'gion.conf'));
+    }else{
+        # heroku addon cleardb
+        if (my $var = $ENV{CLEARDB_DATABASE_URL}){
+            if( $var =~ m,mysql://(.*):(.*)@(.*)/(.*), ){
+                my ($username, $password, $hostname, $database) = ($1, $2, $3, $4);
+                $c->{db}->{username} = $username;
+                $c->{db}->{password} = $password;
+                $database =~ s/(.*)\?(.*)/$1/;
+                $c->{db}->{dsn} = sprintf "dbi:mysql:database=%s:host=%s", $database, $hostname;
+            }
+        }
+    }
 
     sub slurp {
         my $p = shift;

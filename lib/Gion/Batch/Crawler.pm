@@ -60,8 +60,12 @@ sub run {
     }
 
     my $ua = LWP::UserAgent->new;
-    $ua->timeout($cfg->{crawler}->{timeout});
-    $ua->agent($cfg->{crawler}->{ua});
+    if ($cfg->{crawler}->{timeout}){
+        $ua->timeout($cfg->{crawler}->{timeout});
+    }
+    if ($cfg->{crawler}->{ua}){
+        $ua->agent($cfg->{crawler}->{ua});
+    }
 
     #プログレスバーを定義
     my $prog;
@@ -74,13 +78,18 @@ sub run {
     for my $c (@$rs) {
 
         #一定時間ごとに動作するためにスリープする
-        sleep($cfg->{crawler}->{sleep});
+        if($cfg->{crawler}->{sleep}){
+            sleep($cfg->{crawler}->{sleep});
+        }
 
         #プログレスバーの件数更新
         $progcount++;
 
         # キャッシュの設定
+        my $dir = "/tmp/";
+        if ($cfg->{crawler}->{cache}) {
         my $dir = File::Spec->catdir($cfg->{crawler}->{cache}, $c->{id});
+        }
         my $ca = Cache::File->new(cache_root => $dir);
 
         #取得する
@@ -117,7 +126,12 @@ sub run {
         $db->dbh->query('UPDATE target SET http_status = ? WHERE id = ?', $res->http_status, $c->{id});
 
         # 304 Not Modifiedの場合更新しない場合次の対象を処理する
-        next if $cfg->{crawler}->{no304} == 0 and $res->http_status == 304;
+        if ($cfg->{crawler}->{no304}) {
+            next if $cfg->{crawler}->{no304} == 0 
+                and $res->http_status == 304;
+        }else{
+            next if $res->http_status == 304;
+        }
 
         #クロール対象のエントリーの最新の情報の日付を取得する
         my $pd = $db->dbh->select_row("SELECT pubDate FROM entries WHERE _id_target = ? ORDER BY pubDate DESC LIMIT 1", $c->{id});
@@ -130,17 +144,18 @@ sub run {
 
         my $errorcount = 0;
         my $data;
+        my $chkpdate = $cfg->{crawler}->{pubDatecheck} || 0;
 
         try{
             if($c->{parser} == 0 or $c->{parser} == 1){
-                $data = &parser_rss($res->content, $latest, $c->{id}, $cfg->{crawler}->{pubDatecheck}, $c->{user});
+                $data = &parser_rss($res->content, $latest, $c->{id}, $chkpdate, $c->{user});
             }
         }catch{
             $errorcount++;
         };
         try{
             if( ($c->{parser} == 0 and $errorcount == 1) or $c->{parser} == 2 ){
-                $data = &parser_atom($res->content, $latest, $c->{id}, $cfg->{crawler}->{pubDatecheck}, $c->{user});
+                $data = &parser_atom($res->content, $latest, $c->{id}, $chkpdate, $c->{user});
             }
         }catch{
             unless(defined $silent){

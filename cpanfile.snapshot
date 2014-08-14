@@ -2216,80 +2216,83 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Test 0
       perl 5.006
-  Net-DNS-0.77
-    pathname: N/NL/NLNETLABS/Net-DNS-0.77.tar.gz
+  Net-DNS-0.74
+    pathname: N/NL/NLNETLABS/Net-DNS-0.74.tar.gz
     provides:
-      Net::DNS 0.77
-      Net::DNS::Domain 1195
-      Net::DNS::DomainName 1177
-      Net::DNS::DomainName1035 1177
-      Net::DNS::DomainName2535 1177
+      Net::DNS 0.74
+      Net::DNS::Domain 1161
+      Net::DNS::DomainName 1150
+      Net::DNS::DomainName1035 1150
+      Net::DNS::DomainName2535 1150
       Net::DNS::Header 1101
       Net::DNS::Mailbox 1155
       Net::DNS::Mailbox1035 1155
       Net::DNS::Mailbox2535 1155
-      Net::DNS::Nameserver 1186
-      Net::DNS::Packet 1210
-      Net::DNS::Parameters 1194
+      Net::DNS::Nameserver 1145
+      Net::DNS::Packet 1158
+      Net::DNS::Parameters 1155
       Net::DNS::Question 1098
-      Net::DNS::RR 1212
-      Net::DNS::RR::A 1188
-      Net::DNS::RR::AAAA 1188
-      Net::DNS::RR::AFSDB 1188
-      Net::DNS::RR::APL 1188
-      Net::DNS::RR::APL::Item 1188
-      Net::DNS::RR::CAA 1188
-      Net::DNS::RR::CERT 1188
-      Net::DNS::RR::CNAME 1188
-      Net::DNS::RR::DHCID 1188
-      Net::DNS::RR::DNAME 1188
-      Net::DNS::RR::EUI48 1188
-      Net::DNS::RR::EUI64 1188
-      Net::DNS::RR::GPOS 1188
-      Net::DNS::RR::HINFO 1188
-      Net::DNS::RR::HIP 1188
-      Net::DNS::RR::IPSECKEY 1188
-      Net::DNS::RR::ISDN 1188
-      Net::DNS::RR::KX 1188
-      Net::DNS::RR::L32 1188
-      Net::DNS::RR::L64 1188
-      Net::DNS::RR::LOC 1188
-      Net::DNS::RR::LP 1188
-      Net::DNS::RR::MB 1182
-      Net::DNS::RR::MG 1182
-      Net::DNS::RR::MINFO 1188
-      Net::DNS::RR::MR 1182
-      Net::DNS::RR::MX 1188
-      Net::DNS::RR::NAPTR 1188
-      Net::DNS::RR::NID 1188
-      Net::DNS::RR::NS 1188
-      Net::DNS::RR::NULL 1188
-      Net::DNS::RR::OPT 1212
-      Net::DNS::RR::PTR 1188
-      Net::DNS::RR::PX 1188
-      Net::DNS::RR::RP 1189
-      Net::DNS::RR::RT 1188
-      Net::DNS::RR::SOA 1188
-      Net::DNS::RR::SPF 1188
-      Net::DNS::RR::SRV 1188
-      Net::DNS::RR::SSHFP 1188
-      Net::DNS::RR::TKEY 1188
-      Net::DNS::RR::TLSA 1188
-      Net::DNS::RR::TSIG 1188
-      Net::DNS::RR::TXT 1206
-      Net::DNS::RR::X25 1188
-      Net::DNS::Resolver 1218
-      Net::DNS::Resolver::Base 1219
-      Net::DNS::Resolver::MSWin32 1202
-      Net::DNS::Resolver::Recurse 1185
-      Net::DNS::Resolver::UNIX 1185
-      Net::DNS::Resolver::cygwin 1215
-      Net::DNS::Resolver::os2 1185
-      Net::DNS::Text 1206
-      Net::DNS::Update 1171
-      Net::DNS::ZoneFile 1218
-      Net::DNS::ZoneFile::Generator 1218
-      Net::DNS::ZoneFile::Text 1218
+      Net::DNS::RR 1158
+      Net::DNS::RR::A 1096
+      Net::DNS::RR::AAAA 1098
+      Net::DNS::RR::AFSDB 1096
+      Net::DNS::RR::APL 1098
+      Net::DNS::RR::APL::Item 1098
+      Net::DNS::RR::CAA 1139
+      Net::DNS::RR::CERT 1140
+      Net::DNS::RR::CNAME 1096
+      Net::DNS::RR::DHCID 1096
+      Net::DNS::RR::DNAME 1096
+      Net::DNS::RR::EID 1096
+      Net::DNS::RR::EUI48 1139
+      Net::DNS::RR::EUI64 1139
+      Net::DNS::RR::GPOS 1139
+      Net::DNS::RR::HINFO 1096
+      Net::DNS::RR::HIP 1096
+      Net::DNS::RR::IPSECKEY 1096
+      Net::DNS::RR::ISDN 1096
+      Net::DNS::RR::KX 1096
+      Net::DNS::RR::L32 1096
+      Net::DNS::RR::L64 1096
+      Net::DNS::RR::LOC 1075
+      Net::DNS::RR::LP 1096
+      Net::DNS::RR::MB 1096
+      Net::DNS::RR::MG 1096
+      Net::DNS::RR::MINFO 1096
+      Net::DNS::RR::MR 1096
+      Net::DNS::RR::MX 1096
+      Net::DNS::RR::NAPTR 1096
+      Net::DNS::RR::NID 1096
+      Net::DNS::RR::NIMLOC 1096
+      Net::DNS::RR::NS 1096
+      Net::DNS::RR::NSAP 1096
+      Net::DNS::RR::NULL 1144
+      Net::DNS::RR::OPT 1158
+      Net::DNS::RR::PTR 1096
+      Net::DNS::RR::PX 1096
+      Net::DNS::RR::RP 1096
+      Net::DNS::RR::RT 1096
+      Net::DNS::RR::SOA 1151
+      Net::DNS::RR::SPF 1145
+      Net::DNS::RR::SRV 1096
+      Net::DNS::RR::SSHFP 1098
+      Net::DNS::RR::TKEY 1096
+      Net::DNS::RR::TLSA 1140
+      Net::DNS::RR::TSIG 1136
+      Net::DNS::RR::TXT 1147
+      Net::DNS::RR::X25 1096
+      Net::DNS::Resolver 1115
+      Net::DNS::Resolver::Base 1158
+      Net::DNS::Resolver::MSWin32 1096
+      Net::DNS::Resolver::Recurse 1096
+      Net::DNS::Resolver::UNIX 1096
+      Net::DNS::Resolver::cygwin 1096
+      Net::DNS::Resolver::os2 1096
+      Net::DNS::Text 1147
+      Net::DNS::Update 1145
+      Net::DNS::ZoneFile 1158
+      Net::DNS::ZoneFile::Generator 1158
+      Net::DNS::ZoneFile::Text 1158
     requirements:
       Digest::HMAC 1.01
       Digest::MD5 2.13
@@ -2298,7 +2301,6 @@ DISTRIBUTIONS
       IO::Socket 1.24
       MIME::Base64 2.11
       Test::More 0.52
-      perl 5.00404
   Net-HTTP-6.06
     pathname: G/GA/GAAS/Net-HTTP-6.06.tar.gz
     provides:
@@ -2379,14 +2381,24 @@ DISTRIBUTIONS
       constant 0
       strict 0
       warnings 0
-  Package-Stash-XS-0.28
-    pathname: D/DO/DOY/Package-Stash-XS-0.28.tar.gz
+  Package-Stash-XS-0.26
+    pathname: D/DO/DOY/Package-Stash-XS-0.26.tar.gz
     provides:
       CompileTime undef
-      Package::Stash::XS 0.28
+      Package::Stash::XS 0.26
     requirements:
+      B 0
       ExtUtils::MakeMaker 6.30
+      File::Find 0
+      File::Temp 0
+      Scalar::Util 0
+      Symbol 0
+      Test::Fatal 0
+      Test::More 0.88
+      Test::Requires 0
       XSLoader 0
+      base 0
+      constant 0
       strict 0
       warnings 0
   Parallel-Prefork-0.15
@@ -2656,6 +2668,19 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 6.30
       IO::File 1.14
+  String-Random-0.26
+    pathname: S/SH/SHLOMIF/String-Random-0.26.tar.gz
+    provides:
+      String::Random 0.26
+    requirements:
+      Carp 0
+      Exporter 0
+      Module::Build 0.36
+      Test::More 0
+      perl 5.006
+      strict 0
+      vars 0
+      warnings 0
   String-ShellQuote-1.04
     pathname: R/RO/ROSCH/String-ShellQuote-1.04.tar.gz
     provides:
@@ -3069,54 +3094,46 @@ DISTRIBUTIONS
       XML::LibXML 1.69
       XML::XPath 0
       perl 5.008001
-  XML-LibXML-2.0014
-    pathname: S/SH/SHLOMIF/XML-LibXML-2.0014.tar.gz
+  XML-LibXML-1.69
+    pathname: P/PA/PAJAS/XML-LibXML-1.69.tar.gz
     provides:
-      XML::LibXML 2.0014
-      XML::LibXML::Attr 2.0014
-      XML::LibXML::AttributeHash 2.0014
-      XML::LibXML::Boolean 2.0014
-      XML::LibXML::CDATASection 2.0014
-      XML::LibXML::Comment 2.0014
-      XML::LibXML::Common 2.0014
-      XML::LibXML::Devel 2.0014
-      XML::LibXML::Document 2.0014
-      XML::LibXML::DocumentFragment 2.0014
-      XML::LibXML::Dtd 2.0014
-      XML::LibXML::Element 2.0014
-      XML::LibXML::ErrNo 2.0014
-      XML::LibXML::Error 2.0014
-      XML::LibXML::InputCallback 2.0014
-      XML::LibXML::Literal 2.0014
-      XML::LibXML::NamedNodeMap 2.0014
-      XML::LibXML::Namespace 2.0014
-      XML::LibXML::Node 2.0014
-      XML::LibXML::NodeList 2.0014
-      XML::LibXML::Number 2.0014
-      XML::LibXML::PI 2.0014
-      XML::LibXML::Pattern 2.0014
-      XML::LibXML::Reader 2.0014
-      XML::LibXML::RegExp 2.0014
-      XML::LibXML::RelaxNG 2.0014
-      XML::LibXML::SAX 2.0014
-      XML::LibXML::SAX::AttributeNode 2.0014
-      XML::LibXML::SAX::Builder 2.0014
-      XML::LibXML::SAX::Generator 2.0014
-      XML::LibXML::SAX::Parser 2.0014
-      XML::LibXML::Schema 2.0014
-      XML::LibXML::Text 2.0014
-      XML::LibXML::XPathContext 2.0014
-      XML::LibXML::XPathExpression 2.0014
-      XML::LibXML::_SAXParser 2.0014
+      XML::LibXML 1.69
+      XML::LibXML::Attr 1.69
+      XML::LibXML::Boolean 1.69
+      XML::LibXML::CDATASection 1.69
+      XML::LibXML::Comment 1.69
+      XML::LibXML::Document 1.69
+      XML::LibXML::DocumentFragment 1.69
+      XML::LibXML::Dtd 1.69
+      XML::LibXML::Element 1.69
+      XML::LibXML::ErrNo undef
+      XML::LibXML::Error undef
+      XML::LibXML::InputCallback 1.69
+      XML::LibXML::Literal 1.69
+      XML::LibXML::NamedNodeMap 1.69
+      XML::LibXML::Namespace 1.69
+      XML::LibXML::Node 1.69
+      XML::LibXML::NodeList 1.69
+      XML::LibXML::Number 1.69
+      XML::LibXML::PI 1.69
+      XML::LibXML::Pattern 1.69
+      XML::LibXML::Reader 1.69
+      XML::LibXML::RelaxNG 1.69
+      XML::LibXML::SAX 1.69
+      XML::LibXML::SAX::AttributeNode 1.69
+      XML::LibXML::SAX::Builder 1.69
+      XML::LibXML::SAX::Generator 1.69
+      XML::LibXML::SAX::Parser 1.69
+      XML::LibXML::Schema 1.69
+      XML::LibXML::Text 1.69
+      XML::LibXML::XPathContext 1.69
+      XML::LibXML::XPathExpression 1.69
+      XML::LibXML::_SAXParser 1.69
     requirements:
-      ExtUtils::MakeMaker 6.56
-      Test::More 0
+      ExtUtils::MakeMaker 0
+      XML::LibXML::Common 0.13
       XML::NamespaceSupport 1.07
       XML::SAX 0.11
-      base 0
-      strict 0
-      vars 0
-      warnings 0
   XML-NamespaceSupport-1.11
     pathname: P/PE/PERIGRIN/XML-NamespaceSupport-1.11.tar.gz
     provides:

@@ -45,16 +45,16 @@ $proclet->service(
     tag => 'web',
 );
 
-if( $ENV{DYNO} ) {
-$proclet->service(
-    every => '*/30 * * * *',
-    tag => 'ping',
-    code => sub {
-        my $ua = HTTP::Tiny->new;
-        $ua->get("http://xxxxxxxxxx.herokuapp.com/");
-    }
-);
-}
+#if( $ENV{DYNO} ) {
+#$proclet->service(
+#    every => '*/30 * * * *',
+#    tag => 'ping',
+#    code => sub {
+#        my $ua = HTTP::Tiny->new;
+#        $ua->get("http://******.herokuapps.com");
+#    }
+#);
+#}
 
 $proclet->service(
     every => '21,41 * * * *',

@@ -20,8 +20,8 @@ sub run {
     }
 
     my $a = Gion::Util::Auth->new(
-        strech => $self->config->{strech},
-        salt   => $self->config->{salt},
+        strech => $self->config->{strech} || 500,
+        salt   => $self->config->{salt}   || "Gion::Util::Auth",
         id     => $data->{user},
         passwd => $data->{pass},
     );
