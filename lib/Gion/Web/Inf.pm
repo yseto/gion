@@ -5,6 +5,8 @@ use FormValidator::Lite;
 use Time::Piece;
 use Encode;
 
+our $redirector = 'https://www.google.com/url?sa=D&q=';
+
 sub get_categories {
     my $self = shift;
     my $db   = $self->app->dbh;
@@ -67,7 +69,11 @@ sub get_entries {
         if ( $cfg->{noreferrer} == 1 ) {
             my $str = encode( 'utf-8', $url );
             $str =~ s/([^0-9A-Za-z!'()*\-._~])/sprintf("%%%02X", ord($1))/eg;
-            $url = $self->config->{redirector} . $str;
+            my $_redirector = $redirector;
+            if ($self->config->{redirector}){
+                $_redirector = $self->config->{redirector};
+            }
+            $url = $_redirector . $str;
         }
 
         my $pd = Time::Piece->strptime($_->{pubDate}, '%Y-%m-%d %H:%M:%S')->strftime('%m/%d %H:%M');
@@ -140,7 +146,11 @@ sub get_targetlist {
         if ( $cfg->{noreferrer} == 1 ) {
             my $str = encode( 'utf-8', $_->{siteurl} );
             $str =~ s/([^0-9A-Za-z!'()*\-._~])/sprintf("%%%02X", ord($1))/eg;
-            $url = $self->config->{redirector} . $str;
+            my $_redirector = $redirector;
+            if ($self->config->{redirector}){
+                $_redirector = $self->config->{redirector};
+            }
+            $url = $_redirector . $str;
         }
         my $h = {
             i => $_->{id},
@@ -178,7 +188,11 @@ sub get_pinlist {
         my $url = $_->{u};
         my $str = encode( 'utf-8', $url );
         $str =~ s/([^0-9A-Za-z!'()*\-._~])/sprintf("%%%02X", ord($1))/eg;
-        $url = $self->config->{redirector} . $str;
+        my $_redirector = $redirector;
+        if ($self->config->{redirector}){
+            $_redirector = $self->config->{redirector};
+        }
+        $url = $_redirector . $str;
         my $h = {
             t => $_->{t},
             g => $_->{g},

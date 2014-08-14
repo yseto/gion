@@ -30,4 +30,4 @@ requires 'Getopt::Long';
 requires 'Proclet';
 requires 'Plack';
 requires 'Starlet';
-
+requires 'String::Random';
