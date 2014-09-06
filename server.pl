@@ -45,6 +45,8 @@ $proclet->service(
     tag => 'web',
 );
 
+# if no use scheduler.
+#
 #if( $ENV{DYNO} ) {
 #$proclet->service(
 #    every => '*/30 * * * *',
@@ -57,7 +59,7 @@ $proclet->service(
 #}
 
 $proclet->service(
-    every => '21,41 * * * *',
+    every => '11,41 * * * *',
     tag => 'worker_crawl',
     code => sub {
         my $class = Gion::Batch::Crawler->new;

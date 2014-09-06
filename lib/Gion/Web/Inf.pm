@@ -4,6 +4,7 @@ use HTML::Scrubber;
 use FormValidator::Lite;
 use Time::Piece;
 use Encode;
+use Mojo::Util;
 
 our $redirector = 'https://www.google.com/url?sa=D&q=';
 
@@ -241,6 +242,42 @@ sub remove_all_pin {
     $self->render( text => "OK" );
 }
 
+sub update_password {
+    my $self  = shift;
+    my $db    = $self->app->dbh;
+    my $data  = $self->req->params->to_hash;
+    my $valid = FormValidator::Lite->new($self->req);
+    my $res   = $valid->check(
+        password_old => ['NOT_NULL',[qw/LENGTH 8 255/]],
+        {passwd => [qw/password passwordc/]} => ['DUPLICATION'],
+        password => ['NOT_NULL',[qw/LENGTH 8 255/]],
+    );
+    return $self->render(json => { e => 'error' } ) if $valid->has_error;
 
+    my $strech  = $self->config->{strech} || 500;
+    my $salt    = $self->config->{salt} || "Gion::Util::Auth";
+    my $cfg     = $db->dbh->select_row("SELECT * FROM user WHERE id = ?", $self->session('username'));
+    my $id      = $cfg->{name};
+
+    my $nowauth = Gion::Util::Auth->new(
+        strech => $strech,
+        salt   => $salt,
+        id     => $id,
+        passwd => Mojo::Util::encode( 'UTF-8', $data->{password_old} ),
+    );
+    return $self->render( json => { e => 'unmatch now password' } )
+        if $cfg->{pw} ne $nowauth->get_hash;
+
+    my $auth = Gion::Util::Auth->new(
+        strech => $strech,
+        salt   => $salt,
+        id     => $id,
+        passwd => Mojo::Util::encode( 'UTF-8', $data->{password} ),
+    );
+
+    $self->app->log->info( "Update Passwd: " . $auth->get_hash . "," . $self->session('username') );
+    $db->dbh->query("UPDATE user SET pw = ? WHERE id = ?", $auth->get_hash, $self->session('username'));
+    $self->render( json => { e => 'update password' } );
+}
 
 1;

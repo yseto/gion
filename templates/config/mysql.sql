@@ -1,6 +1,4 @@
-
-DROP TABLE IF EXISTS `user`;
-CREATE TABLE `user` (
+CREATE TABLE IF NOT EXISTS `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(32) DEFAULT NULL,
   `pw` varchar(200) NOT NULL,
@@ -12,9 +10,8 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `categories`;
-CREATE TABLE `categories` (
+/**/
+CREATE TABLE IF NOT EXISTS `categories` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user` int(11) NOT NULL,
   `name` varchar(60) NOT NULL,
@@ -22,9 +19,8 @@ CREATE TABLE `categories` (
   KEY `user` (`user`),
   CONSTRAINT `categories_ibfk_1` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `target`;
-CREATE TABLE `target` (
+/**/
+CREATE TABLE IF NOT EXISTS `target` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `url` varchar(2400) NOT NULL,
   `siteurl` varchar(2400) NOT NULL,
@@ -38,9 +34,8 @@ CREATE TABLE `target` (
   KEY `_id_categories` (`_id_categories`),
   CONSTRAINT `target_ibfk` FOREIGN KEY (`_id_categories`) REFERENCES `categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `entries`;
-CREATE TABLE `entries` (
+/**/
+CREATE TABLE IF NOT EXISTS `entries` (
   `guid` varchar(250) NOT NULL,
   `pubDate` datetime NOT NULL,
   `updatetime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -52,19 +47,16 @@ CREATE TABLE `entries` (
   KEY `guid` (`guid`),
   CONSTRAINT `entries_ibfk` FOREIGN KEY (`_id_target`) REFERENCES `target` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `stories`;
-CREATE TABLE `stories` (
+/**/
+CREATE TABLE IF NOT EXISTS `stories` (
   `guid` varchar(250) NOT NULL,
   `title` varchar(80) NOT NULL,
   `description` tinytext NOT NULL,
   `url` tinytext NOT NULL,
   PRIMARY KEY (`guid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `connection`;
-CREATE TABLE `connection` (
+/**/
+CREATE TABLE IF NOT EXISTS `connection` (
   `user` int(11) NOT NULL,
   `service` varchar(60) NOT NULL,
   `username` varchar(60) NOT NULL,
@@ -72,4 +64,5 @@ CREATE TABLE `connection` (
   UNIQUE KEY `userservice` (`user`,`service`),
   CONSTRAINT `connection_ibfk_1` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/**/
 

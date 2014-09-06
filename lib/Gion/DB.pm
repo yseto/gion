@@ -1,12 +1,13 @@
 package Gion::DB;
 use DBIx::Handler;
 use DBIx::Sunny;
-
 use File::Spec;
 use File::Basename;
+use Mojo::Util qw/slurp/;
 
 our $conf;
 our $engine;
+our $template;
 
 BEGIN {
     my $d = File::Spec->catdir(dirname((caller 0)[1]) , '..','..');
@@ -25,28 +26,55 @@ BEGIN {
             }
         }
     }
+    $template = File::Spec->catdir($d, 'templates', 'config');
 
-    sub slurp {
-        my $p = shift;
-        open my $f, '<', $p;
-        my $c = '';
-        while ( $f->sysread( my $b, 131072, 0 ) ) { $c .= $b }
-        $c;
-    }
-
-    $conf = $c->{db};
-    if ($conf->{dsn} =~ /^(?i:dbi):SQLite:/){
+    $conf = $c;
+    if ($conf->{db}->{dsn} =~ /^(?i:dbi):SQLite:/){
         $engine = "SQLite";
+        $template = File::Spec->catfile($template, "sqlite.sql");
     }else{
         $engine = "mysql";
+        $template = File::Spec->catfile($template, "mysql.sql");
     }
 }
 
 sub new {
-    my $h = DBIx::Handler->new($conf->{dsn}, $conf->{username}, $conf->{password}, 
+    my $h = DBIx::Handler->new($conf->{db}->{dsn}, $conf->{db}->{username}, $conf->{db}->{password}, 
         {RootClass => 'DBIx::Sunny',});
-    $h->dbh->query('PRAGMA foreign_keys = ON;') if $engine eq "SQLite";
+    if ($engine eq "SQLite"){
+        $h->dbh->query('PRAGMA foreign_keys = ON;');
+    }elsif($engine eq "mysql"){
+        sql_loader($h);
+    }
+
     return $h;
+}
+
+sub sql_loader {
+    my $h = shift;
+
+    my $sql = slurp($template);
+    my $c;
+    for ( split /\n/, $sql ){
+        if ($_ eq "/**/"){
+            $h->dbh->do($c);
+            $c = "";
+        }else{
+            $c .= $_;
+        }
+    }
+
+    use Gion::Util::Auth;
+    my $a = Gion::Util::Auth->new(
+        strech => $conf->{strech} || 500,
+        salt   => $conf->{salt}   || "Gion::Util::Auth",
+        id     => "admin",
+        passwd => "password",
+    );
+    my $pw = $a->get_hash;
+    my $engine_str = $engine eq "SQLite" ? "OR" : "";
+    $h->dbh->query("INSERT $engine_str IGNORE INTO user (id,pw,name) VALUES (null,?,?)", $pw, "admin");
+
 }
 
 1;
