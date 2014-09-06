@@ -332,6 +332,24 @@ $(function(Gion) {
                 $('#nopinlist').val(0);
             }
         });
+
+        $('#update_password').click(function() {
+            jQuery.ajax({
+                type: 'POST',
+                url: '/inf/update_password',
+                datatype: 'json',
+                data: {
+                    'password_old': $('#password_old').val(),
+                    'password': $('#password').val(),
+                    'passwordc': $('#passwordc').val(),
+                },
+                success: function(p) {
+                    alert(p.e);
+                }
+            });
+        });
+
+
     };
 
 
