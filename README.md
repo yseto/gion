@@ -19,10 +19,15 @@ Requirement
 
 On Heroku
 ----------
-- BuildPack
 
-  https://github.com/kazeburo/heroku-buildpack-perl-procfile.git
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
-- addon
+- for login type admin / password
+- please change password on setting page.
 
-  cleardb
+please add the [Scheduler Add-on](https://devcenter.heroku.com/articles/scheduler)
+
+Frequency: hourly 
+
+    $ ./wakeup.pl -u http://yourapp.herokuapp.com/
+

@@ -12,7 +12,7 @@ use Time::Piece;
 use Time::HiRes qw(sleep);
 use Term::ProgressBar;
 use LWP::UserAgent;
-use XML::RSS;
+use XML::RSS::LibXML;
 use XML::Atom::Feed;
 use Gion::DB;
 use Getopt::Long qw(GetOptionsFromArray);
@@ -267,7 +267,7 @@ sub parser_rss {
     my $lateststr = $latest->ymd('') . $latest->hms('');
 
     #RSSの場合
-    my $rss = new XML::RSS;
+    my $rss = new XML::RSS::LibXML;
     $rss->parse($str);
     for my $ref (@{$rss->{items}}){
 

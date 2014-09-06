@@ -5,6 +5,7 @@
         "API_POCKET": "*****-************************"
     },
     "addons": [
-        "cleardb:ignite"
+        "cleardb:ignite",
+        "scheduler:standard"
     ]
 }
