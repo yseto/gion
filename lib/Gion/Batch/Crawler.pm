@@ -34,7 +34,8 @@ sub run {
     my $eid;
     my $silent;
     my $fail;
-    GetOptionsFromArray(\@_, "e=i{,}" => \@$eid, "silent" => \$silent, "fail" => \$fail );
+    my $uid;
+    GetOptionsFromArray(\@_, "e=i{,}" => \@$eid, "silent" => \$silent, "fail" => \$fail, "u=i" => \$uid);
 
     # DBへ接続
     my $db = Gion::DB->new;
@@ -54,6 +55,9 @@ sub run {
     }elsif(defined $fail){
         $rs = $db->dbh->select_all('SELECT * FROM target WHERE http_status < 0');
         $count = $db->dbh->select_row('SELECT COUNT(*) AS t FROM target WHERE http_status < 0')->{t};
+    }elsif(defined $uid){
+        $rs = $db->dbh->select_all('SELECT * FROM target WHERE user = ?', $uid);
+        $count = $db->dbh->select_row('SELECT COUNT(*) AS t FROM target WHERE user = ?', $uid)->{t};
     }else{
         $rs = $db->dbh->select_all('SELECT * FROM target');
         $count = $db->dbh->select_row('SELECT COUNT(*) AS t FROM target')->{t};
