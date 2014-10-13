@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+<head>
+<title>export data</title>
+</head>
+<body>
+% for (@$records) {
+<outline text="<%== $_->{name} %>" title="<%== $_->{name} %>">
+% my $items = $_->{items};
+% for (@$items) {
+<outline type="rss" text="<%== $_->{title} %>" title="<%== $_->{title} %>" xmlUrl="<%== $_->{url} %>" htmlUrl="<%== $_->{siteurl} %>"/>
+% }
+</outline>
+% }
+</body>
+</opml>
+
