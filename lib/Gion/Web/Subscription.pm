@@ -244,5 +244,35 @@ sub set_connect {
     $self->render( json => "ok" );
 }
 
+sub opml {
+    my $self = shift;
+    my $db   = $self->app->dbh->dbh;
+    my $categories = $db->select_all(
+        "SELECT id, name FROM categories WHERE user = ? ORDER BY name ASC;",
+        $self->session('username'));
+
+    my $records;
+    for(@$categories){
+        my $rs = $db->select_all(
+            "SELECT title, siteurl, url FROM target WHERE _id_categories = ? ORDER BY title ASC",
+            $_->{id},
+        );
+        my $items;
+        for(@$rs){
+            my $h = {
+                title   => $_->{title},
+                siteurl => $_->{siteurl},
+                url     => $_->{url},
+            };
+            push( @$items, $h );
+        }
+        push( @$records, { name => $_->{name}, items => $items });
+    }
+
+    $self->stash(records => $records);
+
+    $self->res->headers->content_disposition('attachment; filename=opml.xml;');
+    $self->render;
+}
 
 1;

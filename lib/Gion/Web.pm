@@ -40,6 +40,8 @@ sub startup {
     $l->get('/subscription/')
       ->to( controller => 'pages', action => 'subscription' );
     $l->get('/settings/')->to( controller => 'pages', action => 'settings' );
+    $l->get('/subscription/opml')
+      ->to( controller => 'subscription', action => 'opml' );
 
     $l->route('/')->to( controller => 'pages', action => 'entrance' );
     $r->route('/')->to( controller => 'pages', action => 'welcome' );
