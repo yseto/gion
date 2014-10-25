@@ -32,9 +32,12 @@ sub connect {
         }
 
         if ( defined $params->{access_token} and defined $params->{username} ) {
-            $db->query("INSERT INTO connection (user,service,username,`key`)
+            $db->query(
+                "INSERT INTO connection (user,service,username,`key`)
             VALUES (?,'pocket',?,?)",
-                $self->session('username'), $params->{username}, $params->{access_token});
+                $self->session('username'), $params->{username},
+                $params->{access_token}
+            );
             return $self->redirect_to( $self->req->url->base . "/settings/" );
         }
         return $self->redirect_to( $self->req->url->base . "/settings/" );
@@ -69,7 +72,7 @@ sub post {
     my $db   = $self->app->dbh->dbh;
     my $rs   = $db->select_row(
         "SELECT `key` FROM connection WHERE user = ? AND service = 'pocket'",
-         $self->session('username'));
+        $self->session('username') );
 
     return $self->render( json => "ng" ) unless $rs;
 
@@ -98,8 +101,8 @@ sub disconnect {
     my $self = shift;
     my $db   = $self->app->dbh->dbh;
     my $data = $self->req->params->to_hash;
-    $db->query("DELETE FROM connection WHERE user = ? AND service = 'pocket'",
-    $self->session('username'));
+    $db->query( "DELETE FROM connection WHERE user = ? AND service = 'pocket'",
+        $self->session('username') );
 
     $self->redirect_to( $self->req->url->base . "/settings/" );
 }
