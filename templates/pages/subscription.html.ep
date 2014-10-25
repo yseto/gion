@@ -1,7 +1,6 @@
 % layout 'default' ;
 <div class="container">
   <div class="row">
-    <div><a href="opml">OPML (export)</a></div>
     <table id="cat_list" class="table table-condensed">
     <tr>
     <th class="col-sm-1" colspan="2">Func.</th><th class="col-sm-11">Websites.</th>
