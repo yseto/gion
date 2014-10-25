@@ -300,6 +300,32 @@ sub update_password {
     $self->render( json => { e => 'update password' } );
 }
 
+sub create_user {
+    my $self = shift;
+    my $db   = $self->app->dbh;
+    my $data = $self->req->params->to_hash;
 
+    unless ( $self->session('superuser') ) {
+        return $self->render( 'json' => { e => 'you are not superuser.' } );
+    }
+
+    my $valid = FormValidator::Lite->new( $self->req );
+    my $res   = $valid->check(
+        username => ['NOT_NULL'],
+        password => [ 'NOT_NULL', [qw/LENGTH 8 255/] ],
+    );
+    return $self->render( json => { e => 'error' } ) if $valid->has_error;
+
+    my $auth = Gion::Util::Auth->new(
+        strech => $self->config->{strech} || 500,
+        salt   => $self->config->{salt}   || "Gion::Util::Auth",
+        id     => encode( 'UTF-8', $data->{username} ),
+        passwd => encode( 'UTF-8', $data->{password} ),
+    );
+
+    $db->dbh->query( 'INSERT INTO user (id,pw,name) VALUES (null,?,?)',
+        $auth->get_hash, encode( 'UTF-8', $data->{username} ) );
+    $self->render( 'json' => { e => "User Added: " . $data->{username} } );
+}
 
 1;
