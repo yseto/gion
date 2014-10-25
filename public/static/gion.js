@@ -57,22 +57,38 @@ $(function(Gion) {
     };
 
     G.menu = function() {
+        var active = location.pathname;
         var nav = $('.nav');
         nav.on('click', 'a[href="#home"]', function() {
             location.href = "/";
         });
+        if (/^\/$/.test(active)){
+            $('#nav-home').addClass('active');
+        }
         nav.on('click', 'a[href="#entries"]', function() {
             location.href = "/entries/";
         });
+        if (/entries/.test(active)){
+            $('#nav-entries').addClass('active');
+        }
         nav.on('click', 'a[href="#addasite"]', function() {
             location.href = "/add/";
         });
+        if (/add/.test(active)){
+            $('#nav-addasite').addClass('active');
+        }
         nav.on('click', 'a[href="#subscription"]', function() {
             location.href = "/subscription/";
         });
+        if (/subscription/.test(active)){
+            $('#nav-subscription').addClass('active');
+        }
         nav.on('click', 'a[href="#settings"]', function() {
             location.href = "/settings/";
         });
+        if (/settings/.test(active)){
+            $('#nav-settings').addClass('active');
+        }
         nav.on('click', 'a[href="#logout"]', function() {
             location.href = "/?logout=1";
         });
@@ -348,7 +364,6 @@ $(function(Gion) {
                 }
             });
         });
-
 
     };
 
