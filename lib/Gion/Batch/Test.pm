@@ -12,13 +12,14 @@ use Data::Dumper;
 #         };
 
 sub run {
-    my $self   = shift;
+    my $self = shift;
     warn Dumper $self->config;
     warn Dumper $self->homedir;
     my $data;
-    GetOptionsFromArray(\@_, 
-        "rec=i"   => \$data->{rec},
-        "paa=s"   => \$data->{paa},
+    GetOptionsFromArray(
+        \@_,
+        "rec=i" => \$data->{rec},
+        "paa=s" => \$data->{paa},
     );
     warn Dumper $data;
 }

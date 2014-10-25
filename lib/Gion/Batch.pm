@@ -6,11 +6,12 @@ use File::Basename;
 our $conf, $dir;
 
 BEGIN {
-    $d = File::Spec->catdir(dirname((caller 0)[1]) , '..','..');
+    $d = File::Spec->catdir( dirname( ( caller 0 )[1] ), '..', '..' );
     my $c;
-    if ( -e File::Spec->catfile($d, 'gion.conf') ) {
-        $c = eval slurp(File::Spec->catfile($d, 'gion.conf'));
-    }else{
+    if ( -e File::Spec->catfile( $d, 'gion.conf' ) ) {
+        $c = eval slurp( File::Spec->catfile( $d, 'gion.conf' ) );
+    }
+    else {
         $c->{__nothing_files} = 1;
     }
 
@@ -27,7 +28,7 @@ BEGIN {
 
 sub new {
     my $class = shift;
-    my $self = {
+    my $self  = {
         config  => $conf,
         homedir => $dir,
     };
