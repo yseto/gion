@@ -9,8 +9,6 @@ use URI;
 use URI::Fetch;
 use Encode;
 use Time::Piece;
-use Time::HiRes qw(sleep);
-use Term::ProgressBar;
 use LWP::UserAgent;
 use XML::RSS;
 use XML::Atom::Feed;
@@ -25,196 +23,238 @@ use HTTP::Date;
 use Date::Parse;
 use File::Spec;
 
+our $verbose;
+
 sub run {
     my $self = shift;
 
-    my $cfg = $self->config;
-
-    # 指定取得かどうか
+    #指定取得かどうか
     my $eid;
-    my $silent;
-    my $fail;
-    my $uid;
-    GetOptionsFromArray(\@_, "e=i{,}" => \@$eid, "silent" => \$silent, "fail" => \$fail, "u=i" => \$uid);
+    my $term;
+    GetOptionsFromArray(
+        \@_,
+        "e=i{,}"  => \@$eid,
+        "verbose" => \$verbose,
+        "term=i"  => \$term,
+    );
 
-    # DBへ接続
+    #DBへ接続
     my $db = Gion::DB->new;
     my $engine;
-    if ($cfg->{db}->{dsn} =~ /^(?i:dbi):SQLite:/){
+    if ( $self->config->{db}->{dsn} =~ /^(?i:dbi):SQLite:/ ) {
         $engine = "SQLite";
-    }else{
+    }
+    else {
         $engine = "mysql";
     }
 
-    # 取得先を取得
+    #取得先を取得
     my $rs;
-    my $count = 1;
-    if (@$eid){
-        $rs = $db->dbh->select_all('SELECT * FROM target WHERE id IN (?)', $eid);
-        $count = @$eid;
-    }elsif(defined $fail){
-        $rs = $db->dbh->select_all('SELECT * FROM target WHERE http_status < 0');
-        $count = $db->dbh->select_row('SELECT COUNT(*) AS t FROM target WHERE http_status < 0')->{t};
-    }elsif(defined $uid){
-        $rs = $db->dbh->select_all('SELECT * FROM target WHERE user = ?', $uid);
-        $count = $db->dbh->select_row('SELECT COUNT(*) AS t FROM target WHERE user = ?', $uid)->{t};
-    }else{
-        $rs = $db->dbh->select_all('SELECT * FROM target');
-        $count = $db->dbh->select_row('SELECT COUNT(*) AS t FROM target')->{t};
+    if (@$eid) {
+        $rs =
+          $db->dbh->select_all( 'SELECT * FROM feeds WHERE id IN (?)', $eid );
+    }
+    elsif ($term) {
+        $rs =
+          $db->dbh->select_all( 'SELECT * FROM feeds WHERE term = ?', $term );
+    }
+    else {
+        $rs = $db->dbh->select_all('SELECT * FROM feeds');
     }
 
+    #ユーザーエージェントを設定
     my $ua = LWP::UserAgent->new;
-    if ($cfg->{crawler}->{timeout}){
-        $ua->timeout($cfg->{crawler}->{timeout});
+    if ( $self->config->{crawler}->{timeout} ) {
+        $ua->timeout( $self->config->{crawler}->{timeout} );
     }
-    if ($cfg->{crawler}->{ua}){
-        $ua->agent($cfg->{crawler}->{ua});
+    if ( $self->config->{crawler}->{ua} ) {
+        $ua->agent( $self->config->{crawler}->{ua} );
     }
 
-    #プログレスバーを定義
-    my $prog;
-    my $progcount = 0;
-    unless(defined $silent){
-        $prog = Term::ProgressBar->new( { count => $count } );
-        $prog->max_update_rate(1);
-    }
+    #キャッシュの設定
+    my $dir = File::Spec->catdir( File::Spec->tmpdir(), 'gion' );
+    my $cache = Cache::File->new( cache_root => $dir );
+
+    my $engine_str = $engine eq "SQLite" ? "OR" : "";
+    my $now = Time::Piece->new()->epoch;
 
     for my $c (@$rs) {
 
-        #一定時間ごとに動作するためにスリープする
-        if($cfg->{crawler}->{sleep}){
-            sleep($cfg->{crawler}->{sleep});
-        }
-
-        #プログレスバーの件数更新
-        $progcount++;
-
-        # キャッシュの設定
-        my $dir = "/tmp/";
-        if ($cfg->{crawler}->{cache}) {
-        my $dir = File::Spec->catdir($cfg->{crawler}->{cache}, $c->{id});
-        }
-        my $ca = Cache::File->new(cache_root => $dir);
-
         #取得する
-        my $res = URI::Fetch->fetch($c->{url}, Cache => $ca, UserAgent => $ua);
+        my $res =
+          URI::Fetch->fetch( $c->{url}, Cache => $cache, UserAgent => $ua );
 
         #結果が得られない場合、次の対象を処理する
-        unless (defined $res) {
-            $db->dbh->query('UPDATE target SET http_status = ? WHERE id = ?', 404, $c->{id});
-            unless (defined $silent){
-                $prog->message(sprintf "404 %4d %s", $c->{id}, encode_utf8($c->{title}));
-                $prog->update($progcount);
-            }
+        unless ( defined $res ) {
+            $db->dbh->query(
+                'UPDATE feeds SET http_status = ?, term = 4 WHERE id = ?',
+                404, $c->{id} );
+            $self->logger( sprintf "404 %4d %s",
+                $c->{id}, encode_utf8( $c->{title} ) );
             next;
         }
 
         #301 Moved Permanentlyの場合
-        if (defined $res->{http_response}->{_previous}) {
+        if ( defined $res->{http_response}->{_previous} ) {
             my $preres = $res->{http_response}->{_previous};
-            if ($preres->{_rc} == 301) {
-                $db->dbh->query('UPDATE target SET url = ? WHERE id = ?', $preres->{_headers}->{location}, $c->{id});
-                unless (defined $silent){
-                    $prog->message(sprintf "301 %s -> %s", $c->{url}, $preres->{_headers}->{location});
-                }
+            if ( $preres->{_rc} == 301 ) {
+                $db->dbh->query(
+                    'UPDATE feeds SET url = ? WHERE id = ?',
+                    $preres->{_headers}->{location},
+                    $c->{id}
+                );
+                $self->logger( sprintf "301 %s -> %s",
+                    $c->{url}, $preres->{_headers}->{location} );
             }
         }
 
-        #プログレスバー更新
-        unless(defined $silent){
-            $prog->message(sprintf "%3d %4d %s", $res->http_status, $c->{id}, encode_utf8($c->{title}));
-            $prog->update($progcount);
+        $self->logger( sprintf "%3d %4d %s",
+            $res->http_status, $c->{id}, encode_utf8( $c->{title} ) );
+
+ #取得できたので、リターンコード、購読間隔を更新する。
+        my $term =
+          1;   # 1: half hour, 2: every hour, 3: half day, 4: 2days, 5: one week
+        my $ans = $now - $c->{pubDate};
+
+        #更新がない場合、クロールを疎遠にしていく。
+        if ( $ans > 86400 * 14 )
+        { # 14日以上に更新がない場合は、1週間に1回クロールする
+            $term = 5;
+        }
+        elsif ( $ans > 86400 * 7 )
+        { # 7日以上に更新がない場合は、2日に1回クロールする
+            $term = 4;
+        }
+        elsif ( $ans > 86400 * 4 )
+        { # 4日以上に更新がない場合は、半日に1回クロールする
+            $term = 3;
+        }
+        elsif ( $ans > 3600 * 12 )
+        { # 12時間以上に更新がない場合は、毎時に1回クロールする
+            $term = 2;
         }
 
-        #取得できたので、リターンコードを更新する。
-        $db->dbh->query('UPDATE target SET http_status = ? WHERE id = ?', $res->http_status, $c->{id});
+      #304 Not Modifiedの場合更新しない場合次の対象を処理する
+        if ( $res->http_status == 304 ) {
 
-        # 304 Not Modifiedの場合更新しない場合次の対象を処理する
-        if ($cfg->{crawler}->{no304}) {
-            next if $cfg->{crawler}->{no304} == 0 
-                and $res->http_status == 304;
-        }else{
-            next if $res->http_status == 304;
-        }
-
-        #クロール対象のエントリーの最新の情報の日付を取得する
-        my $pd = $db->dbh->select_row("SELECT pubDate FROM entries WHERE _id_target = ? ORDER BY pubDate DESC LIMIT 1", $c->{id});
-
-        my $latest = Time::Piece->strptime( '2010-01-01', '%Y-%m-%d' );
-        #最新の日付があれば、活用する。
-        if (defined $pd) {
-            $latest = from_mysql_datetime($pd->{pubDate});
+            # 更新
+            $db->dbh->query(
+                'UPDATE feeds SET http_status = ?, term = ? WHERE id = ?',
+                $res->http_status, $term, $c->{id} );
+            next;
         }
 
         my $errorcount = 0;
         my $data;
-        my $chkpdate = $cfg->{crawler}->{pubDatecheck} || 0;
 
-        try{
-            if($c->{parser} == 0 or $c->{parser} == 1){
-                $data = &parser_rss($res->content, $latest, $c->{id}, $chkpdate, $c->{user});
+        #パースする
+        try {
+            if ( $c->{parser} == 0 or $c->{parser} == 1 ) {
+                $data = $self->parser_rss( $res->content, $c->{url} );
             }
-        }catch{
+        }
+        catch {
             $errorcount++;
         };
-        try{
-            if( ($c->{parser} == 0 and $errorcount == 1) or $c->{parser} == 2 ){
-                $data = &parser_atom($res->content, $latest, $c->{id}, $chkpdate, $c->{user});
+        try {
+            if ( ( $c->{parser} == 0 and $errorcount == 1 )
+                or $c->{parser} == 2 )
+            {
+                $data = $self->parser_atom( $res->content, $c->{url} );
             }
-        }catch{
-            unless(defined $silent){
-                $prog->message(sprintf "ERR %4d %s", $c->{id}, encode_utf8($c->{title}));
-            }
-            my $errflg = $c->{http_status} < 0 ? $c->{http_status} - 1 : -1 ;
-            $db->dbh->query('UPDATE target SET http_status = ?, parser = 0 WHERE id = ?', $errflg, $c->{id});
+        }
+        catch {
+            $self->logger( sprintf "ERR %4d %s",
+                $c->{id}, encode_utf8( $c->{title} ) );
+
+#パースにいずれも失敗した場合、パーサーの設定を初期化する。次回のクロール時にクロールする
+            $db->dbh->query(
+'UPDATE feeds SET http_status = ?, parser = 0, term = 1 WHERE id = ?',
+                $res->http_status, $c->{id}
+            );
             next;
         };
 
-        # パーサ種類を保存
-        $db->dbh->query('UPDATE target SET parser = ? WHERE id = ?', ($errorcount+1), $c->{id});
+        #パーサ種類を保存
+        $db->dbh->query(
+            'UPDATE feeds SET parser = ? WHERE id = ?',
+            ( $errorcount + 1 ),
+            $c->{id}
+        );
 
-        for (@$data) {
+ #クロール対象のエントリーの最新の情報の日付を取得する
+        my $pd = $db->dbh->select_row( "SELECT pubDate FROM feeds WHERE id = ?",
+            $c->{id} );
 
-            if ( not defined $_->{guid} or $_->{guid} eq '' ) {
-                $_->{guid} = $_->{url};   #guidがない場合は、URLを代用
+        #最新の日付があれば、活用する。
+        my $latest =
+          defined $pd
+          ? Time::Piece->new( $pd->{pubDate} )
+          : Time::Piece->strptime( '2010-01-01', '%Y-%m-%d' );
+
+        # term の判断基準となるlast-Modifiedを取得
+        my $last_modified = HTTP::Date::str2time( $res->last_modified );
+
+        my $import_counter = 0;
+        for my $d (@$data) {
+
+            #新しいもののみを取り込む
+            next if $d->{pubDate}->epoch <= $latest->epoch;
+
+#返さない場合があるので、エントリが新しい場合の更新日を利用する
+            unless ($last_modified) {
+                $last_modified = $d->{pubDate}->epoch;
             }
-            elsif ( not defined $_->{url} or $_->{url} eq '' ) {
-                $_->{url} = $_->{guid};   #URLがない場合は、GUIDを代用
+
+            # 取り込まれたら、カウンタを更新する
+            $import_counter++;
+
+            #購読リストを取得する
+            my $target =
+              $db->dbh->select_all( 'SELECT * FROM target WHERE _id_feeds = ?',
+                $c->{id} );
+
+            for (@$target) {
+
+    #購読リストに基づいて、更新情報をユーザーごとへ挿入
+                $db->dbh->query(
+                    "INSERT $engine_str IGNORE INTO entries 
+                    (guid, pubDate, readflag, _id_target, updatetime, user)
+                    VALUES (?,?,0,?,CURRENT_TIMESTAMP,?)",
+                    $d->{guid},
+                    to_mysql_datetime( $d->{pubDate} ),
+                    $_->{id},
+                    $_->{user}
+                );
             }
 
-            # 相対パスだと修正する
-            unless ( $_->{url} =~ /^http/ ) {
-                my $rsuri = $db->dbh->select_row('SELECT url FROM target WHERE id = ?', $_->{id_target});
-                $_->{url} = URI->new_abs($_->{url}, $rsuri->{url})->as_string;
-            }
-
-            my $engine_str = $engine eq "SQLite" ? "OR" : "";
-
-            $db->dbh->query("INSERT $engine_str IGNORE INTO entries 
-                (guid, pubDate, readflag, _id_target, updatetime, user)
-                VALUES (?,?,0,?,CURRENT_TIMESTAMP,?)",
-                $_->{guid},
-                to_mysql_datetime( $_->{pubDate} ),
-                $_->{id_target},
-                $_->{user}
-            );
-
-            my $st_title = $_->{title} ? $_->{title} : '';
-            my $st_description = $_->{description} ? $_->{description} : '';
-
-            $db->dbh->query("INSERT $engine_str IGNORE INTO stories
+            #エントリに対するストーリーを挿入
+            $db->dbh->query(
+                "INSERT $engine_str IGNORE INTO stories
                 (guid, title, description, url)
                 VALUES (?,?,?,?)",
-                $_->{guid},
-                $st_title,
-                $st_description,
-                $_->{url},
+                $d->{guid},
+                $d->{title}       ? $d->{title}       : '',
+                $d->{description} ? $d->{description} : '',
+                $d->{url},
             );
-
         }
 
-    }
+        # 200で、取得物があれば1とする
+        if ($import_counter) {
+            $term = 1;
+        }
 
+#フィードがおかしい場合は、日付がないので元々の日付を利用する
+        unless ($last_modified) {
+            $last_modified = $latest->epoch;
+        }
+        printf "%s %s %s %s \n", $res->http_status, $term, $c->{url},
+          $last_modified;
+        $db->dbh->query(
+'UPDATE feeds SET http_status = ?, pubDate = ?, term = ? WHERE id = ?',
+            $res->http_status, $last_modified, $term, $c->{id} );
+    }
 }
 
 sub to_mysql_datetime {
@@ -223,12 +263,11 @@ sub to_mysql_datetime {
 
 sub from_mysql_datetime {
     my $t = shift;
-#   warn $t;
-    Time::Piece->strptime($t, '%Y-%m-%d %H:%M:%S');
+    Time::Piece->strptime( $t, '%Y-%m-%d %H:%M:%S' );
 }
 
-# すごく汚い日付のパース
-sub from_feed_datetime{
+#すごく汚い日付のパース
+sub from_feed_datetime {
     my $t = shift;
     my $dt;
 
@@ -237,111 +276,119 @@ sub from_feed_datetime{
     };
 
     eval {
-        $dt = DateTime::Format::W3CDTF->parse_datetime($t) unless defined $dt;
+        $dt = DateTime::Format::W3CDTF->parse_datetime($t)
+          unless defined $dt;
     };
 
     eval {
-        $dt = DateTime::Format::ISO8601->parse_datetime($t) unless defined $dt;
+        $dt = DateTime::Format::ISO8601->parse_datetime($t)
+          unless defined $dt;
     };
 
     eval {
-        $dt = DateTime->from_epoch(epoch => HTTP::Date::str2time($t)) unless defined $dt;
+        $dt = DateTime->from_epoch( epoch => HTTP::Date::str2time($t) )
+          unless defined $dt;
     };
 
     eval {
-        $dt = DateTime->from_epoch(epoch => Date::Parse::str2time($t)) unless defined $dt;
+        $dt = DateTime->from_epoch( epoch => Date::Parse::str2time($t) )
+          unless defined $dt;
     };
 
     return Time::Piece->new( $dt->epoch() ) if defined $dt;
 
     return Time::Piece->new();
-#   croak("ERROR:Time Parse");
+
+    #croak("ERROR:Time Parse");
 }
 
+#RSSの場合
 sub parser_rss {
-    my $str    = shift;
-    my $latest = shift;
-    my $id     = shift;
-    my $pcheck = shift;
-    my $user   = shift;
+    my $self  = shift;
+    my $str   = shift;
+    my $rsurl = shift;
 
     my $data;
-    my $errorcheck = 0;
-
-    my $lateststr = $latest->ymd('') . $latest->hms('');
-
-    #RSSの場合
-    my $rss = new XML::RSS;
+    my $ns_dc = "http://purl.org/dc/elements/1.1/";
+    my $rss   = new XML::RSS;
     $rss->parse($str);
-    for my $ref (@{$rss->{items}}){
-
-        my $dt    = localtime;
-        my $ns_dc = "http://purl.org/dc/elements/1.1/";
-
-        if(defined $ref->{pubDate}){
-            $dt = from_feed_datetime( $ref->{pubDate} );
-        }elsif(defined $ref->{$ns_dc}->{date}){
-            $dt = from_feed_datetime( $ref->{$ns_dc}->{date} );
+    foreach ( @{ $rss->{items} } ) {
+        my $dt;
+        if ( defined $_->{pubDate} ) {
+            $dt = from_feed_datetime( $_->{pubDate} );
+        }
+        elsif ( defined $_->{$ns_dc}->{date} ) {
+            $dt = from_feed_datetime( $_->{$ns_dc}->{date} );
+        }
+        else {
+            $dt = localtime;
         }
 
-        #DBに格納されているエントリーより古い情報は
-        #取り込まない設定の場合、次の情報を処理する
-        my $dtstr = $dt->ymd('') . $dt->hms('');
-        $errorcheck++;
-        next if $pcheck == 0 and ($dtstr <= $lateststr);
+        my $guid = $_->{guid};
+        my $url  = $_->{link};
+        if ( !$guid or $guid eq '' ) {
+            $guid = $url;    #guidがない場合は、URLを代用
+        }
+        elsif ( !$url or $url eq '' ) {
+            $url = $guid;    #URLがない場合は、GUIDを代用
+        }
+
+        #相対パスだと修正する
+        if ( $url !~ /^http/ ) {
+            $url = URI->new_abs( $url, $rsurl )->as_string;
+        }
 
         my $h = {
-            guid        => $ref->{guid},
-            title       => $ref->{title},
-            description => $ref->{description},
+            guid        => $guid,
+            title       => $_->{title},
+            description => $_->{description},
             pubDate     => $dt,
-            url         => $ref->{link},
-            id_target   => $id,
-            user        => $user,
-        };
-        push(@$data, $h);
-    }
-    croak("error") if $errorcheck == 0;
-    $data;
-}
-
-sub parser_atom {
-    my $str    = shift;
-    my $latest = shift;
-    my $id     = shift;
-    my $pcheck = shift;
-    my $user   = shift;
-
-    my $data;
-    my $errorcheck = 0;
-
-    my $lateststr = $latest->ymd('') . $latest->hms('');
-
-    #Atomの場合
-    my $atom    = XML::Atom::Feed->new(\$str);
-    my @entries = $atom->entries;
-    foreach my $item (@entries) {
-        my $dt = from_feed_datetime($item->updated);
-
-        #DBに格納されているエントリーより古い情報は
-        #取り込まない設定の場合、次の情報を処理する
-        my $dtstr = $dt->ymd('') . $dt->hms('');
-        $errorcheck++;
-        next if $pcheck == 0 and ($dtstr <= $lateststr);
-
-        my $h = {
-            guid        => $item->link->href,
-            title       => decode('utf-8', $item->title),
-            description => decode('utf-8', $item->summary),
-            pubDate     => $dt,
-            url         => $item->link->href,
-            id_target   => $id,
-            user        => $user,
+            url         => $url,
         };
         push( @$data, $h );
     }
-    croak("error") if $errorcheck == 0;
+    croak("error") unless $data;
     $data;
+}
+
+#Atomの場合
+sub parser_atom {
+    my $self  = shift;
+    my $str   = shift;
+    my $rsurl = shift;
+
+    my $data;
+    my $atom    = XML::Atom::Feed->new( \$str );
+    my @entries = $atom->entries;
+    foreach (@entries) {
+        my $dt = from_feed_datetime( $_->updated );
+
+        my $url = $_->link->href;
+
+        #相対パスだと修正する
+        if ( $url !~ /^http/ ) {
+            $url = URI->new_abs( $url, $rsurl )->as_string;
+        }
+
+        my $h = {
+            guid        => $url,
+            title       => decode( 'utf-8', $_->title ),
+            description => decode( 'utf-8', $_->summary ),
+            pubDate     => $dt,
+            url         => $url,
+        };
+        push( @$data, $h );
+    }
+    croak("error") unless $data;
+    $data;
+}
+
+sub logger {
+    my $self = shift;
+    my $str  = shift;
+    if ($verbose) {
+        warn $str;
+    }
 }
 
 1;

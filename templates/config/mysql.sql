@@ -1,3 +1,4 @@
+
 CREATE TABLE IF NOT EXISTS `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(32) DEFAULT NULL,
@@ -20,19 +21,29 @@ CREATE TABLE IF NOT EXISTS `categories` (
   CONSTRAINT `categories_ibfk_1` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /**/
-CREATE TABLE IF NOT EXISTS `target` (
+CREATE TABLE IF NOT EXISTS `feeds` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `url` varchar(2400) NOT NULL,
   `siteurl` varchar(2400) NOT NULL,
   `title` varchar(200) NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `http_status` varchar(3) NOT NULL,
-  `_id_categories` int(11) NOT NULL,
   `parser` varchar(1) NOT NULL DEFAULT 0,
+  `pubDate` timestamp NOT NULL DEFAULT 0,
+  `term` varchar(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/**/
+CREATE TABLE IF NOT EXISTS `target` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `_id_categories` int(11) NOT NULL,
+  `_id_feeds` int(11) NOT NULL,
   `user` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `_id_categories` (`_id_categories`),
-  CONSTRAINT `target_ibfk` FOREIGN KEY (`_id_categories`) REFERENCES `categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `target_ibfk` FOREIGN KEY (`_id_categories`) REFERENCES `categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  KEY `_id_feeds` (`_id_feeds`),
+  CONSTRAINT `target_ibfkf` FOREIGN KEY (`_id_feeds`) REFERENCES `feeds` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /**/
 CREATE TABLE IF NOT EXISTS `entries` (
