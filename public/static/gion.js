@@ -365,6 +365,21 @@ $(function(Gion) {
             });
         });
 
+        $('#create_user').click(function() {
+            jQuery.ajax({
+                type: 'POST',
+                url: '/inf/create_user',
+                datatype: 'json',
+                data: {
+                    'username': $('#username').val(),
+                    'password': $('#user_password').val(),
+                },
+                success: function(p) {
+                    alert(p.e);
+                }
+            });
+        });
+
     };
 
 
