@@ -60,7 +60,7 @@ sub register_target {
     unless ( defined $feed->{id} ) {
         my $dt = Time::Piece->new;
         $db->query(
-"INSERT INTO feeds (url,siteurl,title,http_status,pubDate) VALUES (?,?,?,0);",
+"INSERT INTO feeds (url,siteurl,title,http_status,pubDate) VALUES (?,?,?,0,?);",
             $data->{rss}, $data->{url}, $data->{title}, $dt->epoch );
 
         $feed = $db->select_row(
