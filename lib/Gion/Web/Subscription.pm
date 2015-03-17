@@ -226,8 +226,8 @@ sub get_numentry {
     $self->render(
         json => {
             r => $rs->{numentry},
-            n => $rs->{noreferrer},
-            p => $rs->{nopinlist},
+            n => $rs->{noreferrer} ? 1 : 0,
+            p => $rs->{nopinlist} ? 1 : 0,
             s => $rs->{numsubstr},
         }
     );

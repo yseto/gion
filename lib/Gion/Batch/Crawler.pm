@@ -218,7 +218,7 @@ sub run {
 
     #購読リストに基づいて、更新情報をユーザーごとへ挿入
                 $db->dbh->query(
-                    "INSERT $engine_str IGNORE INTO entries 
+                    "INSERT $engine_str IGNORE INTO entries
                     (guid, pubDate, readflag, _id_target, updatetime, user)
                     VALUES (?,?,0,?,CURRENT_TIMESTAMP,?)",
                     $d->{guid},
@@ -253,7 +253,10 @@ sub run {
           $last_modified;
         $db->dbh->query(
 'UPDATE feeds SET http_status = ?, pubDate = ?, term = ? WHERE id = ?',
-            $res->http_status, $last_modified, $term, $c->{id} );
+            $res->http_status,
+            to_mysql_datetime(Time::Piece->new($last_modified)),
+            $term,
+            $c->{id} );
     }
 }
 
