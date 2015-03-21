@@ -34,9 +34,10 @@ sub run {
     GetOptionsFromArray(
         \@_,
         "e=i{,}"  => \@$eid,
-        "verbose" => \$verbose,
+        "silent" =>  \(my $verbose_tmp),
         "term=i"  => \$term,
     );
+    $verbose = $verbose_tmp ? 0 : 1;
 
     #DBへ接続
     my $db = Gion::DB->new;
@@ -216,16 +217,24 @@ sub run {
 
             for (@$target) {
 
-    #購読リストに基づいて、更新情報をユーザーごとへ挿入
-                $db->dbh->query(
-                    "INSERT $engine_str IGNORE INTO entries
-                    (guid, pubDate, readflag, _id_target, updatetime, user)
-                    VALUES (?,?,0,?,CURRENT_TIMESTAMP,?)",
-                    $d->{guid},
-                    to_mysql_datetime( $d->{pubDate} ),
-                    $_->{id},
-                    $_->{user}
-                );
+                # 既読管理から最終既読を参照
+                my $entries = $db->dbh->select_row( 'SELECT pubDate FROM entries WHERE
+                    _id_target = ? AND readflag = 1 ORDER BY pubDate DESC LIMIT 1', $_->{id} );
+
+                my $d_pubDate = to_mysql_datetime( $d->{pubDate} );
+                if ( from_mysql_datetime($entries->{pubDate}) < $d->{pubDate} ) {
+                    #購読リストに基づいて、更新情報をユーザーごとへ挿入
+                    $db->dbh->query(
+                        "INSERT $engine_str IGNORE INTO entries 
+                        (guid, pubDate, readflag, _id_target, updatetime, user)
+                        VALUES (?,?,0,?,CURRENT_TIMESTAMP,?)",
+                        $d->{guid},
+                        $d_pubDate,
+                        $_->{id},
+                        $_->{user}
+                    );
+                    $self->logger(sprintf "INSERT user:%4d guid: %s", $_->{user}, $d->{guid} );
+                }
             }
 
             #エントリに対するストーリーを挿入
@@ -249,11 +258,9 @@ sub run {
         unless ($last_modified) {
             $last_modified = $latest->epoch;
         }
-        printf "%s %s %s %s \n", $res->http_status, $term, $c->{url},
-          $last_modified;
         $db->dbh->query(
 'UPDATE feeds SET http_status = ?, pubDate = ?, term = ? WHERE id = ?',
-            $res->http_status,
+            $res->http_status, 
             to_mysql_datetime(Time::Piece->new($last_modified)),
             $term,
             $c->{id} );
@@ -388,9 +395,9 @@ sub parser_atom {
 
 sub logger {
     my $self = shift;
-    my $str  = shift;
+    my $str  = shift . "\n";
     if ($verbose) {
-        warn $str;
+        print STDERR $str;
     }
 }
 
