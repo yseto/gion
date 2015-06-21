@@ -115,35 +115,12 @@ sub run {
         $self->logger( sprintf "%3d %4d %s",
             $res->{headers}->{code}, $c->{id}, encode_utf8( $c->{title} ) );
 
- #取得できたので、リターンコード、購読間隔を更新する。
-        my $term =
-          1;   # 1: half hour, 2: every hour, 3: half day, 4: 2days, 5: one week
-        my $ans = $now - $c->{pubDate};
-
-        #更新がない場合、クロールを疎遠にしていく。
-        if ( $ans > 86400 * 14 )
-        { # 14日以上に更新がない場合は、1週間に1回クロールする
-            $term = 5;
-        }
-        elsif ( $ans > 86400 * 7 )
-        { # 7日以上に更新がない場合は、2日に1回クロールする
-            $term = 4;
-        }
-        elsif ( $ans > 86400 * 4 )
-        { # 4日以上に更新がない場合は、半日に1回クロールする
-            $term = 3;
-        }
-        elsif ( $ans > 3600 * 12 )
-        { # 12時間以上に更新がない場合は、毎時に1回クロールする
-            $term = 2;
-        }
-
       #304 Not Modifiedの場合更新しない場合次の対象を処理する
         if ( $res->{headers}->{code} eq '304' ) {
             # 更新
             $db->dbh->query(
                 'UPDATE feeds SET http_status = 304, term = ?, cache = ? WHERE id = ?',
-                $term,
+                update_term($now, from_mysql_datetime($c->{pubDate})->epoch),
                 JSON::encode_json($res->{headers}),
                 $c->{id}
             );
@@ -190,15 +167,8 @@ sub run {
             $c->{id}
         );
 
- #クロール対象のエントリーの最新の情報の日付を取得する
-        my $pd = $db->dbh->select_row( "SELECT pubDate FROM feeds WHERE id = ?",
-            $c->{id} );
-
-        #最新の日付があれば、活用する。
-        my $latest =
-          defined $pd
-          ? Time::Piece->new( $pd->{pubDate} )
-          : Time::Piece->strptime( '2010-01-01', '%Y-%m-%d' );
+        # クロール対象のエントリーの最新の情報の日付を取得する
+        my $latest = from_mysql_datetime($c->{pubDate});
 
         # term の判断基準となるlast-Modifiedを取得
         # agentの戻り値では、 If-Modified-Since として返却される
@@ -207,11 +177,16 @@ sub run {
         my $import_counter = 0;
         for my $d (@$data) {
 
-            #新しいもののみを取り込む
+            # If-Modified-Sinceが取得できなかった場合、RSSのフィードから得る
+            unless ($last_modified) {
+                $last_modified = $d->{pubDate}->epoch;
+            }
+ 
+            # 新しいもののみを取り込む
             next if $d->{pubDate}->epoch <= $latest->epoch;
 
-#返さない場合があるので、エントリが新しい場合の更新日を利用する
-            unless ($last_modified) {
+            # RSSのデータから最終更新時間を更新する
+            if ($d->{pubDate}->epoch > $last_modified) {
                 $last_modified = $d->{pubDate}->epoch;
             }
 
@@ -258,22 +233,49 @@ sub run {
         }
 
         # 200で、取得物があれば1とする
+        my $_term;
         if ($import_counter) {
-            $term = 1;
+            $_term = 1;
+        } else {
+            $_term = update_term($now, $last_modified);
         }
 
-#フィードがおかしい場合は、日付がないので元々の日付を利用する
-        unless ($last_modified) {
-            $last_modified = $latest->epoch;
-        }
         $db->dbh->query(
 'UPDATE feeds SET http_status = ?, pubDate = ?, term = ?, cache = ? WHERE id = ?',
             $res->{headers}->{code},
             to_mysql_datetime(Time::Piece->new($last_modified)),
-            $term,
+            $_term,
             JSON::encode_json($res->{headers}),
             $c->{id} );
     }
+}
+
+sub update_term {
+    my $now   = shift;
+    my $epoch = shift;
+
+    return 1 unless $epoch;
+    my $term = 1;   # 1: half hour, 2: every hour, 3: half day, 4: 2days, 5: one week
+    my $ans = $now - $epoch;
+
+    #更新がない場合、クロールを疎遠にしていく。
+    if ( $ans > 86400 * 14 )
+    { # 14日以上に更新がない場合は、1週間に1回クロールする
+        $term = 5;
+    }
+    elsif ( $ans > 86400 * 7 )
+    { # 7日以上に更新がない場合は、2日に1回クロールする
+        $term = 4;
+    }
+    elsif ( $ans > 86400 * 4 )
+    { # 4日以上に更新がない場合は、半日に1回クロールする
+        $term = 3;
+    }
+    elsif ( $ans > 3600 * 12 )
+    { # 12時間以上に更新がない場合は、毎時に1回クロールする
+        $term = 2;
+    }
+    return $term;
 }
 
 sub to_mysql_datetime {
@@ -282,7 +284,10 @@ sub to_mysql_datetime {
 
 sub from_mysql_datetime {
     my $t = shift;
-    Time::Piece->strptime( $t, '%Y-%m-%d %H:%M:%S' );
+    if ($t eq '0000-00-00 00:00:00') {
+        return Time::Piece->new;
+    }
+    localtime( Time::Piece->strptime( $t, '%Y-%m-%d %H:%M:%S' ) );
 }
 
 #すごく汚い日付のパース
