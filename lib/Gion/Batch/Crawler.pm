@@ -4,12 +4,9 @@ use base qw/Gion::Batch/;
 use utf8;
 use Try::Tiny;
 use Carp;
-use Cache::File;
 use URI;
-use URI::Fetch;
 use Encode;
 use Time::Piece;
-use LWP::UserAgent;
 use XML::RSS;
 use XML::Atom::Feed;
 use Gion::DB;
@@ -22,6 +19,8 @@ use DateTime::Format::ISO8601;
 use HTTP::Date;
 use Date::Parse;
 use File::Spec;
+use Furl;
+use JSON;
 
 our $verbose;
 
@@ -63,18 +62,20 @@ sub run {
         $rs = $db->dbh->select_all('SELECT * FROM feeds');
     }
 
-    #ユーザーエージェントを設定
-    my $ua = LWP::UserAgent->new;
-    if ( $self->config->{crawler}->{timeout} ) {
-        $ua->timeout( $self->config->{crawler}->{timeout} );
-    }
-    if ( $self->config->{crawler}->{ua} ) {
-        $ua->agent( $self->config->{crawler}->{ua} );
-    }
+    my $opt;
+    $opt->{timeout} = $self->config->{crawler}->{timeout} || 5;
+    $opt->{agent}   = $self->config->{crawler}->{ua} ||
+        "Gion Crawler/0.1 (https://github.com/yseto/gion)";
 
-    #キャッシュの設定
-    my $dir = File::Spec->catdir( File::Spec->tmpdir(), 'gion' );
-    my $cache = Cache::File->new( cache_root => $dir );
+    my $ua = Furl->new(
+        headers => [
+            "Accept-Encoding" => 'gzip' ,
+            Connection => 'close'
+        ],
+        max_redirects => 0,
+        %$opt,
+    );
+    $self->furl_agent($ua);
 
     my $engine_str = $engine eq "SQLite" ? "OR" : "";
     my $now = Time::Piece->new()->epoch;
@@ -82,66 +83,47 @@ sub run {
     for my $c (@$rs) {
 
         #取得する
-        my $res =
-          URI::Fetch->fetch( $c->{url}, Cache => $cache, UserAgent => $ua );
+        my $cache = JSON::decode_json($c->{cache}) if $c->{cache};
+        my $res = $self->agent( $c->{url}, $cache);
 
         #結果が得られない場合、次の対象を処理する
-        unless ( defined $res ) {
+        if ( $res->{headers}->{code} eq '404' ) {
             $db->dbh->query(
-                'UPDATE feeds SET http_status = ?, term = 4 WHERE id = ?',
-                404, $c->{id} );
+                'UPDATE feeds SET http_status = 404, term = 4, cache = ? WHERE id = ?',
+                JSON::encode_json($res->{headers}),
+                $c->{id}
+            );
             $self->logger( sprintf "404 %4d %s",
                 $c->{id}, encode_utf8( $c->{title} ) );
             next;
         }
 
         #301 Moved Permanentlyの場合
-        if ( defined $res->{http_response}->{_previous} ) {
-            my $preres = $res->{http_response}->{_previous};
-            if ( $preres->{_rc} == 301 ) {
-                $db->dbh->query(
-                    'UPDATE feeds SET url = ? WHERE id = ?',
-                    $preres->{_headers}->{location},
-                    $c->{id}
-                );
-                $self->logger( sprintf "301 %s -> %s",
-                    $c->{url}, $preres->{_headers}->{location} );
-            }
+        if ( defined $res->{headers}->{_code} &&
+            $res->{headers}->{_code} eq '301' ) {
+            $db->dbh->query(
+                'UPDATE feeds SET url = ? WHERE id = ?',
+                $res->{headers}->{location},
+                $c->{id}
+            );
+            $self->logger( sprintf "301 %s -> %s",
+                $c->{url}, $res->{headers}->{location} );
+            delete $res->{headers}->{location};
+            delete $res->{headers}->{_code};
         }
 
         $self->logger( sprintf "%3d %4d %s",
-            $res->http_status, $c->{id}, encode_utf8( $c->{title} ) );
-
- #取得できたので、リターンコード、購読間隔を更新する。
-        my $term =
-          1;   # 1: half hour, 2: every hour, 3: half day, 4: 2days, 5: one week
-        my $ans = $now - $c->{pubDate};
-
-        #更新がない場合、クロールを疎遠にしていく。
-        if ( $ans > 86400 * 14 )
-        { # 14日以上に更新がない場合は、1週間に1回クロールする
-            $term = 5;
-        }
-        elsif ( $ans > 86400 * 7 )
-        { # 7日以上に更新がない場合は、2日に1回クロールする
-            $term = 4;
-        }
-        elsif ( $ans > 86400 * 4 )
-        { # 4日以上に更新がない場合は、半日に1回クロールする
-            $term = 3;
-        }
-        elsif ( $ans > 3600 * 12 )
-        { # 12時間以上に更新がない場合は、毎時に1回クロールする
-            $term = 2;
-        }
+            $res->{headers}->{code}, $c->{id}, encode_utf8( $c->{title} ) );
 
       #304 Not Modifiedの場合更新しない場合次の対象を処理する
-        if ( $res->http_status == 304 ) {
-
+        if ( $res->{headers}->{code} eq '304' ) {
             # 更新
             $db->dbh->query(
-                'UPDATE feeds SET http_status = ?, term = ? WHERE id = ?',
-                $res->http_status, $term, $c->{id} );
+                'UPDATE feeds SET http_status = 304, term = ?, cache = ? WHERE id = ?',
+                update_term($now, from_mysql_datetime($c->{pubDate})->epoch),
+                JSON::encode_json($res->{headers}),
+                $c->{id}
+            );
             next;
         }
 
@@ -151,7 +133,7 @@ sub run {
         #パースする
         try {
             if ( $c->{parser} == 0 or $c->{parser} == 1 ) {
-                $data = $self->parser_rss( $res->content, $c->{url} );
+                $data = $self->parser_rss( $res->{content}, $c->{url} );
             }
         }
         catch {
@@ -161,7 +143,7 @@ sub run {
             if ( ( $c->{parser} == 0 and $errorcount == 1 )
                 or $c->{parser} == 2 )
             {
-                $data = $self->parser_atom( $res->content, $c->{url} );
+                $data = $self->parser_atom( $res->{content}, $c->{url} );
             }
         }
         catch {
@@ -170,8 +152,10 @@ sub run {
 
 #パースにいずれも失敗した場合、パーサーの設定を初期化する。次回のクロール時にクロールする
             $db->dbh->query(
-'UPDATE feeds SET http_status = ?, parser = 0, term = 1 WHERE id = ?',
-                $res->http_status, $c->{id}
+'UPDATE feeds SET http_status = ?, parser = 0, term = 1, cache = ? WHERE id = ?',
+                $res->{headers}->{code},
+                JSON::encode_json($res->{headers}),
+                $c->{id}
             );
             next;
         };
@@ -183,27 +167,26 @@ sub run {
             $c->{id}
         );
 
- #クロール対象のエントリーの最新の情報の日付を取得する
-        my $pd = $db->dbh->select_row( "SELECT pubDate FROM feeds WHERE id = ?",
-            $c->{id} );
-
-        #最新の日付があれば、活用する。
-        my $latest =
-          defined $pd
-          ? Time::Piece->new( $pd->{pubDate} )
-          : Time::Piece->strptime( '2010-01-01', '%Y-%m-%d' );
+        # クロール対象のエントリーの最新の情報の日付を取得する
+        my $latest = from_mysql_datetime($c->{pubDate});
 
         # term の判断基準となるlast-Modifiedを取得
-        my $last_modified = HTTP::Date::str2time( $res->last_modified );
+        # agentの戻り値では、 If-Modified-Since として返却される
+        my $last_modified = HTTP::Date::str2time( $res->{headers}->{'If-Modified-Since'} );
 
         my $import_counter = 0;
         for my $d (@$data) {
 
-            #新しいもののみを取り込む
+            # If-Modified-Sinceが取得できなかった場合、RSSのフィードから得る
+            unless ($last_modified) {
+                $last_modified = $d->{pubDate}->epoch;
+            }
+ 
+            # 新しいもののみを取り込む
             next if $d->{pubDate}->epoch <= $latest->epoch;
 
-#返さない場合があるので、エントリが新しい場合の更新日を利用する
-            unless ($last_modified) {
+            # RSSのデータから最終更新時間を更新する
+            if ($d->{pubDate}->epoch > $last_modified) {
                 $last_modified = $d->{pubDate}->epoch;
             }
 
@@ -225,7 +208,7 @@ sub run {
                 if ( from_mysql_datetime($entries->{pubDate}) < $d->{pubDate} ) {
                     #購読リストに基づいて、更新情報をユーザーごとへ挿入
                     $db->dbh->query(
-                        "INSERT $engine_str IGNORE INTO entries 
+                        "INSERT $engine_str IGNORE INTO entries
                         (guid, pubDate, readflag, _id_target, updatetime, user)
                         VALUES (?,?,0,?,CURRENT_TIMESTAMP,?)",
                         $d->{guid},
@@ -250,21 +233,49 @@ sub run {
         }
 
         # 200で、取得物があれば1とする
+        my $_term;
         if ($import_counter) {
-            $term = 1;
+            $_term = 1;
+        } else {
+            $_term = update_term($now, $last_modified);
         }
 
-#フィードがおかしい場合は、日付がないので元々の日付を利用する
-        unless ($last_modified) {
-            $last_modified = $latest->epoch;
-        }
         $db->dbh->query(
-'UPDATE feeds SET http_status = ?, pubDate = ?, term = ? WHERE id = ?',
-            $res->http_status, 
+'UPDATE feeds SET http_status = ?, pubDate = ?, term = ?, cache = ? WHERE id = ?',
+            $res->{headers}->{code},
             to_mysql_datetime(Time::Piece->new($last_modified)),
-            $term,
+            $_term,
+            JSON::encode_json($res->{headers}),
             $c->{id} );
     }
+}
+
+sub update_term {
+    my $now   = shift;
+    my $epoch = shift;
+
+    return 1 unless $epoch;
+    my $term = 1;   # 1: half hour, 2: every hour, 3: half day, 4: 2days, 5: one week
+    my $ans = $now - $epoch;
+
+    #更新がない場合、クロールを疎遠にしていく。
+    if ( $ans > 86400 * 14 )
+    { # 14日以上に更新がない場合は、1週間に1回クロールする
+        $term = 5;
+    }
+    elsif ( $ans > 86400 * 7 )
+    { # 7日以上に更新がない場合は、2日に1回クロールする
+        $term = 4;
+    }
+    elsif ( $ans > 86400 * 4 )
+    { # 4日以上に更新がない場合は、半日に1回クロールする
+        $term = 3;
+    }
+    elsif ( $ans > 3600 * 12 )
+    { # 12時間以上に更新がない場合は、毎時に1回クロールする
+        $term = 2;
+    }
+    return $term;
 }
 
 sub to_mysql_datetime {
@@ -273,7 +284,10 @@ sub to_mysql_datetime {
 
 sub from_mysql_datetime {
     my $t = shift;
-    Time::Piece->strptime( $t, '%Y-%m-%d %H:%M:%S' );
+    if ($t eq '0000-00-00 00:00:00') {
+        return Time::Piece->new;
+    }
+    localtime( Time::Piece->strptime( $t, '%Y-%m-%d %H:%M:%S' ) );
 }
 
 #すごく汚い日付のパース
@@ -398,6 +412,63 @@ sub logger {
     my $str  = shift . "\n";
     if ($verbose) {
         print STDERR $str;
+    }
+}
+
+sub furl_agent {
+    my $self = shift;
+    my $ua   = shift;
+    return $self->{furl} if $self->{furl};
+    $self->{furl} = $ua;
+    return $self->{furl};
+}
+
+sub agent {
+    my $self = shift;
+    my $url  = shift;
+    my $opt  = shift;
+
+    my $response;
+    my @headers;
+    if (ref $opt eq 'HASH') {
+        while (my ($key, $value) = each($opt)){
+            push @headers, $key => $value;
+        }
+        $response = $opt;
+    }
+    my $res  = $self->furl_agent->get($url, \@headers);
+    my $code = $res->code;
+
+    # ここで違う名称で保存する
+    # キャッシュして、取得時にそのまま転用させるため
+    $response->{'If-None-Match'}     = shift $res->headers->{etag}  if $res->headers->{etag};
+    $response->{'If-Modified-Since'} = $res->headers->last_modified if $res->headers->last_modified;
+    $response->{code}                = $code;
+
+# redirect needed status code is  $code =~ /^30[1237]$/;
+# refer Furl::HTTP
+
+    if ($code eq '200') {
+        return {
+            content => $res->content,
+            headers => $response,
+        };
+    }elsif ($code =~ /^30[1237]$/) {
+        my $location = shift $res->headers->{location};
+        if ( $location !~ /^http/ ) {
+            $location = URI->new_abs( $location, $url )->as_string;
+        }
+        # ** Moved Permanently ** need update resource url
+        # return location data.
+        if ($code eq '301') {
+            $response->{location} = $location;
+            $response->{_code} = '301';
+        }
+        return $self->agent($location, $response);
+    }elsif ($code eq '304') {
+        return {
+            headers => $response,
+        };
     }
 }
 

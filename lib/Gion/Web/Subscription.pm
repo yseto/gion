@@ -1,15 +1,15 @@
 package Gion::Web::Subscription;
 use Mojo::Base 'Mojolicious::Controller';
-use LWP::UserAgent;
 use FormValidator::Lite;
 use FormValidator::Lite::Constraint::URL;
 use URI;
 use Encode;
 use Encode::Guess qw/sjis euc-jp 7bit-jis/;
 use XML::LibXML;
-use URI::Fetch;
 use Try::Tiny;
 use Time::Piece;
+use HTTP::Request;
+use Furl;
 
 sub register_categories {
     my $self = shift;
@@ -101,8 +101,7 @@ sub examine_target {
       if $validator->has_error;
 
     my $data = $self->req->params->to_hash;
-
-    my $res = URI::Fetch->fetch( $data->{m} );
+    my $res = Furl->new->get( $data->{m} );
 
     return $self->render( json => { t => '', u => '' } )
       unless defined $res;

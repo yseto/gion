@@ -61,43 +61,6 @@ DISTRIBUTIONS
       Scalar::Util 0
       strict 0
       warnings 0
-  Cache-2.10
-    pathname: S/SH/SHLOMIF/Cache-2.10.tar.gz
-    provides:
-      Cache 2.10
-      Cache::Entry 2.10
-      Cache::File 2.10
-      Cache::File::Entry 2.10
-      Cache::File::Handle undef
-      Cache::File::Heap 2.10
-      Cache::IOString undef
-      Cache::Memory 2.10
-      Cache::Memory::Entry 2.10
-      Cache::Memory::HeapElem undef
-      Cache::Null 2.10
-      Cache::Null::Entry 2.10
-      Cache::RemovalStrategy 2.10
-      Cache::RemovalStrategy::FIFO undef
-      Cache::RemovalStrategy::LRU undef
-      Cache::Tester 2.10
-    requirements:
-      DB_File 1.72
-      Date::Parse 2.24
-      Digest::SHA 0
-      Fcntl 1.03
-      File::Find 0
-      File::NFSLock 1.20
-      File::Path 1.00
-      File::Spec 0.8
-      Heap::Fibonacci 0.01
-      IO::File 1.08
-      IO::Handle 1.21
-      IO::String 1.02
-      Module::Build 0
-      Storable 1.00
-      Symbol 1.02
-      Test::More 0.45
-      perl 5.006
   Capture-Tiny-0.25
     pathname: D/DA/DAGOLDEN/Capture-Tiny-0.25.tar.gz
     provides:
@@ -142,16 +105,6 @@ DISTRIBUTIONS
       Class::Data::Inheritable 0.08
     requirements:
       ExtUtils::MakeMaker 0
-  Class-ErrorHandler-0.03
-    pathname: T/TO/TOKUHIROM/Class-ErrorHandler-0.03.tar.gz
-    provides:
-      Class::ErrorHandler 0.03
-    requirements:
-      CPAN::Meta 0
-      CPAN::Meta::Prereqs 0
-      ExtUtils::CBuilder 0
-      Module::Build 0.38
-      perl 5.008_001
   Class-Factory-Util-1.7
     pathname: D/DR/DROLSKY/Class-Factory-Util-1.7.tar.gz
     provides:
@@ -1549,12 +1502,6 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       HTTP::Date 6
       perl 5.006002
-  File-NFSLock-1.24
-    pathname: B/BB/BBB/File-NFSLock-1.24.tar.gz
-    provides:
-      File::NFSLock 1.24
-    requirements:
-      ExtUtils::MakeMaker 0
   File-ShareDir-1.102
     pathname: R/RE/REHSACK/File-ShareDir-1.102.tar.gz
     provides:
@@ -1632,6 +1579,27 @@ DISTRIBUTIONS
       Filter::Util::Call 0
       Module::Build 0.38
       Scalar::Util 1.19
+      perl 5.008001
+  Furl-3.07
+    pathname: T/TO/TOKUHIROM/Furl-3.07.tar.gz
+    provides:
+      Furl 3.07
+      Furl::ConnectionCache undef
+      Furl::HTTP 3.07
+      Furl::Headers undef
+      Furl::Request undef
+      Furl::Response undef
+      Furl::ZlibStream undef
+    requirements:
+      Class::Accessor::Lite 0
+      Encode 0
+      HTTP::Parser::XS 0.11
+      MIME::Base64 0
+      Module::Build 0.38
+      Mozilla::CA 0
+      Scalar::Util 0
+      Socket 0
+      Time::HiRes 0
       perl 5.008001
   Getopt-Compact-WithCmd-0.22
     pathname: X/XA/XAICRON/Getopt-Compact-WithCmd-0.22.tar.gz
@@ -1785,6 +1753,14 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       HTTP::Headers 6
       perl 5.008001
+  HTTP-Parser-XS-0.17
+    pathname: K/KA/KAZUHO/HTTP-Parser-XS-0.17.tar.gz
+    provides:
+      HTTP::Parser::XS 0.17
+      HTTP::Parser::XS::PP undef
+    requirements:
+      ExtUtils::MakeMaker 6.36
+      Test::More 0.96
   HTTP-Tiny-0.050
     pathname: D/DA/DAGOLDEN/HTTP-Tiny-0.050.tar.gz
     provides:
@@ -1805,23 +1781,6 @@ DISTRIBUTIONS
       Hash::MultiValue 0.15
     requirements:
       ExtUtils::MakeMaker 6.30
-  Heap-0.80
-    pathname: J/JM/JMM/Heap-0.80.tar.gz
-    provides:
-      Heap 0.80
-      Heap::Binary 0.80
-      Heap::Binomial 0.80
-      Heap::Elem 0.80
-      Heap::Elem::Num 0.80
-      Heap::Elem::NumRev 0.80
-      Heap::Elem::Ref 0.80
-      Heap::Elem::RefRev 0.80
-      Heap::Elem::Str 0.80
-      Heap::Elem::StrRev 0.80
-      Heap::Fibonacci 0.80
-    requirements:
-      ExtUtils::MakeMaker 0
-      Test::Simple 0.45
   IO-HTML-1.001
     pathname: C/CJ/CJM/IO-HTML-1.001.tar.gz
     provides:
@@ -1848,12 +1807,6 @@ DISTRIBUTIONS
       Mozilla::CA 0
       Net::SSLeay 1.46
       Scalar::Util 0
-  IO-String-1.08
-    pathname: G/GA/GAAS/IO-String-1.08.tar.gz
-    provides:
-      IO::String 1.08
-    requirements:
-      ExtUtils::MakeMaker 0
   IPC-Run3-0.048
     pathname: R/RJ/RJBS/IPC-Run3-0.048.tar.gz
     provides:
@@ -1875,18 +1828,6 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.006002
-  LWP-Protocol-https-6.06
-    pathname: M/MS/MSCHILLI/LWP-Protocol-https-6.06.tar.gz
-    provides:
-      LWP::Protocol::https 6.06
-      LWP::Protocol::https::Socket 6.06
-    requirements:
-      ExtUtils::MakeMaker 0
-      IO::Socket::SSL 1.54
-      LWP::UserAgent 6.06
-      Mozilla::CA 20110101
-      Net::HTTPS 6
-      perl 5.008001
   List-AllUtils-0.09
     pathname: D/DR/DROLSKY/List-AllUtils-0.09.tar.gz
     provides:
@@ -3092,22 +3033,6 @@ DISTRIBUTIONS
       parent 0
       perl 5.008001
       utf8 0
-  URI-Fetch-0.10
-    pathname: N/NE/NEILB/URI-Fetch-0.10.tar.gz
-    provides:
-      URI::Fetch 0.10
-      URI::Fetch::Response 0.10
-    requirements:
-      Carp 0
-      Class::ErrorHandler 0
-      ExtUtils::MakeMaker 6.30
-      LWP::UserAgent 0
-      Storable 0
-      URI 0
-      base 0
-      constant 0
-      strict 0
-      warnings 0
   Variable-Magic-0.55
     pathname: V/VP/VPIT/Variable-Magic-0.55.tar.gz
     provides:

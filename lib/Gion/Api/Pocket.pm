@@ -1,7 +1,7 @@
 package Gion::Api::Pocket;
 use Mojo::Base 'Mojolicious::Controller';
 use Data::Dumper;
-use LWP::UserAgent;
+use Furl;
 use URI;
 use Mojo::JSON;
 use Try::Tiny;
@@ -10,7 +10,7 @@ sub connect {
     my $self         = shift;
     my $db           = $self->app->dbh->dbh;
     my $data         = $self->req->params->to_hash;
-    my $ua           = LWP::UserAgent->new;
+    my $ua           = Furl->new;
     my $redirect_uri = $self->req->url->base . $self->req->url->path;
     my $app_id       = $self->config->{service}->{pocket} || $ENV{API_POCKET};
 
@@ -88,7 +88,7 @@ sub post {
         $req->content_type('application/json');
         $req->content( Mojo::JSON->new->encode($hash) );
 
-        my $ua = LWP::UserAgent->new;
+        my $ua = Furl->new;
         $ua->request($req)->content;
         return $self->render( json => { e => "ok" } );
     }

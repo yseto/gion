@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS `feeds` (
   `parser` varchar(1) NOT NULL DEFAULT 0,
   `pubDate` timestamp NOT NULL DEFAULT 0,
   `term` varchar(1) NOT NULL DEFAULT 1,
+  `cache` varchar(2400) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /**/
