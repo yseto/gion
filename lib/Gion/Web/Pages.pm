@@ -3,13 +3,11 @@ use Mojo::Base 'Mojolicious::Controller';
 
 sub add {
     my $self = shift;
-    $self->stash( jsfunc => 'register' );
     $self->render();
 }
 
 sub settings {
     my $self = shift;
-    $self->stash( jsfunc      => 'settings' );
     $self->stash( 'superuser' => undef );
     if ( $self->session('superuser') ) {
         $self->stash( 'superuser' => 1 );
@@ -19,13 +17,11 @@ sub settings {
 
 sub subscription {
     my $self = shift;
-    $self->stash( jsfunc => 'subscription' );
     $self->render();
 }
 
 sub normal {
     my $self = shift;
-    $self->stash( jsfunc => 'reader' );
     $self->render();
 }
 
@@ -36,7 +32,6 @@ sub welcome {
 
 sub entrance {
     my $self = shift;
-    $self->stash( jsfunc => 'welcome' );
     $self->render();
 }
 

@@ -3,12 +3,12 @@ module.exports = function(grunt) {
     grunt.initConfig({
         jshint: {
             options: {
-                jshintrc: '.jshintrc'
+                jshintrc: 'jshintrc'
             },
             files: [
                 'Gruntfile.js',
                 'package.json',
-                'public/static/gion.js'
+                '../public/static/gion.js'
             ]
         },
     });
