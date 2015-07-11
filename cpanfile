@@ -17,7 +17,6 @@ requires 'XML::LibXML';
 requires 'XML::RSS';
 requires 'XML::RSS::LibXML';
 requires 'DBD::mysql';
-requires 'DBD::SQLite';
 requires 'FormValidator::Lite';
 requires 'Date::Parse';
 requires 'Getopt::Long';
