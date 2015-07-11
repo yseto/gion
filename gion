@@ -3,9 +3,8 @@
 use strict;
 use warnings;
 
+use Mojolicious::Commands;
 use FindBin;
-use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::Bin/lib";
 
-# Start commands for application
-require Mojolicious::Commands;
 Mojolicious::Commands->start_app('Gion::Web');

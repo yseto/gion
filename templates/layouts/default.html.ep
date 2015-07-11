@@ -88,7 +88,6 @@
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-browser/0.0.6/jquery.browser.min.js"></script>
     <script src="/static/gion.js"></script>
-    <script>var gion = new Gion(); gion.<%== $jsfunc %>();</script>
   </body>
 </html>
 

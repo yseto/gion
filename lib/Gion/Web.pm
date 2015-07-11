@@ -1,7 +1,23 @@
 package Gion::Web;
 use Mojo::Base 'Mojolicious';
-use Gion::DB;
+use DBIx::Handler;
+use DBIx::Sunny;
 use String::Random qw(random_string);
+
+has dbh => sub {
+    my $class = shift;
+    my $conf = $class->app->config->{db};
+    DBIx::Handler->new(
+        $conf->{dsn}, $conf->{username},
+        $conf->{password}, { RootClass => 'DBIx::Sunny', }
+    );
+};
+
+has commands => sub {
+    my $commands = shift->SUPER::commands;
+    $commands->namespaces(['Gion::Batch']);
+    return $commands;
+};
 
 sub startup {
     my $self = shift;
@@ -11,7 +27,6 @@ sub startup {
     $self->secrets( [ random_string( "s" x 32 ) ] );
     $self->sessions->cookie_name('Gion');
     $self->sessions->default_expiration(86400);
-    $self->attr( dbh => sub { Gion::DB->new; } );
 
     # Router
     my $r = $self->routes;
@@ -21,12 +36,11 @@ sub startup {
     $l->post('/pin/:action')->to( controller => 'pin' );
     $l->post('/manage/:action')->to( controller => 'subscription' );
 
-    $l->route('/api/:controller/:action')->to( namespace => 'Gion::Api' );
+    $l->route('/api/:controller/:action')->to( namespace => 'Gion::Web::Api' );
 
     $l->get('/entries/')->to( controller => 'pages', action => 'normal' );
     $l->get('/add/')->to( controller => 'pages', action => 'add' );
-    $l->get('/subscription/')
-      ->to( controller => 'pages', action => 'subscription' );
+    $l->get('/subscription/')->to( controller => 'pages', action => 'subscription' );
     $l->get('/settings/')->to( controller => 'pages', action => 'settings' );
     $l->route('/opml/:action')->to( controller => 'opml' );
 

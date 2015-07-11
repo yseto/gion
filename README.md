@@ -15,19 +15,5 @@ Feature
 Requirement
 ----------
 - Perl
-- mysql (of course MariaDB ok) or SQLite
-
-On Heroku
-----------
-
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
-
-- for login type admin / password
-- please change password on setting page.
-
-please add the [Scheduler Add-on](https://devcenter.heroku.com/articles/scheduler)
-
-Frequency: hourly 
-
-    $ ./wakeup.pl -u http://yourapp.herokuapp.com/
+- mysql (of course MariaDB ok)
 

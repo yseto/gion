@@ -1,9 +1,11 @@
-package Gion::Batch::Useradd;
-use base qw/Gion::Batch/;
+package Gion::Batch::useradd;
+use Mojo::Base 'Mojolicious::Command';
+use Getopt::Long qw(GetOptionsFromArray :config posix_default no_ignore_case gnu_compat);
 
-use Getopt::Long qw(GetOptionsFromArray);
 use Gion::Util::Auth;
-use Gion::DB;
+
+has description => 'user management';
+has usage => '--user ID --pass Password';
 
 sub run {
     my $self = shift;
@@ -16,30 +18,38 @@ sub run {
     );
 
     unless ( defined $data->{user} || defined $data->{pass} ) {
-        warn "--user ID --pass Password";
+        say "need parameter: --user ID --pass Password";
         exit();
     }
 
     my $auth = Gion::Util::Auth->new(
-        strech => $self->config->{strech} || 500,
-        salt   => $self->config->{salt}   || "Gion::Util::Auth",
+        strech => $self->app->config->{strech} || 500,
+        salt   => $self->app->config->{salt}   || "Gion::Util::Auth",
         id     => $data->{user},
         passwd => $data->{pass},
     );
 
     my $pw = $auth->get_hash;
 
-    my $db = Gion::DB->new;
+    my $db = $self->app->dbh;
     if ( defined $data->{force} ) {
         $db->dbh->query( 'UPDATE user SET pw = ? WHERE name = ?',
             $pw, $data->{user} );
-        warn "Password Change: " . $data->{user};
+        say "Password Change: " . $data->{user};
     }
     else {
         $db->dbh->query( 'INSERT INTO user (id,pw,name) VALUES (null,?,?)',
             $pw, $data->{user} );
-        warn "User Added: " . $data->{user};
+        say "User Added: " . $data->{user};
     }
 }
 
 1;
+
+=encoding utf8
+
+=head1 NAME
+
+Gion::Batch::useradd - user management
+
+=cut

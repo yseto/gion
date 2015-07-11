@@ -1,6 +1,8 @@
-package Gion::Batch::Cleanup;
-use base qw/Gion::Batch/;
-use Gion::DB;
+package Gion::Batch::cleanup;
+use Mojo::Base 'Mojolicious::Command';
+
+has description => 'item cleaner';
+has usage => 'supported some options.';
 
 # 既読のものを削除する。
 # ただし、最新の既読エントリは残しておく必要がある
@@ -14,14 +16,7 @@ sub run {
     my $count;
     my $cmp;
 
-    my $db = Gion::DB->new;
-    my $engine;
-    if ( $self->config->{db}->{dsn} =~ /^(?i:dbi):SQLite:/ ) {
-        $engine = "SQLite";
-    }
-    else {
-        $engine = "mysql";
-    }
+    my $db = $self->app->dbh;
 
     $count       = $db->dbh->select_row('SELECT COUNT(guid) AS t FROM entries');
     $cmp->{olde} = $count->{t};
@@ -32,33 +27,17 @@ sub run {
 
     for (@$rs) {
         my $id = $_->{id};
-        if ( $engine eq 'mysql' ) {
-            $db->dbh->query(
-                "DELETE FROM entries WHERE _id_target = ? AND readflag = 1
-                AND updatetime < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -1 DAY)
-                AND 
-    	    	pubdate NOT IN (SELECT pubdate FROM 
-    	    		(SELECT pubdate FROM entries
-    	    			WHERE _id_target = ?  AND readflag = 1
-    	    			ORDER BY pubdate DESC LIMIT 1
-    	    		) x )"
-                , $id, $id
-            );
-        }
-        else {
-            $db->dbh->query(
-                "DELETE FROM entries WHERE _id_target = ? AND readflag = 1
-                AND updatetime < date('now','-1 day')
-                AND 
-    	    	pubdate NOT IN (SELECT pubdate FROM 
-    	    		(SELECT pubdate FROM entries
-    	    			WHERE _id_target = ? AND readflag = 1
-    	    			ORDER BY pubdate DESC LIMIT 1
-    	    		) x )"
-                , $id, $id
-            );
-        }
-
+        $db->dbh->query(
+            "DELETE FROM entries WHERE _id_target = ? AND readflag = 1
+            AND updatetime < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -1 DAY)
+            AND 
+	    	pubdate NOT IN (SELECT pubdate FROM 
+	    		(SELECT pubdate FROM entries
+	    			WHERE _id_target = ?  AND readflag = 1
+	    			ORDER BY pubdate DESC LIMIT 1
+	    		) x )"
+            , $id, $id
+        );
         #       print $id . "\n";
     }
 
@@ -84,10 +63,9 @@ sub run {
         }
     }
 
-    $db->dbh->query('OPTIMIZE TABLE entries;') if $engine eq "mysql";
-    $db->dbh->query(
-        'DELETE FROM stories WHERE guid NOT IN (SELECT guid FROM entries);');
-    $db->dbh->query('OPTIMIZE TABLE stories;') if $engine eq "mysql";
+    $db->dbh->query('OPTIMIZE TABLE entries;');
+    $db->dbh->query('DELETE FROM stories WHERE guid NOT IN (SELECT guid FROM entries);');
+    $db->dbh->query('OPTIMIZE TABLE stories;');
 
     $count    = $db->dbh->select_row('SELECT COUNT(guid) AS t FROM entries');
     $cmp->{e} = $count->{t};
@@ -99,3 +77,11 @@ sub run {
 }
 
 1;
+
+=encoding utf8
+
+=head1 NAME
+
+Gion::Batch::cleanup - item cleaner.
+
+=cut

@@ -1,5 +1,5 @@
-package Gion::Batch::Crawler;
-use base qw/Gion::Batch/;
+package Gion::Batch::crawler;
+use Mojo::Base 'Mojolicious::Command';
 
 use utf8;
 use Try::Tiny;
@@ -9,7 +9,6 @@ use Encode;
 use Time::Piece;
 use XML::RSS;
 use XML::Atom::Feed;
-use Gion::DB;
 use Getopt::Long qw(GetOptionsFromArray);
 use Data::Dumper;
 use DateTime;
@@ -22,31 +21,34 @@ use File::Spec;
 use Furl;
 use JSON;
 
-our $verbose;
+has description => 'item crawler';
+has usage => 'supported some options.';
+
+has verbose => sub {
+    my $self = shift;
+    my $opt  = shift;
+    if ($opt) {
+        $self->{_verbose} = $opt;
+    }
+    $self->{_verbose};
+};
 
 sub run {
-    my $self = shift;
+    my ($self, @args) = @_;
 
     #指定取得かどうか
     my $eid;
     my $term;
     GetOptionsFromArray(
-        \@_,
+        \@args,
         "e=i{,}"  => \@$eid,
         "silent" =>  \(my $verbose_tmp),
         "term=i"  => \$term,
     );
-    $verbose = $verbose_tmp ? 0 : 1;
+    $self->verbose($verbose_tmp ? 0 : 1);
 
     #DBへ接続
-    my $db = Gion::DB->new;
-    my $engine;
-    if ( $self->config->{db}->{dsn} =~ /^(?i:dbi):SQLite:/ ) {
-        $engine = "SQLite";
-    }
-    else {
-        $engine = "mysql";
-    }
+    my $db = $self->app->dbh;
 
     #取得先を取得
     my $rs;
@@ -63,8 +65,8 @@ sub run {
     }
 
     my $opt;
-    $opt->{timeout} = $self->config->{crawler}->{timeout} || 5;
-    $opt->{agent}   = $self->config->{crawler}->{ua} ||
+    $opt->{timeout} = $self->app->config->{crawler}->{timeout} || 5;
+    $opt->{agent}   = $self->app->config->{crawler}->{ua} ||
         "Gion Crawler/0.1 (https://github.com/yseto/gion)";
 
     my $ua = Furl->new(
@@ -77,7 +79,6 @@ sub run {
     );
     $self->furl_agent($ua);
 
-    my $engine_str = $engine eq "SQLite" ? "OR" : "";
     my $now = Time::Piece->new()->epoch;
 
     for my $c (@$rs) {
@@ -87,7 +88,7 @@ sub run {
         my $res = $self->agent( $c->{url}, $cache);
 
         #結果が得られない場合、次の対象を処理する
-        if ( $res->{headers}->{code} eq '404' ) {
+        if ( $res->{headers}->{code} eq '404' || $res->{headers}->{code} =~ /5\d\d/ ) {
             $db->dbh->query(
                 'UPDATE feeds SET http_status = 404, term = 4, cache = ? WHERE id = ?',
                 JSON::encode_json($res->{headers}),
@@ -208,7 +209,7 @@ sub run {
                 if ( from_mysql_datetime($entries->{pubDate}) < $d->{pubDate} ) {
                     #購読リストに基づいて、更新情報をユーザーごとへ挿入
                     $db->dbh->query(
-                        "INSERT $engine_str IGNORE INTO entries
+                        "INSERT IGNORE INTO entries
                         (guid, pubDate, readflag, _id_target, updatetime, user)
                         VALUES (?,?,0,?,CURRENT_TIMESTAMP,?)",
                         $d->{guid},
@@ -222,7 +223,7 @@ sub run {
 
             #エントリに対するストーリーを挿入
             $db->dbh->query(
-                "INSERT $engine_str IGNORE INTO stories
+                "INSERT IGNORE INTO stories
                 (guid, title, description, url)
                 VALUES (?,?,?,?)",
                 $d->{guid},
@@ -410,7 +411,7 @@ sub parser_atom {
 sub logger {
     my $self = shift;
     my $str  = shift . "\n";
-    if ($verbose) {
+    if ($self->verbose) {
         print STDERR $str;
     }
 }
@@ -470,6 +471,17 @@ sub agent {
             headers => $response,
         };
     }
+    return {
+        headers => $response,
+    };
 }
 
 1;
+
+=encoding utf8
+
+=head1 NAME
+
+Gion::Batch::crawler - item crawler.
+
+=cut

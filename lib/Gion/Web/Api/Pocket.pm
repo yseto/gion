@@ -1,4 +1,4 @@
-package Gion::Api::Pocket;
+package Gion::Web::Api::Pocket;
 use Mojo::Base 'Mojolicious::Controller';
 use Data::Dumper;
 use Furl;
