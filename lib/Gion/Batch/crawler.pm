@@ -7,7 +7,7 @@ use Carp;
 use URI;
 use Encode;
 use Time::Piece;
-use XML::RSS;
+use XML::RSS::LibXML;
 use XML::Atom::Feed;
 use Getopt::Long qw(GetOptionsFromArray);
 use Data::Dumper;
@@ -335,8 +335,14 @@ sub parser_rss {
 
     my $data;
     my $ns_dc = "http://purl.org/dc/elements/1.1/";
-    my $rss   = new XML::RSS;
-    $rss->parse($str);
+    my $rss = XML::RSS::LibXML->new();
+    try {
+        $rss->parse($str);
+    }
+    catch {
+        return croak("error");
+    };
+ 
     foreach ( @{ $rss->{items} } ) {
         my $dt;
         if ( defined $_->{pubDate} ) {
