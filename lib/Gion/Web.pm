@@ -8,8 +8,15 @@ has dbh => sub {
     my $class = shift;
     my $conf = $class->app->config->{db};
     DBIx::Handler->new(
-        $conf->{dsn}, $conf->{username},
-        $conf->{password}, { RootClass => 'DBIx::Sunny', }
+        $conf->{dsn}, $conf->{username}, $conf->{password}, {
+            RootClass => 'DBIx::Sunny',
+            Callbacks => {
+                connected => sub {
+                    $_[0]->do('SET NAMES utf8mb4');
+                    return;
+                },
+            },
+        },
     );
 };
 
