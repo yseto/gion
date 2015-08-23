@@ -8,8 +8,15 @@ has dbh => sub {
     my $class = shift;
     my $conf = $class->app->config->{db};
     DBIx::Handler->new(
-        $conf->{dsn}, $conf->{username},
-        $conf->{password}, { RootClass => 'DBIx::Sunny', }
+        $conf->{dsn}, $conf->{username}, $conf->{password}, {
+            RootClass => 'DBIx::Sunny',
+            Callbacks => {
+                connected => sub {
+                    $_[0]->do('SET NAMES utf8mb4');
+                    return;
+                },
+            },
+        },
     );
 };
 
@@ -23,14 +30,14 @@ sub startup {
     my $self = shift;
 
     $self->plugin( 'Config', { file => 'gion.conf', default => {} } );
-    $self->plugin('CSRFProtect');
     $self->secrets( [ random_string( "s" x 32 ) ] );
     $self->sessions->cookie_name('Gion');
     $self->sessions->default_expiration(86400);
 
     # Router
-    my $r = $self->routes;
-    my $l = $r->bridge->to('login#auth');
+    my $rbase = $self->routes;
+    my $r = $rbase->under->to('CSRF#check');
+    my $l = $r->under->to('login#auth');
 
     $l->post('/inf/:action')->to( controller => 'inf' );
     $l->post('/pin/:action')->to( controller => 'pin' );

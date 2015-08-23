@@ -118,7 +118,7 @@
     </div>
 
     <form action="../opml/import" method="post" role="form" enctype="multipart/form-data">
-      <input type="hidden" name="csrftoken" value="<%= csrftoken %>">
+      <%= csrf_field %>
       <div class="form-group">
         <label class="control-label col-sm-3">インポート</label>
         <div class="col-sm-13">

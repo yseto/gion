@@ -1,3 +1,6 @@
+-- ALTER DATABASE XXX CHARACTER SET utf8mb4;
+
+-- TODO guid column charset is utf8.
 
 CREATE TABLE IF NOT EXISTS `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -10,8 +13,8 @@ CREATE TABLE IF NOT EXISTS `user` (
   `last_login` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-/**/
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS `categories` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user` int(11) NOT NULL,
@@ -19,8 +22,8 @@ CREATE TABLE IF NOT EXISTS `categories` (
   PRIMARY KEY (`id`),
   KEY `user` (`user`),
   CONSTRAINT `categories_ibfk_1` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-/**/
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS `feeds` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `url` varchar(2400) NOT NULL,
@@ -33,8 +36,8 @@ CREATE TABLE IF NOT EXISTS `feeds` (
   `term` varchar(1) NOT NULL DEFAULT 1,
   `cache` varchar(2400) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-/**/
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS `target` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `_id_categories` int(11) NOT NULL,
@@ -45,10 +48,10 @@ CREATE TABLE IF NOT EXISTS `target` (
   CONSTRAINT `target_ibfk` FOREIGN KEY (`_id_categories`) REFERENCES `categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   KEY `_id_feeds` (`_id_feeds`),
   CONSTRAINT `target_ibfkf` FOREIGN KEY (`_id_feeds`) REFERENCES `feeds` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-/**/
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS `entries` (
-  `guid` varchar(250) NOT NULL,
+  `guid` varchar(250) CHARACTER SET utf8 NOT NULL,
   `pubDate` datetime NOT NULL,
   `updatetime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `readflag` tinyint(4) NOT NULL,
@@ -58,16 +61,16 @@ CREATE TABLE IF NOT EXISTS `entries` (
   KEY `_id_target` (`_id_target`),
   KEY `guid` (`guid`),
   CONSTRAINT `entries_ibfk` FOREIGN KEY (`_id_target`) REFERENCES `target` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/**/
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS `stories` (
-  `guid` varchar(250) NOT NULL,
+  `guid` varchar(250) CHARACTER SET utf8 NOT NULL,
   `title` varchar(80) NOT NULL,
   `description` tinytext NOT NULL,
   `url` tinytext NOT NULL,
   PRIMARY KEY (`guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/**/
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS `connection` (
   `user` int(11) NOT NULL,
   `service` varchar(60) NOT NULL,
@@ -75,6 +78,6 @@ CREATE TABLE IF NOT EXISTS `connection` (
   `key` varchar(120) NOT NULL,
   UNIQUE KEY `userservice` (`user`,`service`),
   CONSTRAINT `connection_ibfk_1` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/**/
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
