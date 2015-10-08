@@ -21,22 +21,26 @@ G.option = {
     /*
      * 外部サービスの接続状態を取得する
      */
-    service_connection: function() {
+    // ref. http://qiita.com/kawanamiyuu/items/9312e5d99b2b26bd6074
+    service_connection: function(arg) {
         var self = this;
-        jQuery.ajax({
-            type: 'POST',
-            url: '/manage/get_connect',
-            datatype: 'json',
-            success: function(a) {
-                if (a.e === null) {
-                    return false;
+        var opt = $.extend({}, $.ajaxSettings, arg);
+        opt.type= 'POST';
+        opt.url= '/manage/get_connect';
+        opt.datatype= 'json';
+        opt.success = (function(func) {
+            return function(data, statusText, jqXHR) {
+                if (data.e !== null) {
+                    $.each(data.e, function() {
+                        self.service_state[this.service] = this.username;
+                    });
                 }
-                jQuery.each(a.e, function() {
-                    self.service_state[this.service] = this.username;
-                });
-            },
-            error: function() {},
-        });
+                if (func) {
+                    func(data, statusText, jqXHR);
+                }
+            };
+        })(opt.success);
+        return $.ajax(opt);
     },
 };
 
@@ -252,7 +256,7 @@ G.settings = function() {
     /*
      * 外部サービスの設定を取得する
      */
-    self.service_connection();
+    var set_external_service_state = function() {
     jQuery.each(self.service, function() {
         var connect = 0;
         var set_connect = '連携する';
@@ -295,8 +299,8 @@ G.settings = function() {
         tr.append(td).append(td2);
         table.append(tr);
     });
-
-
+    };
+    self.service_connection({ success: set_external_service_state });
 
     /*
      * サービスの切断をする
