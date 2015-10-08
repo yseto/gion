@@ -3,7 +3,7 @@ use Mojo::Base 'Mojolicious::Controller';
 use Data::Dumper;
 use Furl;
 use URI;
-use Mojo::JSON;
+use JSON;
 use Try::Tiny;
 
 sub connect {
@@ -86,7 +86,7 @@ sub post {
         my $url = 'https://getpocket.com/v3/add';
         my $req = HTTP::Request->new( POST => $url );
         $req->content_type('application/json');
-        $req->content( Mojo::JSON->new->encode($hash) );
+        $req->content( JSON::encode_json($hash) );
 
         my $ua = Furl->new;
         $ua->request($req)->content;
