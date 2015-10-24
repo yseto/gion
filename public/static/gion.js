@@ -21,23 +21,26 @@ G.option = {
     /*
      * 外部サービスの接続状態を取得する
      */
-    service_connection: function() {
+    // ref. http://qiita.com/kawanamiyuu/items/9312e5d99b2b26bd6074
+    service_connection: function(arg) {
         var self = this;
-        jQuery.ajax({
-            type: 'POST',
-            url: '/manage/get_connect',
-            datatype: 'json',
-            async: false,
-            success: function(a) {
-                if (a.e === null) {
-                    return false;
+        var opt = $.extend({}, $.ajaxSettings, arg);
+        opt.type= 'POST';
+        opt.url= '/manage/get_connect';
+        opt.datatype= 'json';
+        opt.success = (function(func) {
+            return function(data, statusText, jqXHR) {
+                if (data.e !== null) {
+                    $.each(data.e, function() {
+                        self.service_state[this.service] = this.username;
+                    });
                 }
-                jQuery.each(a.e, function() {
-                    self.service_state[this.service] = this.username;
-                });
-            },
-            error: function() {},
-        });
+                if (func) {
+                    func(data, statusText, jqXHR);
+                }
+            };
+        })(opt.success);
+        return $.ajax(opt);
     },
 };
 
@@ -253,7 +256,7 @@ G.settings = function() {
     /*
      * 外部サービスの設定を取得する
      */
-    self.service_connection();
+    var set_external_service_state = function() {
     jQuery.each(self.service, function() {
         var connect = 0;
         var set_connect = '連携する';
@@ -296,8 +299,8 @@ G.settings = function() {
         tr.append(td).append(td2);
         table.append(tr);
     });
-
-
+    };
+    self.service_connection({ success: set_external_service_state });
 
     /*
      * サービスの切断をする
@@ -386,7 +389,6 @@ G.root = function() {
             type: 'POST',
             url: '/inf/get_pinlist',
             datatype: 'json',
-            async: false,
             success: function(a) {
                 var count = 0;
                 $('#pinlist_ul').empty();
@@ -608,7 +610,6 @@ G.reader = function() {
             type: 'POST',
             url: '/inf/get_categories',
             datatype: 'json',
-            async: false,
             success: function(b) {
                 var link = [];
                 jQuery.each(b, function(i, data) {
@@ -638,6 +639,22 @@ G.reader = function() {
                         }
                     }
                 });
+            },
+            complete: function() {
+              $('.categories_link').removeClass('active');
+              if (q === undefined) {
+                $('.categories_link:first').addClass('active');
+                get_contents(0);
+              } else {
+                if (q === 0) {
+                    $('.categories_link:first').addClass('active');
+                } else {
+                    $('#categories_link_' + q).addClass('active');
+                }
+                get_contents(q);
+              }
+              self.selection = 0;
+              moveselector();
             }
         });
     };
@@ -781,16 +798,7 @@ G.reader = function() {
         q = q.replace('/#', '');
         if (jQuery.isNumeric(q)) {
             cat_list(q);
-            $('.categories_link').removeClass('active');
-            get_contents(q);
-            if (parseInt(q) === 0) {
-                $('.categories_link:first').addClass('active');
-            } else {
-                $('#categories_link_' + q).addClass('active');
-            }
-            self.selection = 0;
-            moveselector();
-        }
+       }
     };
 
     /*
@@ -921,11 +929,7 @@ G.reader = function() {
      * またそのコンテンツを取得する
      */
     cat_list();
-    $('.categories_link').removeClass('active');
-    get_contents(0);
-    $('.categories_link:first').addClass('active');
     $('#pinlist').hide();
-    moveselector();
 
     /*
      * カテゴリリストのリンクをクリック
@@ -945,7 +949,6 @@ G.reader = function() {
                 type: 'POST',
                 url: '/inf/get_pinlist',
                 datatype: 'json',
-                async: false,
                 success: function(a) {
                     var count = 0;
                     $('#pinlist_ul').empty();
@@ -974,11 +977,6 @@ G.reader = function() {
                 datatype: 'json',
                 success: function() {
                     cat_list();
-                    $('.categories_link').removeClass('active');
-                    get_contents(0);
-                    $('.categories_link:first').addClass('active');
-                    self.selection = 0;
-                    moveselector();
                 },
             });
         }
