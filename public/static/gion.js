@@ -16,6 +16,9 @@ G.option = {
     service: [{
         name: 'Pocket (formerly read it later)',
         id: 'pocket'
+    },{
+        name: 'Hatena Bookmark',
+        id: 'hatena'
     }],
     actions: function() {},
     /*
@@ -995,13 +998,17 @@ G.reader = function() {
      * 外部サービスへポストする
      */
     $(document).on('click', '.service', function() {
-        var r = $(this);
+        var r = $(this), comment;
+        if ($(this).data('service') === 'hatena') {
+            comment = window.prompt("type a comment", "");
+        }
         jQuery.ajax({
             type: 'POST',
             url: '/api/' + $(this).data('service') + '/post',
             datatype: 'json',
             data: {
                 'url': $(this).data('url'),
+                'comment': comment,
             },
             success: function(a) {
                 if (a.e === 'ok') {
@@ -1060,6 +1067,11 @@ G.reader = function() {
             case 118:
                 // V
                 item_view();
+                break;
+
+            case 105:
+                // I
+                item_service('hatena');
                 break;
 
             case 108:
