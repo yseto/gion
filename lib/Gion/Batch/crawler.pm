@@ -205,8 +205,16 @@ sub run {
                 my $entries = $db->dbh->select_row( 'SELECT pubDate FROM entries WHERE
                     _id_target = ? AND readflag = 1 ORDER BY pubDate DESC LIMIT 1', $_->{id} );
 
-                my $d_pubDate = to_mysql_datetime( $d->{pubDate} );
-                if ( from_mysql_datetime($entries->{pubDate}) < $d->{pubDate} ) {
+                my $state = 0;
+                unless ($entries) {
+                    # 既読データが存在しない場合
+                    $state = 1;
+                } else {
+                    $state = (from_mysql_datetime($entries->{pubDate}) < $d->{pubDate});
+                }
+
+                if ( $state ) {
+                    my $d_pubDate = to_mysql_datetime( $d->{pubDate} );
                     #購読リストに基づいて、更新情報をユーザーごとへ挿入
                     $db->dbh->query(
                         "INSERT IGNORE INTO entries

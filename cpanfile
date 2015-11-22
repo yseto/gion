@@ -19,3 +19,6 @@ requires 'Date::Parse';
 requires 'String::Random';
 requires 'Furl';
 requires 'IO::Socket::SSL';
+requires 'OAuth::Lite::Consumer';
+requires 'OAuth::Lite::Token';
+requires 'LWP::Protocol::https';

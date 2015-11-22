@@ -20,5 +20,9 @@
     },
     service => {
         pocket => '',
+        hatena => {
+            consumer_key => '',
+            consumer_secret => '',
+        },
     },
 };
