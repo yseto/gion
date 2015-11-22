@@ -447,6 +447,7 @@ sub agent {
     my @headers;
     if (ref $opt eq 'HASH') {
         while (my ($key, $value) = each($opt)){
+            next if $key eq 'code';
             push @headers, $key => $value;
         }
         $response = $opt;
