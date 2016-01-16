@@ -32,6 +32,7 @@ sub auth {
             $db->query(
                 'UPDATE user SET last_login = CURRENT_TIMESTAMP WHERE id = ?',
                 $c->{id} );
+            $self->app->log->info("LOGIN " . $self->session('username'));
             return 1;
         }
     }

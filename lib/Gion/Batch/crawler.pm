@@ -77,6 +77,7 @@ sub run {
         max_redirects => 0,
         %$opt,
     );
+    $ua->env_proxy;
     $self->furl_agent($ua);
 
     my $now = Time::Piece->new()->epoch;
