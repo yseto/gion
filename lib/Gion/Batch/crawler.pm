@@ -373,6 +373,10 @@ sub parser_rss {
             $url = $guid;    #URLがない場合は、GUIDを代用
         }
 
+        if ( $url eq '' or $guid eq '' ) {
+            next;   # 両方空の場合は登録できない
+        }
+
         #相対パスだと修正する
         if ( $url !~ /^http/ ) {
             $url = URI->new_abs( $url, $rsurl )->as_string;
