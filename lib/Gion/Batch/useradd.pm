@@ -13,12 +13,12 @@ sub run {
     GetOptionsFromArray(
         \@_,
         "user=s"    => \$data->{user},
-        "pass=s"    => \$data->{pass},
+        "password=s"    => \$data->{password},
         "overwrite" => \$data->{force},
     );
 
-    unless ( defined $data->{user} || defined $data->{pass} ) {
-        say "need parameter: --user ID --pass Password";
+    unless ( defined $data->{user} || defined $data->{password} ) {
+        say "need parameter: --user ID --password Password";
         exit();
     }
 
@@ -26,20 +26,20 @@ sub run {
         strech => $self->app->config->{strech} || 500,
         salt   => $self->app->config->{salt}   || "Gion::Util::Auth",
         id     => $data->{user},
-        passwd => $data->{pass},
+        password => $data->{password},
     );
 
-    my $pw = $auth->get_hash;
+    my $password = $auth->get_hash;
 
     my $db = $self->app->dbh;
     if ( defined $data->{force} ) {
-        $db->dbh->query( 'UPDATE user SET pw = ? WHERE name = ?',
-            $pw, $data->{user} );
+        $db->dbh->query( 'UPDATE user SET password = ? WHERE name = ?',
+            $password, $data->{user} );
         say "Password Change: " . $data->{user};
     }
     else {
-        $db->dbh->query( 'INSERT INTO user (id,pw,name) VALUES (null,?,?)',
-            $pw, $data->{user} );
+        $db->dbh->query( 'INSERT INTO user (id,password,name) VALUES (null,?,?)',
+            $password, $data->{user} );
         say "User Added: " . $data->{user};
     }
 }

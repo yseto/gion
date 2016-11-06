@@ -11,7 +11,7 @@ use Time::Piece;
 use HTTP::Request;
 use Furl;
 
-sub register_categories {
+sub register_category {
     my $self = shift;
     my $db   = $self->app->dbh->dbh;
 
@@ -21,8 +21,8 @@ sub register_categories {
 
     my $data = $self->req->params->to_hash;
     my $rs   = $db->select_row(
-        "SELECT COUNT(*) AS t FROM categories 
-        WHERE user = ? AND name = ?",
+        "SELECT COUNT(*) AS t FROM category 
+        WHERE user_id = ? AND name = ?",
         $self->session('username'),
         $data->{name}
     );
@@ -31,7 +31,7 @@ sub register_categories {
       if $rs->{t} > 0;
 
     $db->query(
-        "INSERT INTO categories (id,user,name) VALUES (null,?,?)",
+        "INSERT INTO category (id,user_id,name) VALUES (null,?,?)",
         $self->session('username'),
         $data->{name}
     );
@@ -54,22 +54,22 @@ sub register_target {
     my $data = $self->req->params->to_hash;
 
     my $feed =
-      $db->select_row( "SELECT id FROM feeds WHERE url = ? AND siteurl = ? ",
+      $db->select_row( "SELECT id FROM feed WHERE url = ? AND siteurl = ? ",
         $data->{rss}, $data->{url} );
 
     unless ( defined $feed->{id} ) {
         my $dt = Time::Piece->new;
         $db->query(
-"INSERT INTO feeds (url,siteurl,title,http_status,pubDate) VALUES (?,?,?,0,?);",
+"INSERT INTO feed (url,siteurl,title,http_status,pubDate) VALUES (?,?,?,0,?);",
             $data->{rss}, $data->{url}, $data->{title}, $dt->epoch );
 
         $feed = $db->select_row(
-            "SELECT id FROM feeds WHERE url = ? AND siteurl = ? ",
+            "SELECT id FROM feed WHERE url = ? AND siteurl = ? ",
             $data->{rss}, $data->{url} );
     }
 
     my $rs = $db->select_row(
-        "SELECT COUNT(*) AS t FROM target WHERE user = ? AND _id_feeds = ?",
+        "SELECT COUNT(*) AS t FROM target WHERE user_id = ? AND feed_id = ?",
         $self->session('username'),
         $feed->{id}
     );
@@ -78,7 +78,7 @@ sub register_target {
       if $rs->{t} > 0;
 
     $rs = $db->select_row(
-        "SELECT COUNT(*) AS t FROM categories WHERE user = ? AND id = ?",
+        "SELECT COUNT(*) AS t FROM category WHERE user_id = ? AND id = ?",
         $self->session('username'),
         $data->{cat}
     );
@@ -86,7 +86,7 @@ sub register_target {
     return if $rs->{t} == 0;
 
     $db->query(
-        "INSERT INTO target (_id_categories,_id_feeds,user) VALUES (?,?,?);",
+        "INSERT INTO target (category_id,feed_id,user_id) VALUES (?,?,?);",
         $data->{cat}, $feed->{id}, $self->session('username') );
 
     $self->render( json => { r => "OK" } );
@@ -135,7 +135,7 @@ sub examine_target {
         return $self->render( json => { t => '', u => '' } );
     };
 
-    $title = decode_utf8($title);
+#   $title = decode_utf8($title);
     $title =~ s/\r|\n//g;
 
     #warn $title;
@@ -143,8 +143,7 @@ sub examine_target {
     # http://blog.livedoor.jp/dankogai/archives/51568463.html
 
     # RSS の場合
-    $url =
-      $doc->findvalue('/html/head/link[@type="application/rss+xml"][1]/@href');
+    $url = $doc->findvalue('/html/head/link[@type="application/rss+xml"][1]/@href');
     unless ( $url eq "" ) {
         return $self->render(
             json => {
@@ -155,8 +154,7 @@ sub examine_target {
     }
 
     # Atom の場合
-    $url =
-      $doc->findvalue('/html/head/link[@type="application/atom+xml"][1]/@href');
+    $url = $doc->findvalue('/html/head/link[@type="application/atom+xml"][1]/@href');
     unless ( $url eq "" ) {
         return $self->render(
             json => {
@@ -184,11 +182,11 @@ sub delete_it {
     my $data = $self->req->params->to_hash;
 
     if ( $data->{target} eq 'category' ) {
-        $db->query( "DELETE FROM categories WHERE id = ? AND user = ?",
+        $db->query( "DELETE FROM category WHERE id = ? AND user_id = ?",
             $data->{id}, $self->session('username') );
     }
     elsif ( $data->{target} eq 'entry' ) {
-        $db->query( "DELETE FROM target WHERE _id_feeds = ? AND user = ?;",
+        $db->query( "DELETE FROM target WHERE feed_id = ? AND user_id = ?;",
             $data->{id}, $self->session('username') );
     }
     $self->render( json => { r => "OK" } );
@@ -208,7 +206,7 @@ sub change_it {
     my $data = $self->req->params->to_hash;
 
     $db->query(
-        "UPDATE target SET _id_categories = ? WHERE _id_feeds = ? AND user = ?",
+        "UPDATE target SET category_id = ? WHERE feed_id = ? AND user_id = ?",
         $data->{cat}, $data->{id}, $self->session('username') );
 
     return $self->render( json => { r => "OK" } );
@@ -258,7 +256,7 @@ sub get_connect {
     my $self = shift;
     my $db   = $self->app->dbh->dbh;
     my $rs   = $db->select_all(
-        "SELECT username , service FROM connection WHERE user = ?",
+        "SELECT username , service FROM connection WHERE user_id = ?",
         $self->session('username') );
 
     $self->render( json => { e => $rs } );
@@ -269,7 +267,7 @@ sub set_connect {
     my $db   = $self->app->dbh->dbh;
     my $data = $self->req->params->to_hash;
     $db->query(
-        "DELETE FROM connection WHERE user = ? AND service = ?",
+        "DELETE FROM connection WHERE user_id = ? AND service = ?",
         $self->session('username'),
         $data->{service}
     );

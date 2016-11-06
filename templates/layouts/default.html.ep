@@ -22,7 +22,7 @@
         margin:0 0 5px !important;
         padding:0 10px;
       }
-      .list-group .categories_link, #pinlist_ul .list-group-item {
+      .list-group .category_link, #pinlist_ul .list-group-item {
         padding:4px 10px;
       }
     </style>
@@ -50,7 +50,7 @@
       <div class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
           <li id="nav-home"><a href="#home"><span class="glyphicon glyphicon-home"></span> Home</a></li>
-          <li id="nav-entries"><a href="#entries"><span class="glyphicon glyphicon-inbox"></span> Read</a></li>
+          <li id="nav-entry"><a href="#entry"><span class="glyphicon glyphicon-inbox"></span> Read</a></li>
           <li id="nav-addasite"><a href="#addasite"><span class="glyphicon glyphicon-plus-sign"></span> Add a Site</a></li>
           <li id="nav-subscription"><a href="#subscription"><span class="glyphicon glyphicon-list"></span> Subscription</a></li>
         </ul>

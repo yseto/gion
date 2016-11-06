@@ -8,23 +8,23 @@ use Mojo::Util;
 
 our $redirector = 'https://www.google.com/url?sa=D&q=';
 
-sub get_categories {
+sub get_category {
     my $self = shift;
     my $db   = $self->app->dbh;
 
     my $rs = $db->dbh->select_all( "
         SELECT COUNT(0) AS c, cc.id AS i, cc.name AS n
-        FROM entries
-        INNER JOIN target AS t ON entries._id_target = t.id
-        INNER JOIN categories AS cc ON t._id_categories = cc.id 
-        WHERE readflag != 1 AND cc.user = ?
+        FROM entry
+        INNER JOIN target AS t ON entry.target_id = t.id
+        INNER JOIN category AS cc ON t.category_id = cc.id 
+        WHERE readflag != 1 AND cc.user_id = ?
         GROUP BY cc.id
         ORDER BY cc.name ASC
         ", $self->session('username') );
     $self->render( json => $rs );
 }
 
-sub get_entries {
+sub get_entry {
     my $self = shift;
     my $db   = $self->app->dbh;
     my $data = $self->req->params->to_hash;
@@ -39,10 +39,10 @@ sub get_entries {
 
     if ( $id == 0 ) {
         my $rs = $db->dbh->select_row(
-            "SELECT c.id AS id FROM entries 
-        INNER JOIN target AS t ON _id_target = t.id
-        INNER JOIN categories AS c ON c.id = t._id_categories
-        WHERE readflag != 1 AND c.user = ? 
+            "SELECT c.id AS id FROM entry 
+        INNER JOIN target AS t ON target_id = t.id
+        INNER JOIN category AS c ON c.id = t.category_id
+        WHERE readflag != 1 AND c.user_id = ? 
         GROUP BY c.id ORDER BY c.name ASC LIMIT 1",
             $self->session('username')
         );
@@ -57,17 +57,17 @@ sub get_entries {
 
     my $rs = $db->dbh->select_all(
         "SELECT e.guid, s.title, description, 
-        pubDate, readflag, s.url, _id_target FROM entries AS e
-        INNER JOIN target AS t ON _id_target = t.id
-        INNER JOIN stories AS s ON s.guid = e.guid
-        WHERE t._id_categories = ? AND readflag != 1 AND e.user = ?
+        pubDate, readflag, s.url, target_id FROM entry AS e
+        INNER JOIN target AS t ON target_id = t.id
+        INNER JOIN story AS s ON s.guid = e.guid
+        WHERE t.category_id = ? AND readflag != 1 AND e.user_id = ?
         ORDER BY pubDate DESC", $id, $self->session('username')
     );
 
     for (@$rs) {
         my $rs2 = $db->dbh->select_row(
-"SELECT f.title FROM target AS t INNER JOIN feeds AS f ON t._id_feeds = f.id WHERE t.id = ?",
-            $_->{_id_target}
+"SELECT f.title FROM target AS t INNER JOIN feed AS f ON t.feed_id = f.id WHERE t.id = ?",
+            $_->{target_id}
         );
         my $url = $_->{url};
 
@@ -124,11 +124,11 @@ sub set_asread {
         $self->app->log->info(
             sprintf( "ASREAD %s\t%s", $self->session('username'), $_ ) );
         $db->query(
-            "UPDATE entries
+            "UPDATE entry
             SET readflag = 1, updatetime = CURRENT_TIMESTAMP
-            WHERE readflag = 0 AND user = ? AND guid = ?",
+            WHERE readflag = 0 AND user_id = ? AND guid = ?",
             $self->session('username'), $_
-        ) if 1 == 1;    # TODO COMMENT OUT
+        ) if 0 == 1;    # TODO COMMENT OUT
     }
     $self->render( text => "OK" );
 }
@@ -141,15 +141,15 @@ sub get_targetlist {
         $self->session('username') );
 
     my $hash = $db->dbh->select_all(
-"SELECT id AS i, name AS n FROM categories WHERE user = ? ORDER BY name ASC;",
+"SELECT id AS i, name AS n FROM category WHERE user_id = ? ORDER BY name ASC;",
         $self->session('username')
     );
 
     my $rs = $db->dbh->select_all(
-        "SELECT f.id, f.title, t._id_categories, f.http_status, f.siteurl 
+        "SELECT f.id, f.title, t.category_id, f.http_status, f.siteurl 
         FROM target AS t 
-        INNER JOIN feeds AS f ON _id_feeds = f.id 
-        WHERE t.user = ? ORDER BY title ASC",
+        INNER JOIN feed AS f ON feed_id = f.id 
+        WHERE t.user_id = ? ORDER BY title ASC",
         $self->session('username')
     );
 
@@ -168,7 +168,7 @@ sub get_targetlist {
         my $h = {
             i => $_->{id},
             n => $_->{title},
-            c => $_->{_id_categories},
+            c => $_->{category_id},
             r => $_->{http_status},
             h => $url,
         };
@@ -186,10 +186,10 @@ sub get_pinlist {
 
     my $rs = $db->dbh->select_all(
         "SELECT s.title AS t, s.url AS u, e.guid AS g, e.updatetime AS m
-            FROM entries AS e 
-            INNER JOIN target AS tt ON e._id_target = tt.id
-            INNER JOIN stories AS s ON s.guid = e.guid
-            WHERE e.readflag = 2 AND tt.user = ?
+            FROM entry AS e 
+            INNER JOIN target AS tt ON e.target_id = tt.id
+            INNER JOIN story AS s ON s.guid = e.guid
+            WHERE e.readflag = 2 AND tt.user_id = ?
             ORDER BY pubDate DESC", $self->session('username')
     );
 
@@ -236,9 +236,9 @@ sub set_pin {
         sprintf( "PIN %s\t%s", $self->session('username'), $data->{pinid} ) );
 
     $db->dbh->query(
-        "UPDATE entries
+        "UPDATE entry
         SET readflag = ?, updatetime = CURRENT_TIMESTAMP
-        WHERE user = ? AND guid = ?",
+        WHERE user_id = ? AND guid = ?",
         $flag, $self->session('username'), $data->{pinid}
     );
 
@@ -250,9 +250,9 @@ sub remove_all_pin {
     my $db   = $self->app->dbh;
 
     $db->dbh->query(
-        "UPDATE entries
+        "UPDATE entry
         SET readflag = 1, updatetime = CURRENT_TIMESTAMP
-        WHERE readflag = 2 AND user = ?",
+        WHERE readflag = 2 AND user_id = ?",
         $self->session('username')
     );
     $self->render( text => "OK" );
@@ -265,14 +265,14 @@ sub update_password {
     my $valid = FormValidator::Lite->new( $self->req );
     my $res   = $valid->check(
         password_old => [ 'NOT_NULL', [qw/LENGTH 8 255/] ],
-        { passwd => [qw/password passwordc/] } => ['DUPLICATION'],
+        { password => [qw/password passwordc/] } => ['DUPLICATION'],
         password => [ 'NOT_NULL', [qw/LENGTH 8 255/] ],
     );
     return $self->render( json => { e => 'error' } ) if $valid->has_error;
 
     my $strech = $self->config->{strech} || 500;
     my $salt   = $self->config->{salt}   || "Gion::Util::Auth";
-    my $cfg = $db->dbh->select_row( "SELECT * FROM user WHERE id = ?",
+    my $cfg = $db->dbh->select_row( "SELECT * FROM user_id WHERE id = ?",
         $self->session('username') );
     my $id = $cfg->{name};
 
@@ -280,22 +280,22 @@ sub update_password {
         strech => $strech,
         salt   => $salt,
         id     => $id,
-        passwd => Mojo::Util::encode( 'UTF-8', $data->{password_old} ),
+        password => Mojo::Util::encode( 'UTF-8', $data->{password_old} ),
     );
     return $self->render( json => { e => 'unmatch now password' } )
-      if $cfg->{pw} ne $nowauth->get_hash;
+      if $cfg->{password} ne $nowauth->get_hash;
 
     my $auth = Gion::Util::Auth->new(
         strech => $strech,
         salt   => $salt,
         id     => $id,
-        passwd => Mojo::Util::encode( 'UTF-8', $data->{password} ),
+        password => Mojo::Util::encode( 'UTF-8', $data->{password} ),
     );
 
     $self->app->log->info( "Update Passwd: "
           . $auth->get_hash . ","
           . $self->session('username') );
-    $db->dbh->query( "UPDATE user SET pw = ? WHERE id = ?",
+    $db->dbh->query( "UPDATE user SET password = ? WHERE id = ?",
         $auth->get_hash, $self->session('username') );
     $self->render( json => { e => 'update password' } );
 }
@@ -320,10 +320,10 @@ sub create_user {
         strech => $self->config->{strech} || 500,
         salt   => $self->config->{salt}   || "Gion::Util::Auth",
         id     => encode( 'UTF-8', $data->{username} ),
-        passwd => encode( 'UTF-8', $data->{password} ),
+        password => encode( 'UTF-8', $data->{password} ),
     );
 
-    $db->dbh->query( 'INSERT INTO user (id,pw,name) VALUES (null,?,?)',
+    $db->dbh->query( 'INSERT INTO user (id,password,name) VALUES (null,?,?)',
         $auth->get_hash, encode( 'UTF-8', $data->{username} ) );
     $self->render( 'json' => { e => "User Added: " . $data->{username} } );
 }

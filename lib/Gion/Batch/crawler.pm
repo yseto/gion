@@ -54,14 +54,14 @@ sub run {
     my $rs;
     if (@$eid) {
         $rs =
-          $db->dbh->select_all( 'SELECT * FROM feeds WHERE id IN (?)', $eid );
+          $db->dbh->select_all( 'SELECT * FROM feed WHERE id IN (?)', $eid );
     }
     elsif ($term) {
         $rs =
-          $db->dbh->select_all( 'SELECT * FROM feeds WHERE term = ?', $term );
+          $db->dbh->select_all( 'SELECT * FROM feed WHERE term = ?', $term );
     }
     else {
-        $rs = $db->dbh->select_all('SELECT * FROM feeds');
+        $rs = $db->dbh->select_all('SELECT * FROM feed');
     }
 
     my $opt;
@@ -91,7 +91,7 @@ sub run {
         #結果が得られない場合、次の対象を処理する
         if ( $res->{headers}->{code} eq '404' || $res->{headers}->{code} =~ /5\d\d/ ) {
             $db->dbh->query(
-                'UPDATE feeds SET http_status = 404, term = 4, cache = ? WHERE id = ?',
+                'UPDATE feed SET http_status = 404, term = 4, cache = ? WHERE id = ?',
                 JSON::encode_json($res->{headers}),
                 $c->{id}
             );
@@ -104,7 +104,7 @@ sub run {
         if ( defined $res->{headers}->{_code} &&
             $res->{headers}->{_code} eq '301' ) {
             $db->dbh->query(
-                'UPDATE feeds SET url = ? WHERE id = ?',
+                'UPDATE feed SET url = ? WHERE id = ?',
                 $res->{headers}->{location},
                 $c->{id}
             );
@@ -121,7 +121,7 @@ sub run {
         if ( $res->{headers}->{code} eq '304' ) {
             # 更新
             $db->dbh->query(
-                'UPDATE feeds SET http_status = 304, term = ?, cache = ? WHERE id = ?',
+                'UPDATE feed SET http_status = 304, term = ?, cache = ? WHERE id = ?',
                 update_term($now, from_mysql_datetime($c->{pubDate})->epoch),
                 JSON::encode_json($res->{headers}),
                 $c->{id}
@@ -154,7 +154,7 @@ sub run {
 
 #パースにいずれも失敗した場合、パーサーの設定を初期化する。次回のクロール時にクロールする
             $db->dbh->query(
-'UPDATE feeds SET http_status = ?, parser = 0, term = 1, cache = ? WHERE id = ?',
+'UPDATE feed SET http_status = ?, parser = 0, term = 1, cache = ? WHERE id = ?',
                 $res->{headers}->{code},
                 JSON::encode_json($res->{headers}),
                 $c->{id}
@@ -164,7 +164,7 @@ sub run {
 
         #パーサ種類を保存
         $db->dbh->query(
-            'UPDATE feeds SET parser = ? WHERE id = ?',
+            'UPDATE feed SET parser = ? WHERE id = ?',
             ( $errorcount + 1 ),
             $c->{id}
         );
@@ -185,7 +185,7 @@ sub run {
             }
  
             # 新しいもののみを取り込む
-            next if $d->{pubDate}->epoch <= $latest->epoch;
+#           next if $d->{pubDate}->epoch <= $latest->epoch; # XXX
 
             # RSSのデータから最終更新時間を更新する
             if ($d->{pubDate}->epoch > $last_modified) {
@@ -197,44 +197,40 @@ sub run {
 
             #購読リストを取得する
             my $target =
-              $db->dbh->select_all( 'SELECT * FROM target WHERE _id_feeds = ?',
+              $db->dbh->select_all( 'SELECT * FROM target WHERE feed_id = ?',
                 $c->{id} );
 
             for (@$target) {
 
                 # 既読管理から最終既読を参照
-                my $entries = $db->dbh->select_row( 'SELECT pubDate FROM entries WHERE
-                    _id_target = ? AND readflag = 1 ORDER BY pubDate DESC LIMIT 1', $_->{id} );
+                my $entry = $db->dbh->select_row( 'SELECT pubDate FROM entry WHERE
+                    target_id = ? AND readflag = 1 ORDER BY pubDate DESC LIMIT 1', $_->{id} );
 
                 my $state = 0;
-                unless ($entries) {
+                unless ($entry) {
                     # 既読データが存在しない場合
                     $state = 1;
                 } else {
-                    $state = (from_mysql_datetime($entries->{pubDate}) < $d->{pubDate});
+                    $state = (from_mysql_datetime($entry->{pubDate}) < $d->{pubDate});
                 }
 
                 if ( $state ) {
                     my $d_pubDate = to_mysql_datetime( $d->{pubDate} );
                     #購読リストに基づいて、更新情報をユーザーごとへ挿入
                     $db->dbh->query(
-                        "INSERT IGNORE INTO entries
-                        (guid, pubDate, readflag, _id_target, updatetime, user)
-                        VALUES (?,?,0,?,CURRENT_TIMESTAMP,?)",
+                        "INSERT IGNORE INTO entry (guid, pubDate, readflag, target_id, updatetime, user_id) VALUES (?,?,0,?,CURRENT_TIMESTAMP,?)",
                         $d->{guid},
                         $d_pubDate,
                         $_->{id},
-                        $_->{user}
+                        $_->{user_id}
                     );
-                    $self->logger(sprintf "INSERT user:%4d guid: %s", $_->{user}, $d->{guid} );
+                    $self->logger(sprintf "INSERT user_id:%4d guid: %s", $_->{user_id}, $d->{guid} );
                 }
             }
 
             #エントリに対するストーリーを挿入
             $db->dbh->query(
-                "INSERT IGNORE INTO stories
-                (guid, title, description, url)
-                VALUES (?,?,?,?)",
+                "INSERT IGNORE INTO story (guid, title, description, url) VALUES (?,?,?,?)",
                 $d->{guid},
                 $d->{title}       ? $d->{title}       : '',
                 $d->{description} ? $d->{description} : '',
@@ -250,8 +246,7 @@ sub run {
             $_term = update_term($now, $last_modified);
         }
 
-        $db->dbh->query(
-'UPDATE feeds SET http_status = ?, pubDate = ?, term = ?, cache = ? WHERE id = ?',
+        $db->dbh->query( 'UPDATE feed SET http_status = ?, pubDate = ?, term = ?, cache = ? WHERE id = ?',
             $res->{headers}->{code},
             to_mysql_datetime(Time::Piece->new($last_modified)),
             $_term,
@@ -403,8 +398,8 @@ sub parser_atom {
 
     my $data;
     my $atom    = XML::Atom::Feed->new( \$str );
-    my @entries = $atom->entries;
-    foreach (@entries) {
+    my @entry = $atom->entries;
+    foreach (@entry) {
         my $dt = from_feed_datetime( $_->updated );
 
         my $url = $_->link->href;
@@ -451,7 +446,7 @@ sub agent {
     my $response;
     my @headers;
     if (ref $opt eq 'HASH') {
-        while (my ($key, $value) = each($opt)){
+        while (my ($key, $value) = each(%$opt)){
             next if $key eq 'code';
             push @headers, $key => $value;
         }
@@ -462,7 +457,9 @@ sub agent {
 
     # ここで違う名称で保存する
     # キャッシュして、取得時にそのまま転用させるため
-    $response->{'If-None-Match'}     = shift $res->headers->{etag}  if $res->headers->{etag};
+    if (defined $res->headers->{etag}) {
+        $response->{'If-None-Match'}     = $res->headers->{etag}[0];
+    }
     $response->{'If-Modified-Since'} = $res->headers->last_modified if $res->headers->last_modified;
     $response->{code}                = $code;
 
@@ -475,7 +472,7 @@ sub agent {
             headers => $response,
         };
     }elsif ($code =~ /^30[1237]$/) {
-        my $location = shift $res->headers->{location};
+        my $location = $res->headers->{location}[0];
         if ( $location !~ /^http/ ) {
             $location = URI->new_abs( $location, $url )->as_string;
         }

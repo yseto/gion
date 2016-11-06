@@ -18,9 +18,9 @@ sub run {
 
     my $db = $self->app->dbh;
 
-    $count       = $db->dbh->select_row('SELECT COUNT(guid) AS t FROM entries');
+    $count       = $db->dbh->select_row('SELECT COUNT(guid) AS t FROM entry');
     $cmp->{olde} = $count->{t};
-    $count       = $db->dbh->select_row('SELECT COUNT(guid) AS t FROM stories');
+    $count       = $db->dbh->select_row('SELECT COUNT(guid) AS t FROM story');
     $cmp->{olds} = $count->{t};
 
     my $rs = $db->dbh->select_all('SELECT id FROM target');
@@ -28,12 +28,12 @@ sub run {
     for (@$rs) {
         my $id = $_->{id};
         $db->dbh->query(
-            "DELETE FROM entries WHERE _id_target = ? AND readflag = 1
+            "DELETE FROM entry WHERE target_id = ? AND readflag = 1
             AND updatetime < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -1 DAY)
             AND 
 	    	pubdate NOT IN (SELECT pubdate FROM 
-	    		(SELECT pubdate FROM entries
-	    			WHERE _id_target = ?  AND readflag = 1
+	    		(SELECT pubdate FROM entry
+	    			WHERE target_id = ?  AND readflag = 1
 	    			ORDER BY pubdate DESC LIMIT 1
 	    		) x )"
             , $id, $id
@@ -41,39 +41,39 @@ sub run {
         #       print $id . "\n";
     }
 
-    my $entries = $db->dbh->select_all("SELECT * FROM entries;");
-    for (@$entries) {
+    my $entry = $db->dbh->select_all("SELECT * FROM entry;");
+    for (@$entry) {
         my $target =
           $db->dbh->select_row( "SELECT COUNT(*) AS t FROM target WHERE id = ?",
-            $_->{_id_target} );
+            $_->{target_id} );
         unless ( $target->{t} > 0 ) {
-            $db->dbh->query( "DELETE FROM entries WHERE _id_target = ?",
-                $_->{_id_target} );
+            $db->dbh->query( "DELETE FROM entry WHERE target_id = ?",
+                $_->{target_id} );
         }
     }
 
-    my $feeds = $db->dbh->select_all("SELECT * FROM feeds;");
-    for (@$feeds) {
+    my $feed = $db->dbh->select_all("SELECT * FROM feed;");
+    for (@$feed) {
         my $target = $db->dbh->select_row(
-            "SELECT COUNT(*) AS t FROM target WHERE _id_feeds = ?",
+            "SELECT COUNT(*) AS t FROM target WHERE feed_id = ?",
             $_->{id} );
         unless ( $target->{t} > 0 ) {
             printf "remove target: %s \n", $_->{siteurl};
-            $db->dbh->query( "DELETE FROM feeds WHERE id = ?", $_->{id} );
+            $db->dbh->query( "DELETE FROM feed WHERE id = ?", $_->{id} );
         }
     }
 
-    $db->dbh->query('OPTIMIZE TABLE entries;');
-    $db->dbh->query('DELETE FROM stories WHERE guid NOT IN (SELECT guid FROM entries);');
-    $db->dbh->query('OPTIMIZE TABLE stories;');
+    $db->dbh->query('OPTIMIZE TABLE entry;');
+    $db->dbh->query('DELETE FROM story WHERE guid NOT IN (SELECT guid FROM entry);');
+    $db->dbh->query('OPTIMIZE TABLE story;');
 
-    $count    = $db->dbh->select_row('SELECT COUNT(guid) AS t FROM entries');
+    $count    = $db->dbh->select_row('SELECT COUNT(guid) AS t FROM entry');
     $cmp->{e} = $count->{t};
-    $count    = $db->dbh->select_row('SELECT COUNT(guid) AS t FROM stories');
+    $count    = $db->dbh->select_row('SELECT COUNT(guid) AS t FROM story');
     $cmp->{s} = $count->{t};
 
-    printf "entries %d -> %d \n", $cmp->{olde}, $cmp->{e};
-    printf "stories %d -> %d \n", $cmp->{olds}, $cmp->{s};
+    printf "entry %d -> %d \n", $cmp->{olde}, $cmp->{e};
+    printf "story %d -> %d \n", $cmp->{olds}, $cmp->{s};
 }
 
 1;

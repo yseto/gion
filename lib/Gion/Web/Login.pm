@@ -21,10 +21,10 @@ sub auth {
             strech => $self->config->{strech} || 500,
             salt   => $self->config->{salt}   || "Gion::Util::Auth",
             id     => encode( 'UTF-8', $data->{id} ),
-            passwd => encode( 'UTF-8', $data->{pw} ),
+            password => encode( 'UTF-8', $data->{password} ),
         );
 
-        my $c = $db->select_row( 'SELECT * FROM user WHERE pw = ?',
+        my $c = $db->select_row( 'SELECT * FROM user WHERE password = ?',
             $auth->get_hash );
         if ( defined $c ) {
             $self->session( username => $c->{id} );

@@ -24,8 +24,8 @@
   </div><!--/row-->
 
 <ul class="pager hidden-lg hidden-md">
-    <li class="previous"><a id="btn_categories_prev" class="btn btn-default">&lt;&lt; Category Back</a></li>
-    <li class="next"><a id="btn_categories_next" class="btn btn-default">Category Next &gt;&gt;</a></li>
+    <li class="previous"><a id="btn_category_prev" class="btn btn-default">&lt;&lt; Category Back</a></li>
+    <li class="next"><a id="btn_category_next" class="btn btn-default">Category Next &gt;&gt;</a></li>
 </ul>
 
 <%= include 'footer' %>

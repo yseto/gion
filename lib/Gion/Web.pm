@@ -39,16 +39,16 @@ sub startup {
     my $r = $rbase->under->to('CSRF#check');
     my $l = $r->under->to('login#auth');
 
-    $l->post('/inf/:action')->to( controller => 'inf' );
-    $l->post('/pin/:action')->to( controller => 'pin' );
+    $l->post('/api/:action')->to( controller => 'inf' );
     $l->post('/manage/:action')->to( controller => 'subscription' );
 
-    $l->route('/api/:controller/:action')->to( namespace => 'Gion::Web::Api' );
+    $l->route('/external_api/:controller/:action')->to( namespace => 'Gion::Web::Api' );
 
-    $l->get('/entries/')->to( controller => 'pages', action => 'normal' );
+    $l->get('/entry/')->to( controller => 'pages', action => 'normal' );
     $l->get('/add/')->to( controller => 'pages', action => 'add' );
     $l->get('/subscription/')->to( controller => 'pages', action => 'subscription' );
     $l->get('/settings/')->to( controller => 'pages', action => 'settings' );
+
     $l->route('/opml/:action')->to( controller => 'opml' );
 
     $l->route('/')->to( controller => 'pages', action => 'entrance' );

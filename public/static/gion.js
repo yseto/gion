@@ -67,11 +67,11 @@ G.main = function() {
         $('#nav-home').addClass('active');
         G.root();
     }
-    nav.on('click', 'a[href="#entries"]', function() {
-        location.href = "/entries/";
+    nav.on('click', 'a[href="#entry"]', function() {
+        location.href = "/entry/";
     });
-    if (/entries/.test(active)){
-        $('#nav-entries').addClass('active');
+    if (/entry/.test(active)){
+        $('#nav-entry').addClass('active');
         G.reader();
     }
     nav.on('click', 'a[href="#addasite"]', function() {
@@ -120,7 +120,7 @@ G.subscription = function() {
         $('.appendlist').remove();
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/get_targetlist',
+            url: '/api/get_targetlist',
             datatype: 'json',
             success: function(b) {
                 $('#selectCat').empty();
@@ -173,7 +173,7 @@ G.subscription = function() {
     /*
      * カテゴリの変更決定ボタン
      */
-    $(document).on('click', '#change-categories', function() {
+    $(document).on('click', '#change-category', function() {
         jQuery.ajax({
             type: 'POST',
             url: '/manage/change_it',
@@ -183,7 +183,7 @@ G.subscription = function() {
             },
             datatype: 'json',
             success: function() {
-                $('#categoriesModal').modal('hide');
+                $('#categoryModal').modal('hide');
                 list();
             }
         });
@@ -215,7 +215,7 @@ G.subscription = function() {
     $(document).on('click', '.categorybtn', function() {
         $('#selectCat').val($(this).data('name'));
         $('#target-id').val($(this).data('id'));
-        $('#categoriesModal').modal('show');
+        $('#categoryModal').modal('show');
     });
 
     list();
@@ -280,7 +280,7 @@ G.settings = function() {
             .append(
                 $('<a>').addClass('disconnect ' + set_disconnect).attr({
                     id: 'disconnect' + this.id,
-                    href: '/api/' + this.id + '/disconnect'
+                    href: '/external_api/' + this.id + '/disconnect'
                 })
                 .append($('<span>').addClass('glyphicon glyphicon-remove')
                     .append($('<span>').text('連携の解除'))
@@ -291,7 +291,7 @@ G.settings = function() {
         td2.append(
             $('<a>').addClass('btn btn-default').attr({
                 id: 'btn' + this.id,
-                href: '/api/' + this.id + '/connect',
+                href: '/external_api/' + this.id + '/connect',
                 disabled: set_connect_state
             })
             .append($('<span>').addClass('glyphicon glyphicon-link')
@@ -350,7 +350,7 @@ G.settings = function() {
     $('#update_password').click(function() {
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/update_password',
+            url: '/api/update_password',
             datatype: 'json',
             data: {
                 'password_old': $('#password_old').val(),
@@ -366,7 +366,7 @@ G.settings = function() {
     $('#create_user').click(function() {
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/create_user',
+            url: '/api/create_user',
             datatype: 'json',
             data: {
                 'username': $('#username').val(),
@@ -390,7 +390,7 @@ G.root = function() {
     var refresh = function() {
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/get_pinlist',
+            url: '/api/get_pinlist',
             datatype: 'json',
             success: function(a) {
                 var count = 0;
@@ -424,7 +424,7 @@ G.root = function() {
         datatype: 'json',
         success: function(b) {
             if (b.p === 1) {
-                location.href = "/entries/";
+                location.href = "/entry/";
             } else {
                 refresh();
             }
@@ -437,7 +437,7 @@ G.root = function() {
     $(document).on('click', '.read', function() {
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/set_pin',
+            url: '/api/set_pin',
             data: {
                 'flag': 0,
                 'pinid': encodeURI($(this).attr('id'))
@@ -460,7 +460,7 @@ G.add = function() {
         $('#selectCat').empty();
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/get_targetlist',
+            url: '/api/get_targetlist',
             datatype: 'json',
             success: function(b) {
                 jQuery.each(b.n, function() {
@@ -512,7 +512,7 @@ G.add = function() {
         }
         jQuery.ajax({
             type: 'POST',
-            url: '/manage/register_categories',
+            url: '/manage/register_category',
             data: {
                 'name': $('#inputCategoryName').val(),
             },
@@ -611,13 +611,13 @@ G.reader = function() {
         var frag = document.createDocumentFragment();
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/get_categories',
+            url: '/api/get_category',
             datatype: 'json',
             success: function(b) {
                 var link = [];
                 jQuery.each(b, function(i, data) {
-                    var li = $('<a>').addClass('categories_link list-group-item').attr({
-                        id: 'categories_link_' + data.i,
+                    var li = $('<a>').addClass('category_link list-group-item').attr({
+                        id: 'category_link_' + data.i,
                         href: '/#' + data.i
                     }).text(data.n).append($('<span>').addClass('badge hidden-sm').text(data.c));
                     frag.appendChild(li[0]);
@@ -644,15 +644,15 @@ G.reader = function() {
                 });
             },
             complete: function() {
-              $('.categories_link').removeClass('active');
+              $('.category_link').removeClass('active');
               if (q === undefined) {
-                $('.categories_link:first').addClass('active');
+                $('.category_link:first').addClass('active');
                 get_contents(0);
               } else {
                 if (q === 0) {
-                    $('.categories_link:first').addClass('active');
+                    $('.category_link:first').addClass('active');
                 } else {
-                    $('#categories_link_' + q).addClass('active');
+                    $('#category_link_' + q).addClass('active');
                 }
                 get_contents(q);
               }
@@ -665,7 +665,7 @@ G.reader = function() {
     /*
      * フィードのアイテムを表示する
      */
-    var entries = function(b) {
+    var entry = function(b) {
 
         if (typeof b === 'undefined' || b.length === 0 ) {
             var div = $('<div>').addClass('tw panel panel-default');
@@ -746,7 +746,7 @@ G.reader = function() {
         }
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/set_asread',
+            url: '/api/set_asread',
             data: {
                 'g': param
             },
@@ -782,13 +782,13 @@ G.reader = function() {
 
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/get_entries',
+            url: '/api/get_entry',
             data: {
                 'cat': id
             },
             datatype: 'json',
             success: function(b) {
-                entries(b.c);
+                entry(b.c);
                 moveselector();
                 self.cat_idx_selected = '/#' + b.id;
                 send_read_register(b.c, b.id);
@@ -797,7 +797,7 @@ G.reader = function() {
     };
 
     // カテゴリ移動
-    var categories_link = function(q) {
+    var category_link = function(q) {
         q = q.replace('/#', '');
         if (jQuery.isNumeric(q)) {
             cat_list(q);
@@ -810,7 +810,7 @@ G.reader = function() {
     var post_pin = function(id) {
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/set_pin',
+            url: '/api/set_pin',
             data: {
                 'flag': is_toggle_pin(id),
                 'pinid': encodeURI(id.attr('id'))
@@ -888,27 +888,27 @@ G.reader = function() {
     /*
      * 次のカテゴリへ移動する
      */
-    var categories_next = function() {
+    var category_next = function() {
         if (self.cat_idx_next !== undefined) {
-            categories_link(self.cat_idx_next);
+            category_link(self.cat_idx_next);
         }
     };
 
-    $('#btn_categories_next').click(function() {
-        categories_next();
+    $('#btn_category_next').click(function() {
+        category_next();
     });
 
     /*
      * 前のカテゴリへ移動する
      */
-    var categories_prev = function() {
+    var category_prev = function() {
         if (self.cat_idx_prev !== undefined) {
-            categories_link(self.cat_idx_prev);
+            category_link(self.cat_idx_prev);
         }
     };
 
-    $('#btn_categories_prev').click(function() {
-        categories_prev();
+    $('#btn_category_prev').click(function() {
+        category_prev();
     });
 
     /*
@@ -937,8 +937,8 @@ G.reader = function() {
     /*
      * カテゴリリストのリンクをクリック
      */
-    $('#cat_list').on('click', '.categories_link', function(e) {
-        categories_link($(this).attr('href'));
+    $('#cat_list').on('click', '.category_link', function(e) {
+        category_link($(this).attr('href'));
         e.preventDefault();
     });
 
@@ -950,7 +950,7 @@ G.reader = function() {
 
             jQuery.ajax({
                 type: 'POST',
-                url: '/inf/get_pinlist',
+                url: '/api/get_pinlist',
                 datatype: 'json',
                 success: function(a) {
                     var count = 0;
@@ -976,7 +976,7 @@ G.reader = function() {
         if (confirm('ピンをすべて外しますか?')) {
             jQuery.ajax({
                 type: 'POST',
-                url: '/inf/remove_all_pin',
+                url: '/api/remove_all_pin',
                 datatype: 'json',
                 success: function() {
                     cat_list();
@@ -1004,7 +1004,7 @@ G.reader = function() {
         }
         jQuery.ajax({
             type: 'POST',
-            url: '/api/' + $(this).data('service') + '/post',
+            url: '/external_api/' + $(this).data('service') + '/post',
             datatype: 'json',
             data: {
                 'url': $(this).data('url'),
@@ -1030,12 +1030,12 @@ G.reader = function() {
         switch (e.keyCode || e.which) {
             case 97:
                 // A
-                categories_prev();
+                category_prev();
                 break;
 
             case 115:
                 // S
-                categories_next();
+                category_next();
                 break;
 
             case 111:
@@ -1051,7 +1051,7 @@ G.reader = function() {
 
             case 114:
                 // R
-                categories_link(self.cat_idx_selected);
+                category_link(self.cat_idx_selected);
                 break;
 
             case 107:

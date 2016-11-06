@@ -17,14 +17,14 @@ sub get_hash {
 
     return undef unless defined $self->{id} and length( $self->{id} ) > 0;
     return undef
-      unless defined $self->{passwd} and length( $self->{passwd} ) > 0;
+      unless defined $self->{password} and length( $self->{password} ) > 0;
     return undef unless defined $self->{salt};
     return undef unless defined $self->{strech};
 
     my $salt = $self->{id} . pack( 'H*', $self->{salt} );
 
     for ( my $i = 0 ; $i < $self->{strech} ; $i++ ) {
-        $hash = sha1_sum( $hash . $self->{passwd} . $salt );
+        $hash = sha1_sum( $hash . $self->{password} . $salt );
     }
     $hash;
 }
