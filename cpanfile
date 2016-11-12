@@ -21,6 +21,7 @@ requires 'OAuth::Lite::Token';
 requires 'Plack';
 requires 'Plack::Middleware::Session';
 requires 'Router::Simple';
+requires 'Starlet';
 requires 'Text::Xslate';
 requires 'Time::Zone';
 requires 'Try::Tiny';

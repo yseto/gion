@@ -29,7 +29,7 @@ G.option = {
         var self = this;
         var opt = $.extend({}, $.ajaxSettings, arg);
         opt.type= 'POST';
-        opt.url= '/manage/get_connect';
+        opt.url= '/api/get_connect';
         opt.datatype= 'json';
         opt.success = (function(func) {
             return function(data, statusText, jqXHR) {
@@ -56,7 +56,9 @@ G.main = function() {
         error: function() {
             $('#myModal').modal('show');
         },
-        beforeSend: function() {},
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('X-CSRF-Token', $('[name=csrf-token]').attr('content'));
+        },
         complete: function() {},
     });
 
@@ -96,7 +98,7 @@ G.main = function() {
         G.settings();
     }
     nav.on('click', 'a[href="#logout"]', function() {
-        location.href = "/?logout=1";
+        location.href = "/logout";
     });
 
     $('#helpmodal').click(function() {
@@ -176,7 +178,7 @@ G.subscription = function() {
     $(document).on('click', '#change-category', function() {
         jQuery.ajax({
             type: 'POST',
-            url: '/manage/change_it',
+            url: '/api/change_it',
             data: {
                 'id': $('#target-id').val(),
                 'cat': $('#selectCat').val(),
@@ -196,7 +198,7 @@ G.subscription = function() {
         if (confirm($(this).data('name') + ' を削除しますか')) {
             jQuery.ajax({
                 type: 'POST',
-                url: '/manage/delete_it',
+                url: '/api/delete_it',
                 data: {
                     'target': $(this).data('target'),
                     'id': $(this).data('id'),
@@ -230,7 +232,7 @@ G.settings = function() {
      */
     jQuery.ajax({
         type: 'POST',
-        url: '/manage/get_numentry',
+        url: '/api/get_numentry',
         datatype: 'json',
         success: function(b) {
             $('#numentry').val(b.r);
@@ -317,7 +319,7 @@ G.settings = function() {
     $('#btn_numentry').click(function() {
         jQuery.ajax({
             type: 'POST',
-            url: '/manage/set_numentry',
+            url: '/api/set_numentry',
             datatype: 'json',
             data: {
                 'val': $('#numentry').val(),
@@ -420,7 +422,7 @@ G.root = function() {
      */
     jQuery.ajax({
         type: 'POST',
-        url: '/manage/get_numentry',
+        url: '/api/get_numentry',
         datatype: 'json',
         success: function(b) {
             if (b.p === 1) {
@@ -480,7 +482,7 @@ G.add = function() {
         $('#url-search').show();
         jQuery.ajax({
             type: 'POST',
-            url: '/manage/examine_target',
+            url: '/api/examine_target',
             data: {
                 'm': $('#inputURL').val()
             },
@@ -512,7 +514,7 @@ G.add = function() {
         }
         jQuery.ajax({
             type: 'POST',
-            url: '/manage/register_category',
+            url: '/api/register_category',
             data: {
                 'name': $('#inputCategoryName').val(),
             },
@@ -536,7 +538,7 @@ G.add = function() {
         $('#return').empty();
         jQuery.ajax({
             type: 'POST',
-            url: '/manage/register_target',
+            url: '/api/register_target',
             data: {
                 'url': $('#inputURL').val(),
                 'rss': $('#inputRSS').val(),
@@ -747,9 +749,8 @@ G.reader = function() {
         jQuery.ajax({
             type: 'POST',
             url: '/api/set_asread',
-            data: {
-                'g': param
-            },
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify({ 'g': param }),
             datatype: 'json',
             success: function() {},
         });
