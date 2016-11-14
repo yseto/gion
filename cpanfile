@@ -20,6 +20,7 @@ requires 'OAuth::Lite::Consumer';
 requires 'OAuth::Lite::Token';
 requires 'Plack';
 requires 'Plack::Middleware::Session';
+requires 'Proclet';
 requires 'Router::Simple';
 requires 'Starlet';
 requires 'Text::Xslate';
