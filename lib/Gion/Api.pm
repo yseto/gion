@@ -617,6 +617,7 @@ sub update_password {
 sub create_user {
     my ($class, $r) = @_;
     $r->require_login;
+    $r->require_admin;
     $r->require_xhr;
 
     unless ($r->is_admin) {

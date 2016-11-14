@@ -158,6 +158,13 @@ sub is_admin {
         $r->session->get('superuser') : 0;
 }
 
+sub require_xhr {
+    my ($r) = @_;
+    $r->is_xhr ?
+        undef :
+        throw code => 403, body => 'need xhr.';
+}
+
 sub require_login {
     my ($r) = @_;
     $r->is_login ?
@@ -165,11 +172,11 @@ sub require_login {
         throw code => 401, body => 'need login.';
 }
 
-sub require_xhr {
+sub require_admin {
     my ($r) = @_;
-    $r->is_xhr ?
+    $r->is_admin ?
         undef :
-        throw code => 403, body => 'need xhr.';
+        throw code => 401, body => 'need privilege.';
 }
 
 1;
