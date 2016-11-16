@@ -383,18 +383,19 @@ sub get_entry {
             WHERE target.id = ?
         ", $_->{target_id});
 
-        my $pd = Time::Piece->strptime($_->{pubDate}, '%Y-%m-%d %H:%M:%S')->strftime('%m/%d %H:%M');
-        my $desc = $scrubber->scrub($_->{description});
-        $desc = substr($desc, 0, $user_config->{numsubstr}) if $user_config->{numsubstr} > 0;
+        my $pubdate = Time::Piece->strptime($_->{pubDate}, '%Y-%m-%d %H:%M:%S')->strftime('%m/%d %H:%M');
+        my $description = $scrubber->scrub($_->{description});
+        $description = substr($description, 0, $user_config->{numsubstr}) if $user_config->{numsubstr} > 0;
 
         my %row = (
-            g => $_->{guid},
-            t => $_->{title},
-            d => $desc,
-            p => $pd . " - " . $rs2->{title},
-            r => $_->{readflag},
-            u => $user_config->{noreferrer} ? redirect_url($_->{url}) : $_->{url},
-            s => $_->{url},
+            guid => $_->{guid},
+            title => $_->{title},
+            description => $description,
+            date => $pubdate,
+            site_title => $rs2->{title},
+            readflag => $_->{readflag},
+            url => $user_config->{noreferrer} ? redirect_url($_->{url}) : $_->{url},
+            raw_url => $_->{url},
         );
         push @info, \%row;
 
@@ -405,7 +406,7 @@ sub get_entry {
     }
 
     $r->json({
-        c => \@info,
+        entry => \@info,
         id => $id
     });
 }
@@ -420,7 +421,6 @@ sub set_asread {
     my $payload = JSON->new->decode($r->req->content);
     for (@{$payload->{g}}) {
         warn sprintf "ASREAD %s\t%s", $r->session->get('username'), $_ ;
-        last; # XXX
         # XXX デバッグ時は以下SQLを抑止
         $db->query("
             UPDATE entry

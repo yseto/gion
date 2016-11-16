@@ -684,16 +684,16 @@ G.reader = function() {
             div.addClass('tw panel panel-default');
 
             div.attr({
-                id: this.g // ピン立てなどに利用する
+                id: this.guid // ピン立てなどに利用する
             });
 
             var texttitle = '[nothing title...]';
-            if (this.t.length > 0) {
-                texttitle = this.t;
+            if (this.title.length > 0) {
+                texttitle = this.title;
             }
 
             var titleh4 = $('<h4>').addClass('viewpage').append($('<a>').attr({
-                href: this.u,
+                href: this.url,
                 target: 'blank',
                 rel: 'noreferrer', // リファラを送らない(だめな時はリファラを抑制するオプションを使って外部リダイレクタを利用する)
             }).text(texttitle).click(function() {
@@ -701,17 +701,17 @@ G.reader = function() {
                 return false;
             }).css('color', '#333'));
 
-            if (this.r === "2") { // ピン立てしているアイテム
+            if (this.readflag === "2") { // ピン立てしているアイテム
                 titleh4.css('background-color', '#6cf');
             }
 
             div.append(titleh4);
 
-            div.append($('<p>').text(this.d)); // description
+            div.append($('<p>').text(this.description)); // description
 
             var pintarget = $('<p>').addClass('add pull-right').append($('<span>').addClass('glyphicon glyphicon-ok')).append(' Pin!');
 
-            if (this.r !== "2") { //ピン立てしていない時の状態
+            if (this.readflag !== "2") { //ピン立てしていない時の状態
                 pintarget.hide();
             }
 
@@ -719,7 +719,7 @@ G.reader = function() {
 
             // 外部サービスごとのボタンを生成する
             var btn = $('<div>').addClass('text-right').prepend($('<br>').addClass('hidden-md hidden-lg'));
-            var service_link = this.s;
+            var service_link = this.raw_url;
             $.each(self.service_state, function(i) {
                 btn.append($('<span>').css('margin-left', '1em'));
                 btn.append($('<button>').addClass('service btn btn-danger btn-sm').text(i).data('service', i).data('url', service_link));
@@ -727,7 +727,7 @@ G.reader = function() {
 
             div.append(btn);
             div.append(pintarget);
-            div.append($('<p>').text(this.p));
+            div.append($('<p>').text(this.date + " - " + this.site_title));
 
             frag.appendChild(div[0]);
         });
@@ -766,7 +766,7 @@ G.reader = function() {
         var param = [];
         jQuery.each(content, function() {
             if (this.r === "0") { // 未読ステータスのものだけ送る
-                param.push(this.g);
+                param.push(this.guid);
             }
         });
         if (param.length > 0) { // 未読ステータスのものがあるか
@@ -788,11 +788,11 @@ G.reader = function() {
                 'cat': id
             },
             datatype: 'json',
-            success: function(b) {
-                entry(b.c);
+            success: function(res) {
+                entry(res.entry);
                 moveselector();
-                self.cat_idx_selected = '/#' + b.id;
-                send_read_register(b.c, b.id);
+                self.cat_idx_selected = '/#' + res.id;
+                send_read_register(res.entry, res.id);
             },
         });
     };
