@@ -20,7 +20,7 @@ builder {
 
     enable 'Session',
         state => Plack::Session::State::Cookie->new(
-            #secure => 1,
+            secure => ($ENV{SECURE_COOKIE} || 0),
             httponly => 1,
             session_key => 'gion',
         ),

@@ -8,9 +8,7 @@ use Proclet;
 my $proclet = Proclet->new(color => 1);
 
 $proclet->service(
-    code => sub {
-        exec('plackup', '-s', 'Starlet', '--max-workers', '5', 'app.psgi');
-    },
+    code => 'plackup -s Starlet --max-workers 5 app.psgi',
     tag => 'web',
 );
 
@@ -27,18 +25,14 @@ for (my $i = 0; $i < @terms; $i++) {
     $proclet->service(
         every => $terms[$i],
         tag => "crawler.$i",
-        code => sub {
-            exec('script/crawler.pl','--term',$term);
-        },
+        code => "script/crawler.pl --term $term",
     );
 }
 
 $proclet->service(
     every => '35 4 * * *',
     tag => 'cleanup',
-    code => sub {
-        exec('script/cleanup.pl');
-    },
+    code => 'script/cleanup.pl',
 );
 
 $proclet->run;
