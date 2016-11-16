@@ -56,7 +56,7 @@ sub register_target {
         rss => [ 'HTTP_URL', 'NOT_NULL' ],
         url => [ 'HTTP_URL', 'NOT_NULL' ],
         title => ['NOT_NULL'],
-        cat => [ 'UINT',     'NOT_NULL' ],
+        category => [ 'UINT', 'NOT_NULL' ],
     );
     return $r->json([]) if $validator->has_error;
 
@@ -88,13 +88,13 @@ sub register_target {
 
     $rs = $db->select_row("SELECT COUNT(*) AS t FROM category WHERE user_id = ? AND id = ?",
         $r->session->get('username'),
-        $r->req->param('cat')
+        $r->req->param('category')
     );
 
     return if $rs->{t} == 0;
 
     $db->query("INSERT INTO target (category_id,feed_id,user_id) VALUES (?,?,?);",
-        $r->req->param('cat'),
+        $r->req->param('category'),
         $feed->{id},
         $r->session->get('username')
     );
@@ -109,12 +109,12 @@ sub examine_target {
 
     my $validator = FormValidator::Lite->new($r->req);
     $validator->check(
-        m => [ 'HTTP_URL', 'NOT_NULL' ],
+        url => [ 'HTTP_URL', 'NOT_NULL' ],
     );
 
     my ($success, $resource);
     if ($validator->is_valid) {
-        ($success, $resource) = $class->examine_url($r->req->param('m'));
+        ($success, $resource) = $class->examine_url($r->req->param('url'));
     }
     
     $r->json($success ? $resource : { t => '', u => '' });
@@ -193,14 +193,14 @@ sub change_it {
 
     my $validator = FormValidator::Lite->new($r->req);
     my $res = $validator->check(
-        cat => [ 'UINT', 'NOT_NULL' ],
+        category => [ 'UINT', 'NOT_NULL' ],
         id => [ 'UINT', 'NOT_NULL' ],
     );
     return $r->json([]) if $validator->has_error;
 
     my $db = $r->dbh->dbh;
     $db->query("UPDATE target SET category_id = ? WHERE feed_id = ? AND user_id = ?",
-        $r->req->param('cat'),
+        $r->req->param('category'),
         $r->req->param('id'),
         $r->session->get('username')
     );
@@ -233,19 +233,19 @@ sub set_numentry {
 
     my $validator = FormValidator::Lite->new($r->req);
     my $res = $validator->check(
-        val => [ 'UINT', 'NOT_NULL' ],
-        noref => [ 'UINT', 'NOT_NULL' ],
-        nopin => [ 'UINT', 'NOT_NULL' ],
-        substr => [ 'UINT', 'NOT_NULL' ],
+        numentry => [ 'UINT', 'NOT_NULL' ],
+        noreferrer => [ 'UINT', 'NOT_NULL' ],
+        nopinlist => [ 'UINT', 'NOT_NULL' ],
+        numsubstr => [ 'UINT', 'NOT_NULL' ],
     );
     return $r->json([]) if $validator->has_error;
 
     my $db = $r->dbh->dbh;
     $db->query("UPDATE user SET numentry = ?, noreferrer = ?, nopinlist = ?, numsubstr = ? WHERE id = ?",
-        $r->req->param('val'),
-        $r->req->param('noref'),
-        $r->req->param('nopin'),
-        $r->req->param('substr'),
+        $r->req->param('numentry'),
+        $r->req->param('noreferrer'),
+        $r->req->param('nopinlist'),
+        $r->req->param('numsubstr'),
         $r->session->get('username')
     );
 
@@ -323,11 +323,11 @@ sub get_entry {
 
     my $validator = FormValidator::Lite->new( $r->req );
     my $res = $validator->check(
-        cat => [ 'NOT_NULL', 'UINT' ],
+        category => [ 'NOT_NULL', 'UINT' ],
     );
     return $r->json([]) if $validator->has_error;
 
-    my $id = $r->req->param('cat');
+    my $id = $r->req->param('category');
     my $db = $r->dbh;
 
     if ( $id == 0 ) {

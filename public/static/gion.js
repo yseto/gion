@@ -181,7 +181,7 @@ G.subscription = function() {
             url: '/api/change_it',
             data: {
                 'id': $('#target-id').val(),
-                'cat': $('#selectCat').val(),
+                'category': $('#selectCat').val(),
             },
             datatype: 'json',
             success: function() {
@@ -322,10 +322,10 @@ G.settings = function() {
             url: '/api/set_numentry',
             datatype: 'json',
             data: {
-                'val': $('#numentry').val(),
-                'noref': $('#noreferrer').val(),
-                'nopin': $('#nopinlist').val(),
-                'substr': $('#numsubstr').val()
+                'numentry': $('#numentry').val(),
+                'noreferrer': $('#noreferrer').val(),
+                'nopinlist': $('#nopinlist').val(),
+                'numsubstr': $('#numsubstr').val()
             },
             success: function() {
                 $('#txt_numentry').show();
@@ -484,7 +484,7 @@ G.add = function() {
             type: 'POST',
             url: '/api/examine_target',
             data: {
-                'm': $('#inputURL').val()
+                'url': $('#inputURL').val()
             },
             datatype: 'json',
         })
@@ -543,7 +543,7 @@ G.add = function() {
                 'url': $('#inputURL').val(),
                 'rss': $('#inputRSS').val(),
                 'title': $('#inputTitle').val(),
-                'cat': $('#selectCat option:selected').val(),
+                'category': $('#selectCat option:selected').val(),
             },
             datatype: 'json',
             success: function(j) {
@@ -785,7 +785,7 @@ G.reader = function() {
             type: 'POST',
             url: '/api/get_entry',
             data: {
-                'cat': id
+                'category': id
             },
             datatype: 'json',
             success: function(res) {
