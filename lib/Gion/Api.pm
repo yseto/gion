@@ -219,10 +219,10 @@ sub get_numentry {
     );
 
     $r->json({
-        r => $rs->{numentry},
-        n => $rs->{noreferrer} ? 1 : 0,
-        p => $rs->{nopinlist} ? 1 : 0,
-        s => $rs->{numsubstr},
+        numentry => $rs->{numentry},
+        noreferrer => $rs->{noreferrer} ? 1 : 0,
+        nopinlist => $rs->{nopinlist} ? 1 : 0,
+        numsubstr => $rs->{numsubstr},
     });
 }
 
@@ -420,6 +420,7 @@ sub set_asread {
     my $payload = JSON->new->decode($r->req->content);
     for (@{$payload->{g}}) {
         warn sprintf "ASREAD %s\t%s", $r->session->get('username'), $_ ;
+        last; # XXX
         # XXX デバッグ時は以下SQLを抑止
         $db->query("
             UPDATE entry

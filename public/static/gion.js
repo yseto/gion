@@ -235,9 +235,9 @@ G.settings = function() {
         url: '/api/get_numentry',
         datatype: 'json',
         success: function(b) {
-            $('#numentry').val(b.r);
-            $('#numsubstr').val(b.s);
-            if (b.n === 0) {
+            $('#numentry').val(b.numentry);
+            $('#numsubstr').val(b.numsubstr);
+            if (b.noreferrer === 0) {
                 $('#noreferrer').attr('checked', false);
                 $('#noreferrer').val(0);
             } else {
@@ -245,7 +245,7 @@ G.settings = function() {
                 $('#noreferrer').val(1);
             }
 
-            if (b.p === 0) {
+            if (b.nopinlist === 0) {
                 $('#nopinlist').attr('checked', false);
                 $('#nopinlist').val(0);
             } else {
@@ -425,7 +425,7 @@ G.root = function() {
         url: '/api/get_numentry',
         datatype: 'json',
         success: function(b) {
-            if (b.p === 1) {
+            if (b.nopinlist === 1) {
                 location.href = "/entry/";
             } else {
                 refresh();
