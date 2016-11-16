@@ -399,16 +399,16 @@ G.root = function() {
                 $('#pinlist_ul').empty();
                 jQuery.each(a, function() {
                     var li = $('<a>').attr({
-                        id: this.g
+                        id: this.guid
                     }).addClass('read glyphicon glyphicon-check').text('');
                     li.css('cursor', 'pointer');
                     var lic = $('<span>').text(' ')
-                        .append($('<span>').text(this.m))
+                        .append($('<span>').text(this.updatetime))
                         .append($('<span>').text(' '))
                         .append($('<a>').attr({
-                            href: this.u,
+                            href: this.url,
                             target: 'blank',
-                        }).text(this.t));
+                        }).text(this.title));
                     $('#pinlist_ul').append($('<li>').append(li).append(lic).addClass('list-group-item'));
                     count++;
                 });
@@ -958,8 +958,8 @@ G.reader = function() {
                     $('#pinlist_ul').empty();
                     jQuery.each(a, function() {
                         $('#pinlist_ul').append($('<a>').attr({
-                            href: this.u
-                        }).text(this.t).addClass('list-group-item'));
+                            href: this.url
+                        }).text(this.title).addClass('list-group-item'));
                         count++;
                     });
                     $('#pincount').text(count);
@@ -974,16 +974,18 @@ G.reader = function() {
      * すべてのピンを外す
      */
     $('#remove_all_pin').click(function() {
-        if (confirm('ピンをすべて外しますか?')) {
-            jQuery.ajax({
-                type: 'POST',
-                url: '/api/remove_all_pin',
-                datatype: 'json',
-                success: function() {
-                    cat_list();
-                },
-            });
+        if (!confirm('ピンをすべて外しますか?')) {
+            return false;
         }
+        $('#pinlist').hide();
+        jQuery.ajax({
+            type: 'POST',
+            url: '/api/remove_all_pin',
+            datatype: 'json',
+            success: function() {
+                cat_list();
+            },
+        });
     });
 
     /*

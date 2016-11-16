@@ -489,10 +489,10 @@ sub get_pinlist {
 
     my $list = $db->dbh->select_all("
         SELECT
-            story.title AS t,
-            story.url AS u,
-            entry.guid AS g,
-            entry.updatetime AS m
+            story.title,
+            story.url,
+            entry.guid,
+            entry.updatetime
         FROM entry
         INNER JOIN target ON entry.target_id = target.id
         INNER JOIN story ON story.guid = entry.guid
@@ -508,7 +508,7 @@ sub get_pinlist {
 
     my @list_r;
     for my $row (@$list) {
-        $row->{u} = redirect_url($row->{u});
+        $row->{url} = redirect_url($row->{url});
         push @list_r, $row;
     }
     $r->json(\@list_r);
