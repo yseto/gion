@@ -127,46 +127,46 @@ G.subscription = function() {
             success: function(b) {
                 $('#selectCat').empty();
 
-                jQuery.each(b.n, function() {
-                    var tr = $('<tr>').attr('id', 'child_' + this.i).addClass('appendlist');
+                jQuery.each(b.category, function() {
+                    var tr = $('<tr>').attr('id', 'child_' + this.id).addClass('appendlist');
 
                     tr.append($('<td>').attr('colspan', 2).append($('<button>').addClass('deletebtn btn btn-danger btn-xs')
-                        .data('name', this.n).data('target', 'category').data('id', this.i).text('削除')));
-                    tr.append($('<th>').text(this.n));
+                        .data('name', this.name).data('target', 'category').data('id', this.id).text('削除')));
+                    tr.append($('<th>').text(this.name));
 
                     $('#cat_list').append(tr);
 
-                    $('#selectCat').append($('<option>').val(this.i).text(this.n));
+                    $('#selectCat').append($('<option>').val(this.id).text(this.name));
                 });
 
-                jQuery.each(b.t, function() {
+                jQuery.each(b.target, function() {
                     var tr = $('<tr>').addClass('appendlist');
 
                     tr.append($('<td>').append($('<button>').addClass('deletebtn btn btn-danger btn-xs')
-                        .data('name', this.n).data('target', 'entry').data('id', this.i).text('削除')));
+                        .data('name', this.title).data('target', 'entry').data('id', this.id).text('削除')));
 
                     tr.append($('<td>').append($('<button>').addClass('categorybtn btn btn-info btn-xs')
-                        .data('name', this.c).data('id', this.i).text('変更')));
+                        .data('name', this.category_id).data('id', this.id).text('変更')));
 
-                    var cutstr = this.n.substr(0, 20);
-                    if (cutstr !== this.n) {
+                    var cutstr = this.title.substr(0, 20);
+                    if (cutstr !== this.title) {
                         cutstr = cutstr + '...';
                     }
 
                     var linkage = $('<a>').addClass('btn btn-link btn-xs').attr({
-                        href: this.h,
+                        href: this.siteurl,
                         target: 'blank',
-                        title: this.n,
+                        title: this.title,
                     }).append($('<span>').addClass('visible-xs').text(cutstr))
-                        .append($('<span>').addClass('visible-sm visible-md visible-lg').text(this.n));
+                        .append($('<span>').addClass('visible-sm visible-md visible-lg').text(this.title));
 
-                    if (this.r < -5 || this.r === "404") {
+                    if (this.http_status < -5 || this.http_status === "404") {
                         linkage.append($('<span>').addClass('badge ').text('取得に失敗しました'));
                         tr.addClass('danger');
                     }
                     tr.append($('<td>').append(linkage));
 
-                    $('#child_' + this.c).after(tr);
+                    $('#child_' + this.category_id).after(tr);
                 });
             }
         });
@@ -465,8 +465,8 @@ G.add = function() {
             url: '/api/get_targetlist',
             datatype: 'json',
             success: function(b) {
-                jQuery.each(b.n, function() {
-                    $('#selectCat').append($('<option>').val(this.i).text(this.n));
+                jQuery.each(b.category, function() {
+                    $('#selectCat').append($('<option>').val(this.id).text(this.name));
                 });
             },
         });

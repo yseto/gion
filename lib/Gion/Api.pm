@@ -445,9 +445,7 @@ sub get_targetlist {
     my $user_config = $db->dbh->select_row("SELECT * FROM user WHERE id = ?", $r->session->get('username'));
 
     my $category = $db->dbh->select_all("
-        SELECT
-            id AS i,
-            name AS n
+        SELECT id, name
         FROM category
         WHERE user_id = ?
         ORDER BY name ASC
@@ -468,20 +466,16 @@ sub get_targetlist {
     ", $r->session->get('username')
     );
 
-    my @hash_c;
-    for (@$rs) {
-        my %row = (
-            i => $_->{id},
-            n => $_->{title},
-            c => $_->{category_id},
-            r => $_->{http_status},
-            h => $user_config->{noreferrer} ? redirect_url($_->{siteurl}) : $_->{siteurl},
-        );
-        push @hash_c, \%row;
+    my @target;
+    for my $row (@$rs) {
+        $row->{siteurl} = $user_config->{noreferrer} ?
+            redirect_url($row->{siteurl}) :
+            $row->{siteurl};
+        push @target, $row;
     }
     $r->json({
-        n => $category,
-        t => \@hash_c
+        category => $category,
+        target => \@target
     });
 }
 
@@ -512,8 +506,7 @@ sub get_pinlist {
         if $user_config->{noreferrer} == 0;
 
     my @list_r;
-    for (@$list) {
-        my $row = $_;
+    for my $row (@$list) {
         $row->{u} = redirect_url($row->{u});
         push @list_r, $row;
     }
