@@ -750,7 +750,7 @@ G.reader = function() {
             type: 'POST',
             url: '/api/set_asread',
             contentType: 'application/json; charset=utf-8',
-            data: JSON.stringify({ 'g': param }),
+            data: JSON.stringify({ 'guid': param }),
             datatype: 'json',
             success: function() {},
         });

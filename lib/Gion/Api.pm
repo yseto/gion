@@ -419,7 +419,7 @@ sub set_asread {
     my $db = $r->dbh;
 
     my $payload = JSON->new->decode($r->req->content);
-    for (@{$payload->{g}}) {
+    for (@{$payload->{guid}}) {
         warn sprintf "ASREAD %s\t%s", $r->session->get('username'), $_ ;
         # XXX デバッグ時は以下SQLを抑止
         $db->query("
