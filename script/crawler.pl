@@ -104,7 +104,7 @@ for my $c (@$rs) {
         $db->dbh->query('
             UPDATE feed SET http_status = 304, term = ?, cache = ? WHERE id = ?
         ',
-            update_term(from_mysql_datetime($c->{pubDate})->epoch),
+            update_term(from_mysql_datetime($c->{pubdate})->epoch),
             JSON::to_json($res->{headers}),
             $c->{id});
         next;
@@ -152,7 +152,7 @@ for my $c (@$rs) {
     ', ($errorcount + 1), $c->{id});
 
     # クロール対象のエントリーの最新の情報の日付を取得する
-    my $latest = from_mysql_datetime($c->{pubDate});
+    my $latest = from_mysql_datetime($c->{pubdate});
 
     # term の判断基準となるlast-Modifiedを取得
     # agentの戻り値では、 If-Modified-Since として返却される
@@ -163,15 +163,15 @@ for my $c (@$rs) {
 
         # If-Modified-Sinceが取得できなかった場合、RSSのフィードから得る
         unless ($last_modified) {
-            $last_modified = $d->{pubDate}->epoch;
+            $last_modified = $d->{pubdate}->epoch;
         }
 
         # 新しいもののみを取り込む XXX デバッグ時は以下を抑止
-        next if $d->{pubDate}->epoch <= $latest->epoch;
+        next if $d->{pubdate}->epoch <= $latest->epoch;
 
         # RSSのデータから最終更新時間を更新する
-        if ($d->{pubDate}->epoch > $last_modified) {
-            $last_modified = $d->{pubDate}->epoch;
+        if ($d->{pubdate}->epoch > $last_modified) {
+            $last_modified = $d->{pubdate}->epoch;
         }
 
         # 取り込まれたら、カウンタを更新する
@@ -186,11 +186,11 @@ for my $c (@$rs) {
 
             # 既読管理から最終既読を参照
             my $entry = $db->dbh->select_row('
-                SELECT pubDate
+                SELECT pubdate
                 FROM entry
                 WHERE target_id = ? 
                     AND readflag = 1
-                ORDER BY pubDate DESC
+                ORDER BY pubdate DESC
                 LIMIT 1
             ', $_->{id});
 
@@ -199,17 +199,17 @@ for my $c (@$rs) {
                 # 既読データが存在しない場合
                 $state = 1;
             } else {
-                $state = from_mysql_datetime($entry->{pubDate}) < $d->{pubDate};
+                $state = from_mysql_datetime($entry->{pubdate}) < $d->{pubdate};
             }
 
             if ($state) {
                 # 購読リストに基づいて、更新情報をユーザーごとへ挿入
                 $db->dbh->query('
                     INSERT IGNORE INTO entry 
-                    (guid, pubDate, readflag, target_id, updatetime, user_id)
+                    (guid, pubdate, readflag, target_id, update_at, user_id)
                     VALUES (?,?,0,?,CURRENT_TIMESTAMP,?)
                 ', $d->{guid},
-                to_mysql_datetime($d->{pubDate}),
+                to_mysql_datetime($d->{pubdate}),
                 $_->{id},
                 $_->{user_id},
                 );
@@ -243,7 +243,7 @@ for my $c (@$rs) {
     $db->dbh->query('
         UPDATE feed 
         SET http_status = ?,
-            pubDate = ?,
+            pubdate = ?,
             term = ?,
             cache = ?
         WHERE id = ?
@@ -343,8 +343,8 @@ sub parser_rss {
  
     foreach ( @{ $rss->{items} } ) {
         my $dt;
-        if ( defined $_->{pubDate} ) {
-            $dt = from_feed_datetime($_->{pubDate});
+        if ( defined $_->{pubdate} ) {
+            $dt = from_feed_datetime($_->{pubdate});
         } elsif ( defined $_->{$ns_dc}->{date} ) {
             $dt = from_feed_datetime($_->{$ns_dc}{date});
         } else {
@@ -372,7 +372,7 @@ sub parser_rss {
             guid => $guid,
             title => $_->{title},
             description => $_->{description},
-            pubDate => $dt,
+            pubdate => $dt,
             url => $url,
         );
         push @$data, \%h;
@@ -403,7 +403,7 @@ sub parser_atom {
             guid => $url,
             title => decode( 'utf-8', $_->title ),
             description => decode( 'utf-8', $_->summary ),
-            pubDate => $dt,
+            pubdate => $dt,
             url => $url,
         );
         push @$data, \%h;

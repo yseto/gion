@@ -110,7 +110,7 @@ sub opml_import {
 
         unless (defined $feedrs->{id}) {
             my $dt = Time::Piece->new;
-            $db->query("INSERT INTO feed (url,siteurl,title,http_status,pubDate) VALUES (?,?,?,0,?);",
+            $db->query("INSERT INTO feed (url,siteurl,title,http_status,pubdate) VALUES (?,?,?,0,?);",
                 $xmlUrl,
                 $htmlUrl,
                 $e->getAttribute('title'),

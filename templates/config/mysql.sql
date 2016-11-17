@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `feed` (
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `http_status` varchar(3) NOT NULL,
   `parser` varchar(1) NOT NULL DEFAULT 0,
-  `pubDate` timestamp NOT NULL DEFAULT 0,
+  `pubdate` timestamp NOT NULL DEFAULT 0,
   `term` varchar(1) NOT NULL DEFAULT 1,
   `cache` varchar(2400) NOT NULL,
   PRIMARY KEY (`id`)
@@ -52,8 +52,8 @@ CREATE TABLE IF NOT EXISTS `target` (
 
 CREATE TABLE IF NOT EXISTS `entry` (
   `guid` varchar(250) CHARACTER SET utf8 NOT NULL,
-  `pubDate` datetime NOT NULL,
-  `updatetime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `pubdate` datetime NOT NULL,
+  `update_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `readflag` tinyint(4) NOT NULL,
   `target_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,

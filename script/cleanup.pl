@@ -34,7 +34,7 @@ for (@$rs) {
         FROM entry
         WHERE target_id = ?
             AND readflag = 1
-            AND updatetime < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -1 DAY)
+            AND update_at < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -1 DAY)
             AND 
             pubdate NOT IN (SELECT pubdate FROM 
                 (SELECT pubdate FROM entry

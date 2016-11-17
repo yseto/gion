@@ -403,7 +403,7 @@ G.root = function() {
                     }).addClass('read glyphicon glyphicon-check').text('');
                     li.css('cursor', 'pointer');
                     var lic = $('<span>').text(' ')
-                        .append($('<span>').text(this.updatetime))
+                        .append($('<span>').text(this.update_at))
                         .append($('<span>').text(' '))
                         .append($('<a>').attr({
                             href: this.url,
@@ -765,7 +765,7 @@ G.reader = function() {
         }
         var param = [];
         jQuery.each(content, function() {
-            if (this.r === "0") { // 未読ステータスのものだけ送る
+            if (this.readflag === "0") { // 未読ステータスのものだけ送る
                 param.push(this.guid);
             }
         });

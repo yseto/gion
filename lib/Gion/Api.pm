@@ -67,7 +67,7 @@ sub register_target {
 
     unless ( defined $feed->{id} ) {
         my $dt = Time::Piece->new;
-        $db->query("INSERT INTO feed (url,siteurl,title,http_status,pubDate) VALUES (?,?,?,0,?);",
+        $db->query("INSERT INTO feed (url,siteurl,title,http_status,pubdate) VALUES (?,?,?,0,?);",
             $r->req->param('rss'),
             $r->req->param('url'),
             $r->req->param('title'),
@@ -357,7 +357,7 @@ sub get_entry {
             entry.guid,
             story.title,
             description, 
-            pubDate,
+            pubdate,
             readflag,
             story.url,
             target_id
@@ -367,7 +367,7 @@ sub get_entry {
         WHERE target.category_id = ?
             AND readflag <> 1
             AND entry.user_id = ?
-        ORDER BY pubDate DESC
+        ORDER BY pubdate DESC
     ",
         $id,
         $r->session->get('username')
@@ -383,7 +383,7 @@ sub get_entry {
             WHERE target.id = ?
         ", $_->{target_id});
 
-        my $pubdate = Time::Piece->strptime($_->{pubDate}, '%Y-%m-%d %H:%M:%S')->strftime('%m/%d %H:%M');
+        my $pubdate = Time::Piece->strptime($_->{pubdate}, '%Y-%m-%d %H:%M:%S')->strftime('%m/%d %H:%M');
         my $description = $scrubber->scrub($_->{description});
         $description = substr($description, 0, $user_config->{numsubstr}) if $user_config->{numsubstr} > 0;
 
@@ -426,7 +426,7 @@ sub set_asread {
             UPDATE entry
             SET
                 readflag = 1,
-                updatetime = CURRENT_TIMESTAMP
+                update_at = CURRENT_TIMESTAMP
             WHERE readflag = 0
                 AND user_id = ?
                 AND guid = ?
@@ -492,13 +492,13 @@ sub get_pinlist {
             story.title,
             story.url,
             entry.guid,
-            entry.updatetime
+            entry.update_at
         FROM entry
         INNER JOIN target ON entry.target_id = target.id
         INNER JOIN story ON story.guid = entry.guid
         WHERE entry.readflag = 2
             AND target.user_id = ?
-        ORDER BY pubDate DESC
+        ORDER BY pubdate DESC
     ", $r->session->get('username'));
 
     my $user_config = $db->dbh->select_row("SELECT * FROM user WHERE id = ?", $r->session->get('username'));
@@ -535,7 +535,7 @@ sub set_pin {
         UPDATE entry
         SET
             readflag = ?,
-            updatetime = CURRENT_TIMESTAMP
+            update_at = CURRENT_TIMESTAMP
         WHERE user_id = ?
             AND guid = ?
     ",
@@ -556,7 +556,7 @@ sub remove_all_pin {
         UPDATE entry
         SET
             readflag = 1,
-            updatetime = CURRENT_TIMESTAMP
+            update_at = CURRENT_TIMESTAMP
         WHERE readflag = 2
             AND user_id = ?
     ", $r->session->get('username'));
