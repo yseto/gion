@@ -45,15 +45,15 @@
       </div>
       <div class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
-          <li id="nav-home"><a href="#home"><span class="glyphicon glyphicon-home"></span> Home</a></li>
-          <li id="nav-entry"><a href="#entry"><span class="glyphicon glyphicon-inbox"></span> Read</a></li>
-          <li id="nav-addasite"><a href="#addasite"><span class="glyphicon glyphicon-plus-sign"></span> Add a Site</a></li>
-          <li id="nav-subscription"><a href="#subscription"><span class="glyphicon glyphicon-list"></span> Subscription</a></li>
+          <li [% IF r.req.path == "/" %]class="active" [% END %]><a href="/"><span class="glyphicon glyphicon-home"></span> Home</a></li>
+          <li [% IF r.req.path == "/entry/" %]class="active" [% END %]><a href="/entry/"><span class="glyphicon glyphicon-inbox"></span> Read</a></li>
+          <li [% IF r.req.path == "/add/" %]class="active" [% END %]><a href="/add/"><span class="glyphicon glyphicon-plus-sign"></span> Add a Site</a></li>
+          <li [% IF r.req.path == "/subscription/" %]class="active" [% END %]><a href="/subscription/"><span class="glyphicon glyphicon-list"></span> Subscription</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
-          <li id="nav-settings"><a href="#settings"><span class="glyphicon glyphicon-wrench"></span> Settings</a></li>
+          <li [% IF r.req.path == "/settings/" %]class="active" [% END %]><a href="/settings/"><span class="glyphicon glyphicon-wrench"></span> Settings</a></li>
           <li class="hidden-sm"><a style="cursor:pointer;" id="helpmodal"><i class="glyphicon glyphicon-question-sign"></i> Help</a></li>
-          <li><a href="#logout"><span class="glyphicon glyphicon-off"></span> Logout</a></li>
+          <li><a href="/logout"><span class="glyphicon glyphicon-off"></span> Logout</a></li>
         </ul>
       </div><!--/.navbar-collapse -->
     </div>

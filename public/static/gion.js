@@ -48,9 +48,6 @@ G.option = {
 };
 
 G.main = function() {
-    var active = location.pathname;
-    var nav = $('.nav');
-
     jQuery.ajaxSetup({
         cache: false,
         error: function() {
@@ -62,44 +59,22 @@ G.main = function() {
         complete: function() {},
     });
 
-    nav.on('click', 'a[href="#home"]', function() {
-        location.href = "/";
-    });
+    var active = location.pathname;
     if (/^\/$/.test(active)){
-        $('#nav-home').addClass('active');
         G.root();
     }
-    nav.on('click', 'a[href="#entry"]', function() {
-        location.href = "/entry/";
-    });
     if (/entry/.test(active)){
-        $('#nav-entry').addClass('active');
         G.reader();
     }
-    nav.on('click', 'a[href="#addasite"]', function() {
-        location.href = "/add/";
-    });
     if (/add/.test(active)){
-        $('#nav-addasite').addClass('active');
         G.add();
     }
-    nav.on('click', 'a[href="#subscription"]', function() {
-        location.href = "/subscription/";
-    });
     if (/subscription/.test(active)){
-        $('#nav-subscription').addClass('active');
         G.subscription();
     }
-    nav.on('click', 'a[href="#settings"]', function() {
-        location.href = "/settings/";
-    });
     if (/settings/.test(active)){
-        $('#nav-settings').addClass('active');
         G.settings();
     }
-    nav.on('click', 'a[href="#logout"]', function() {
-        location.href = "/logout";
-    });
 
     $('#helpmodal').click(function() {
         $('#helpModal').modal('show');
