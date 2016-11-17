@@ -63,10 +63,9 @@
   <body>
 
     <div class="container">
-[% IF r.is_login -%]
-      <h2>Logged off...</h2>
-      <script> location.replace('/logout') </script>
-[% ELSE %]
+[% IF retry -%]
+      <div class="alert alert-warning" role="alert">Incorrect ID or Password.</div>
+[% END %]
       <form class="form-signin" method="post" action="/login">
         <h2 class="form-signin-heading">Please sign in</h2>
         <input type="hidden" name="login" value="1"/>
@@ -76,7 +75,6 @@
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
       </form>
     </div> <!-- /container -->
-[% END %]
   </body>
 </html>
 

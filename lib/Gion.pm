@@ -49,13 +49,17 @@ sub login {
         password => encode_utf8 $r->req->param('password'),
     );
 
-    my $c = $db->select_row('SELECT * FROM user WHERE password = ?', $auth);
-    if ( defined $c ) {
+    if ( my $c = $db->select_row('SELECT * FROM user WHERE password = ?', $auth) ) {
         $r->session->set(username => $c->{id});
         $r->session->set(superuser => $r->req->param('id') eq 'admin' ? 1 : 0);
         $db->query('UPDATE user SET last_login = CURRENT_TIMESTAMP WHERE id = ?', $c->{id});
+        $r->res->redirect('/');
+        return;
     }
-    $r->res->redirect('/');
+
+    $r->html('welcome.html', {
+        retry => 1,
+    });
 }
 
 sub logout {
