@@ -63,20 +63,18 @@
   <body>
 
     <div class="container">
-% if (defined $self->stash('id') ) {
-      <h2>Logged off...</h2>
-      <script> location.replace('./') </script>
-% }else{
-      <form class="form-signin" method="post" action="./">
+[% IF retry -%]
+      <div class="alert alert-warning" role="alert">Incorrect ID or Password.</div>
+[% END %]
+      <form class="form-signin" method="post" action="/login">
         <h2 class="form-signin-heading">Please sign in</h2>
         <input type="hidden" name="login" value="1"/>
-        <%= csrf_field %>
+        [% r.csrf_field %]
         <input type="text" class="form-control" placeholder="ID" required autofocus name="id">
-        <input type="password" class="form-control" placeholder="Password" required name="pw">
+        <input type="password" class="form-control" placeholder="Password" required name="password">
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
       </form>
     </div> <!-- /container -->
-% }
   </body>
 </html>
 

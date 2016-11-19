@@ -1,4 +1,4 @@
-% layout 'default' ;
+[% INCLUDE "layouts/header.inc" %]
 <div class="container">
   <div class="row">
     <div class="col-sm-3">
@@ -24,11 +24,11 @@
   </div><!--/row-->
 
 <ul class="pager hidden-lg hidden-md">
-    <li class="previous"><a id="btn_categories_prev" class="btn btn-default">&lt;&lt; Category Back</a></li>
-    <li class="next"><a id="btn_categories_next" class="btn btn-default">Category Next &gt;&gt;</a></li>
+    <li class="previous"><a id="btn_category_prev" class="btn btn-default">&lt;&lt; Category Back</a></li>
+    <li class="next"><a id="btn_category_next" class="btn btn-default">Category Next &gt;&gt;</a></li>
 </ul>
 
-<%= include 'footer' %>
+[% INCLUDE "layouts/button.inc" %]
 </div><!--/.container-->
 
 <div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -56,3 +56,4 @@
     </div>
   </div>
 </div>
+[% INCLUDE "layouts/footer.inc" %]

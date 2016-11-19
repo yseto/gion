@@ -1,4 +1,4 @@
-% layout 'default' ;
+[% INCLUDE "layouts/header.inc" %]
 <div class="container">
   <div class="row">
     <table id="cat_list" class="table table-condensed">
@@ -10,10 +10,10 @@
     <hr/>
   </div><!--/row-->
 
-<%= include 'footer' %>
+[% INCLUDE "layouts/button.inc" %]
 </div><!--/.container-->
  
-<div class="modal fade" id="categoriesModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal fade" id="categoryModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -26,7 +26,7 @@
         <input type="hidden" id="target-id"/>
       </div>
       <div class="modal-footer">
-        <a class="btn btn-success" id="change-categories">OK</a>
+        <a class="btn btn-success" id="change-category">OK</a>
         <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
       </div>
     </div>
@@ -52,3 +52,4 @@
     </div>
   </div>
 </div>
+[% INCLUDE "layouts/footer.inc" %]

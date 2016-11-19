@@ -1,4 +1,4 @@
-% layout 'default' ;
+[% INCLUDE "layouts/header.inc" %]
 <div class="container">
 <div class="row">
 
@@ -9,7 +9,7 @@
   
   <ul id="pinlist_ul" class="list-group"></ul>
 </div>
-<%= include 'footer' %>
+[% INCLUDE "layouts/button.inc" %]
 </div><!--/.container-->
 
 <div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -30,3 +30,4 @@
     </div>
   </div>
 </div>
+[% INCLUDE "layouts/footer.inc" %]

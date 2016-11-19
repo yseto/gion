@@ -1,4 +1,4 @@
-% layout 'default' ;
+[% INCLUDE "layouts/header.inc" %]
 <div class="container">
 <div class="row">
 <h4>Subscription</h4>
@@ -55,8 +55,7 @@
   </div>
 </form>
 </div>
-
-<%= include 'footer' %>
+[% INCLUDE "layouts/button.inc" %]
 </div><!--/.fluid-container-->
 
 <div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -77,4 +76,4 @@
     </div>
   </div>
 </div>
-
+[% INCLUDE "layouts/footer.inc" %]

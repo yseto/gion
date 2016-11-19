@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+<head>
+<title>export data</title>
+</head>
+<body>
+[% FOREACH row IN records %]
+<outline text="[% row.name %]" title="[% row.name %]">
+[% FOREACH item IN row.items %]
+<outline type="rss" text="[% item.title %]" title="[% item.title %]" xmlUrl="[% item.url %]" htmlUrl="[% item.siteurl %]"/>
+[% END %]
+</outline>
+[% END %]
+</body>
+</opml>
+

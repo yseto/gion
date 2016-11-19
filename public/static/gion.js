@@ -29,7 +29,7 @@ G.option = {
         var self = this;
         var opt = $.extend({}, $.ajaxSettings, arg);
         opt.type= 'POST';
-        opt.url= '/manage/get_connect';
+        opt.url= '/api/get_connect';
         opt.datatype= 'json';
         opt.success = (function(func) {
             return function(data, statusText, jqXHR) {
@@ -48,56 +48,33 @@ G.option = {
 };
 
 G.main = function() {
-    var active = location.pathname;
-    var nav = $('.nav');
-
     jQuery.ajaxSetup({
         cache: false,
         error: function() {
             $('#myModal').modal('show');
         },
-        beforeSend: function() {},
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('X-CSRF-Token', $('[name=csrf-token]').attr('content'));
+        },
         complete: function() {},
     });
 
-    nav.on('click', 'a[href="#home"]', function() {
-        location.href = "/";
-    });
+    var active = location.pathname;
     if (/^\/$/.test(active)){
-        $('#nav-home').addClass('active');
         G.root();
     }
-    nav.on('click', 'a[href="#entries"]', function() {
-        location.href = "/entries/";
-    });
-    if (/entries/.test(active)){
-        $('#nav-entries').addClass('active');
+    if (/entry/.test(active)){
         G.reader();
     }
-    nav.on('click', 'a[href="#addasite"]', function() {
-        location.href = "/add/";
-    });
     if (/add/.test(active)){
-        $('#nav-addasite').addClass('active');
         G.add();
     }
-    nav.on('click', 'a[href="#subscription"]', function() {
-        location.href = "/subscription/";
-    });
     if (/subscription/.test(active)){
-        $('#nav-subscription').addClass('active');
         G.subscription();
     }
-    nav.on('click', 'a[href="#settings"]', function() {
-        location.href = "/settings/";
-    });
     if (/settings/.test(active)){
-        $('#nav-settings').addClass('active');
         G.settings();
     }
-    nav.on('click', 'a[href="#logout"]', function() {
-        location.href = "/?logout=1";
-    });
 
     $('#helpmodal').click(function() {
         $('#helpModal').modal('show');
@@ -120,51 +97,51 @@ G.subscription = function() {
         $('.appendlist').remove();
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/get_targetlist',
+            url: '/api/get_targetlist',
             datatype: 'json',
             success: function(b) {
                 $('#selectCat').empty();
 
-                jQuery.each(b.n, function() {
-                    var tr = $('<tr>').attr('id', 'child_' + this.i).addClass('appendlist');
+                jQuery.each(b.category, function() {
+                    var tr = $('<tr>').attr('id', 'child_' + this.id).addClass('appendlist');
 
                     tr.append($('<td>').attr('colspan', 2).append($('<button>').addClass('deletebtn btn btn-danger btn-xs')
-                        .data('name', this.n).data('target', 'category').data('id', this.i).text('削除')));
-                    tr.append($('<th>').text(this.n));
+                        .data('name', this.name).data('target', 'category').data('id', this.id).text('削除')));
+                    tr.append($('<th>').text(this.name));
 
                     $('#cat_list').append(tr);
 
-                    $('#selectCat').append($('<option>').val(this.i).text(this.n));
+                    $('#selectCat').append($('<option>').val(this.id).text(this.name));
                 });
 
-                jQuery.each(b.t, function() {
+                jQuery.each(b.target, function() {
                     var tr = $('<tr>').addClass('appendlist');
 
                     tr.append($('<td>').append($('<button>').addClass('deletebtn btn btn-danger btn-xs')
-                        .data('name', this.n).data('target', 'entry').data('id', this.i).text('削除')));
+                        .data('name', this.title).data('target', 'entry').data('id', this.id).text('削除')));
 
                     tr.append($('<td>').append($('<button>').addClass('categorybtn btn btn-info btn-xs')
-                        .data('name', this.c).data('id', this.i).text('変更')));
+                        .data('name', this.category_id).data('id', this.id).text('変更')));
 
-                    var cutstr = this.n.substr(0, 20);
-                    if (cutstr !== this.n) {
+                    var cutstr = this.title.substr(0, 20);
+                    if (cutstr !== this.title) {
                         cutstr = cutstr + '...';
                     }
 
                     var linkage = $('<a>').addClass('btn btn-link btn-xs').attr({
-                        href: this.h,
+                        href: this.siteurl,
                         target: 'blank',
-                        title: this.n,
+                        title: this.title,
                     }).append($('<span>').addClass('visible-xs').text(cutstr))
-                        .append($('<span>').addClass('visible-sm visible-md visible-lg').text(this.n));
+                        .append($('<span>').addClass('visible-sm visible-md visible-lg').text(this.title));
 
-                    if (this.r < -5 || this.r === "404") {
+                    if (this.http_status < -5 || this.http_status === "404") {
                         linkage.append($('<span>').addClass('badge ').text('取得に失敗しました'));
                         tr.addClass('danger');
                     }
                     tr.append($('<td>').append(linkage));
 
-                    $('#child_' + this.c).after(tr);
+                    $('#child_' + this.category_id).after(tr);
                 });
             }
         });
@@ -173,17 +150,17 @@ G.subscription = function() {
     /*
      * カテゴリの変更決定ボタン
      */
-    $(document).on('click', '#change-categories', function() {
+    $(document).on('click', '#change-category', function() {
         jQuery.ajax({
             type: 'POST',
-            url: '/manage/change_it',
+            url: '/api/change_it',
             data: {
                 'id': $('#target-id').val(),
-                'cat': $('#selectCat').val(),
+                'category': $('#selectCat').val(),
             },
             datatype: 'json',
             success: function() {
-                $('#categoriesModal').modal('hide');
+                $('#categoryModal').modal('hide');
                 list();
             }
         });
@@ -196,7 +173,7 @@ G.subscription = function() {
         if (confirm($(this).data('name') + ' を削除しますか')) {
             jQuery.ajax({
                 type: 'POST',
-                url: '/manage/delete_it',
+                url: '/api/delete_it',
                 data: {
                     'target': $(this).data('target'),
                     'id': $(this).data('id'),
@@ -215,7 +192,7 @@ G.subscription = function() {
     $(document).on('click', '.categorybtn', function() {
         $('#selectCat').val($(this).data('name'));
         $('#target-id').val($(this).data('id'));
-        $('#categoriesModal').modal('show');
+        $('#categoryModal').modal('show');
     });
 
     list();
@@ -230,12 +207,12 @@ G.settings = function() {
      */
     jQuery.ajax({
         type: 'POST',
-        url: '/manage/get_numentry',
+        url: '/api/get_numentry',
         datatype: 'json',
         success: function(b) {
-            $('#numentry').val(b.r);
-            $('#numsubstr').val(b.s);
-            if (b.n === 0) {
+            $('#numentry').val(b.numentry);
+            $('#numsubstr').val(b.numsubstr);
+            if (b.noreferrer === 0) {
                 $('#noreferrer').attr('checked', false);
                 $('#noreferrer').val(0);
             } else {
@@ -243,7 +220,7 @@ G.settings = function() {
                 $('#noreferrer').val(1);
             }
 
-            if (b.p === 0) {
+            if (b.nopinlist === 0) {
                 $('#nopinlist').attr('checked', false);
                 $('#nopinlist').val(0);
             } else {
@@ -280,7 +257,7 @@ G.settings = function() {
             .append(
                 $('<a>').addClass('disconnect ' + set_disconnect).attr({
                     id: 'disconnect' + this.id,
-                    href: '/api/' + this.id + '/disconnect'
+                    href: '/external_api/' + this.id + '/disconnect'
                 })
                 .append($('<span>').addClass('glyphicon glyphicon-remove')
                     .append($('<span>').text('連携の解除'))
@@ -291,7 +268,7 @@ G.settings = function() {
         td2.append(
             $('<a>').addClass('btn btn-default').attr({
                 id: 'btn' + this.id,
-                href: '/api/' + this.id + '/connect',
+                href: '/external_api/' + this.id + '/connect',
                 disabled: set_connect_state
             })
             .append($('<span>').addClass('glyphicon glyphicon-link')
@@ -317,13 +294,13 @@ G.settings = function() {
     $('#btn_numentry').click(function() {
         jQuery.ajax({
             type: 'POST',
-            url: '/manage/set_numentry',
+            url: '/api/set_numentry',
             datatype: 'json',
             data: {
-                'val': $('#numentry').val(),
-                'noref': $('#noreferrer').val(),
-                'nopin': $('#nopinlist').val(),
-                'substr': $('#numsubstr').val()
+                'numentry': $('#numentry').val(),
+                'noreferrer': $('#noreferrer').val(),
+                'nopinlist': $('#nopinlist').val(),
+                'numsubstr': $('#numsubstr').val()
             },
             success: function() {
                 $('#txt_numentry').show();
@@ -350,7 +327,7 @@ G.settings = function() {
     $('#update_password').click(function() {
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/update_password',
+            url: '/api/update_password',
             datatype: 'json',
             data: {
                 'password_old': $('#password_old').val(),
@@ -366,7 +343,7 @@ G.settings = function() {
     $('#create_user').click(function() {
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/create_user',
+            url: '/api/create_user',
             datatype: 'json',
             data: {
                 'username': $('#username').val(),
@@ -390,23 +367,23 @@ G.root = function() {
     var refresh = function() {
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/get_pinlist',
+            url: '/api/get_pinlist',
             datatype: 'json',
             success: function(a) {
                 var count = 0;
                 $('#pinlist_ul').empty();
                 jQuery.each(a, function() {
                     var li = $('<a>').attr({
-                        id: this.g
+                        id: this.guid
                     }).addClass('read glyphicon glyphicon-check').text('');
                     li.css('cursor', 'pointer');
                     var lic = $('<span>').text(' ')
-                        .append($('<span>').text(this.m))
+                        .append($('<span>').text(this.update_at))
                         .append($('<span>').text(' '))
                         .append($('<a>').attr({
-                            href: this.u,
+                            href: this.url,
                             target: 'blank',
-                        }).text(this.t));
+                        }).text(this.title));
                     $('#pinlist_ul').append($('<li>').append(li).append(lic).addClass('list-group-item'));
                     count++;
                 });
@@ -420,11 +397,11 @@ G.root = function() {
      */
     jQuery.ajax({
         type: 'POST',
-        url: '/manage/get_numentry',
+        url: '/api/get_numentry',
         datatype: 'json',
         success: function(b) {
-            if (b.p === 1) {
-                location.href = "/entries/";
+            if (b.nopinlist === 1) {
+                location.href = "/entry/";
             } else {
                 refresh();
             }
@@ -437,7 +414,7 @@ G.root = function() {
     $(document).on('click', '.read', function() {
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/set_pin',
+            url: '/api/set_pin',
             data: {
                 'flag': 0,
                 'pinid': encodeURI($(this).attr('id'))
@@ -460,11 +437,11 @@ G.add = function() {
         $('#selectCat').empty();
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/get_targetlist',
+            url: '/api/get_targetlist',
             datatype: 'json',
             success: function(b) {
-                jQuery.each(b.n, function() {
-                    $('#selectCat').append($('<option>').val(this.i).text(this.n));
+                jQuery.each(b.category, function() {
+                    $('#selectCat').append($('<option>').val(this.id).text(this.name));
                 });
             },
         });
@@ -480,9 +457,9 @@ G.add = function() {
         $('#url-search').show();
         jQuery.ajax({
             type: 'POST',
-            url: '/manage/examine_target',
+            url: '/api/examine_target',
             data: {
-                'm': $('#inputURL').val()
+                'url': $('#inputURL').val()
             },
             datatype: 'json',
         })
@@ -512,7 +489,7 @@ G.add = function() {
         }
         jQuery.ajax({
             type: 'POST',
-            url: '/manage/register_categories',
+            url: '/api/register_category',
             data: {
                 'name': $('#inputCategoryName').val(),
             },
@@ -536,12 +513,12 @@ G.add = function() {
         $('#return').empty();
         jQuery.ajax({
             type: 'POST',
-            url: '/manage/register_target',
+            url: '/api/register_target',
             data: {
                 'url': $('#inputURL').val(),
                 'rss': $('#inputRSS').val(),
                 'title': $('#inputTitle').val(),
-                'cat': $('#selectCat option:selected').val(),
+                'category': $('#selectCat option:selected').val(),
             },
             datatype: 'json',
             success: function(j) {
@@ -611,13 +588,13 @@ G.reader = function() {
         var frag = document.createDocumentFragment();
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/get_categories',
+            url: '/api/get_category',
             datatype: 'json',
             success: function(b) {
                 var link = [];
                 jQuery.each(b, function(i, data) {
-                    var li = $('<a>').addClass('categories_link list-group-item').attr({
-                        id: 'categories_link_' + data.i,
+                    var li = $('<a>').addClass('category_link list-group-item').attr({
+                        id: 'category_link_' + data.i,
                         href: '/#' + data.i
                     }).text(data.n).append($('<span>').addClass('badge hidden-sm').text(data.c));
                     frag.appendChild(li[0]);
@@ -644,15 +621,15 @@ G.reader = function() {
                 });
             },
             complete: function() {
-              $('.categories_link').removeClass('active');
+              $('.category_link').removeClass('active');
               if (q === undefined) {
-                $('.categories_link:first').addClass('active');
+                $('.category_link:first').addClass('active');
                 get_contents(0);
               } else {
                 if (q === 0) {
-                    $('.categories_link:first').addClass('active');
+                    $('.category_link:first').addClass('active');
                 } else {
-                    $('#categories_link_' + q).addClass('active');
+                    $('#category_link_' + q).addClass('active');
                 }
                 get_contents(q);
               }
@@ -665,7 +642,7 @@ G.reader = function() {
     /*
      * フィードのアイテムを表示する
      */
-    var entries = function(b) {
+    var entry = function(b) {
 
         if (typeof b === 'undefined' || b.length === 0 ) {
             var div = $('<div>').addClass('tw panel panel-default');
@@ -682,16 +659,16 @@ G.reader = function() {
             div.addClass('tw panel panel-default');
 
             div.attr({
-                id: this.g // ピン立てなどに利用する
+                id: this.guid // ピン立てなどに利用する
             });
 
             var texttitle = '[nothing title...]';
-            if (this.t.length > 0) {
-                texttitle = this.t;
+            if (this.title.length > 0) {
+                texttitle = this.title;
             }
 
             var titleh4 = $('<h4>').addClass('viewpage').append($('<a>').attr({
-                href: this.u,
+                href: this.url,
                 target: 'blank',
                 rel: 'noreferrer', // リファラを送らない(だめな時はリファラを抑制するオプションを使って外部リダイレクタを利用する)
             }).text(texttitle).click(function() {
@@ -699,17 +676,17 @@ G.reader = function() {
                 return false;
             }).css('color', '#333'));
 
-            if (this.r === "2") { // ピン立てしているアイテム
+            if (this.readflag === "2") { // ピン立てしているアイテム
                 titleh4.css('background-color', '#6cf');
             }
 
             div.append(titleh4);
 
-            div.append($('<p>').text(this.d)); // description
+            div.append($('<p>').text(this.description)); // description
 
             var pintarget = $('<p>').addClass('add pull-right').append($('<span>').addClass('glyphicon glyphicon-ok')).append(' Pin!');
 
-            if (this.r !== "2") { //ピン立てしていない時の状態
+            if (this.readflag !== "2") { //ピン立てしていない時の状態
                 pintarget.hide();
             }
 
@@ -717,7 +694,7 @@ G.reader = function() {
 
             // 外部サービスごとのボタンを生成する
             var btn = $('<div>').addClass('text-right').prepend($('<br>').addClass('hidden-md hidden-lg'));
-            var service_link = this.s;
+            var service_link = this.raw_url;
             $.each(self.service_state, function(i) {
                 btn.append($('<span>').css('margin-left', '1em'));
                 btn.append($('<button>').addClass('service btn btn-danger btn-sm').text(i).data('service', i).data('url', service_link));
@@ -725,7 +702,7 @@ G.reader = function() {
 
             div.append(btn);
             div.append(pintarget);
-            div.append($('<p>').text(this.p));
+            div.append($('<p>').text(this.date + " - " + this.site_title));
 
             frag.appendChild(div[0]);
         });
@@ -746,10 +723,9 @@ G.reader = function() {
         }
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/set_asread',
-            data: {
-                'g': param
-            },
+            url: '/api/set_asread',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify({ 'guid': param }),
             datatype: 'json',
             success: function() {},
         });
@@ -764,8 +740,8 @@ G.reader = function() {
         }
         var param = [];
         jQuery.each(content, function() {
-            if (this.r === "0") { // 未読ステータスのものだけ送る
-                param.push(this.g);
+            if (this.readflag === "0") { // 未読ステータスのものだけ送る
+                param.push(this.guid);
             }
         });
         if (param.length > 0) { // 未読ステータスのものがあるか
@@ -782,22 +758,22 @@ G.reader = function() {
 
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/get_entries',
+            url: '/api/get_entry',
             data: {
-                'cat': id
+                'category': id
             },
             datatype: 'json',
-            success: function(b) {
-                entries(b.c);
+            success: function(res) {
+                entry(res.entry);
                 moveselector();
-                self.cat_idx_selected = '/#' + b.id;
-                send_read_register(b.c, b.id);
+                self.cat_idx_selected = '/#' + res.id;
+                send_read_register(res.entry, res.id);
             },
         });
     };
 
     // カテゴリ移動
-    var categories_link = function(q) {
+    var category_link = function(q) {
         q = q.replace('/#', '');
         if (jQuery.isNumeric(q)) {
             cat_list(q);
@@ -810,7 +786,7 @@ G.reader = function() {
     var post_pin = function(id) {
         jQuery.ajax({
             type: 'POST',
-            url: '/inf/set_pin',
+            url: '/api/set_pin',
             data: {
                 'flag': is_toggle_pin(id),
                 'pinid': encodeURI(id.attr('id'))
@@ -888,27 +864,27 @@ G.reader = function() {
     /*
      * 次のカテゴリへ移動する
      */
-    var categories_next = function() {
+    var category_next = function() {
         if (self.cat_idx_next !== undefined) {
-            categories_link(self.cat_idx_next);
+            category_link(self.cat_idx_next);
         }
     };
 
-    $('#btn_categories_next').click(function() {
-        categories_next();
+    $('#btn_category_next').click(function() {
+        category_next();
     });
 
     /*
      * 前のカテゴリへ移動する
      */
-    var categories_prev = function() {
+    var category_prev = function() {
         if (self.cat_idx_prev !== undefined) {
-            categories_link(self.cat_idx_prev);
+            category_link(self.cat_idx_prev);
         }
     };
 
-    $('#btn_categories_prev').click(function() {
-        categories_prev();
+    $('#btn_category_prev').click(function() {
+        category_prev();
     });
 
     /*
@@ -937,8 +913,8 @@ G.reader = function() {
     /*
      * カテゴリリストのリンクをクリック
      */
-    $('#cat_list').on('click', '.categories_link', function(e) {
-        categories_link($(this).attr('href'));
+    $('#cat_list').on('click', '.category_link', function(e) {
+        category_link($(this).attr('href'));
         e.preventDefault();
     });
 
@@ -950,15 +926,15 @@ G.reader = function() {
 
             jQuery.ajax({
                 type: 'POST',
-                url: '/inf/get_pinlist',
+                url: '/api/get_pinlist',
                 datatype: 'json',
                 success: function(a) {
                     var count = 0;
                     $('#pinlist_ul').empty();
                     jQuery.each(a, function() {
                         $('#pinlist_ul').append($('<a>').attr({
-                            href: this.u
-                        }).text(this.t).addClass('list-group-item'));
+                            href: this.url
+                        }).text(this.title).addClass('list-group-item'));
                         count++;
                     });
                     $('#pincount').text(count);
@@ -973,16 +949,18 @@ G.reader = function() {
      * すべてのピンを外す
      */
     $('#remove_all_pin').click(function() {
-        if (confirm('ピンをすべて外しますか?')) {
-            jQuery.ajax({
-                type: 'POST',
-                url: '/inf/remove_all_pin',
-                datatype: 'json',
-                success: function() {
-                    cat_list();
-                },
-            });
+        if (!confirm('ピンをすべて外しますか?')) {
+            return false;
         }
+        $('#pinlist').hide();
+        jQuery.ajax({
+            type: 'POST',
+            url: '/api/remove_all_pin',
+            datatype: 'json',
+            success: function() {
+                cat_list();
+            },
+        });
     });
 
     /*
@@ -1004,7 +982,7 @@ G.reader = function() {
         }
         jQuery.ajax({
             type: 'POST',
-            url: '/api/' + $(this).data('service') + '/post',
+            url: '/external_api/' + $(this).data('service') + '/post',
             datatype: 'json',
             data: {
                 'url': $(this).data('url'),
@@ -1030,12 +1008,12 @@ G.reader = function() {
         switch (e.keyCode || e.which) {
             case 97:
                 // A
-                categories_prev();
+                category_prev();
                 break;
 
             case 115:
                 // S
-                categories_next();
+                category_next();
                 break;
 
             case 111:
@@ -1051,7 +1029,7 @@ G.reader = function() {
 
             case 114:
                 // R
-                categories_link(self.cat_idx_selected);
+                category_link(self.cat_idx_selected);
                 break;
 
             case 107:
