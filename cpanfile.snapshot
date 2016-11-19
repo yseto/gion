@@ -62,6 +62,32 @@ DISTRIBUTIONS
       strict 0
       utf8 0
       warnings 0
+  CPAN-Meta-2.150010
+    pathname: D/DA/DAGOLDEN/CPAN-Meta-2.150010.tar.gz
+    provides:
+      CPAN::Meta 2.150010
+      CPAN::Meta::Converter 2.150010
+      CPAN::Meta::Feature 2.150010
+      CPAN::Meta::History 2.150010
+      CPAN::Meta::Merge 2.150010
+      CPAN::Meta::Prereqs 2.150010
+      CPAN::Meta::Spec 2.150010
+      CPAN::Meta::Validator 2.150010
+      Parse::CPAN::Meta 2.150010
+    requirements:
+      CPAN::Meta::Requirements 2.121
+      CPAN::Meta::YAML 0.011
+      Carp 0
+      Encode 0
+      Exporter 0
+      ExtUtils::MakeMaker 6.17
+      File::Spec 0.80
+      JSON::PP 2.27300
+      Scalar::Util 0
+      perl 5.008001
+      strict 0
+      version 0.88
+      warnings 0
   Canary-Stability-2012
     pathname: M/ML/MLEHMANN/Canary-Stability-2012.tar.gz
     provides:
@@ -104,7 +130,7 @@ DISTRIBUTIONS
       Class::Data::Accessor 0.04004
     requirements:
       Carp 0
-      ExtUtils::MakeMaker 7.0401
+      ExtUtils::MakeMaker 6.98
   Class-Data-Inheritable-0.08
     pathname: T/TM/TMTM/Class-Data-Inheritable-0.08.tar.gz
     provides:
@@ -178,13 +204,6 @@ DISTRIBUTIONS
       Module::Build 0.38
       URI::Escape 0
       perl 5.008001
-  Cpanel-JSON-XS-3.0222
-    pathname: R/RU/RURBAN/Cpanel-JSON-XS-3.0222.tar.gz
-    provides:
-      Cpanel::JSON::XS 3.0222
-    requirements:
-      ExtUtils::MakeMaker 0
-      Pod::Text 2.08
   Crypt-OpenSSL-RSA-0.28
     pathname: P/PE/PERLER/Crypt-OpenSSL-RSA-0.28.tar.gz
     provides:
@@ -322,8 +341,8 @@ DISTRIBUTIONS
     provides:
       DBIx::Sunny 0.22
       DBIx::Sunny::Schema undef
-      DBIx::Sunny::db undef
-      DBIx::Sunny::st undef
+      DBIx::Sunny::db 0.22
+      DBIx::Sunny::st 0.22
     requirements:
       CPAN::Meta 0
       CPAN::Meta::Prereqs 0
@@ -923,6 +942,12 @@ DISTRIBUTIONS
       Test::Requires 0
       parent 0
       perl 5.008001
+  Devel-PPPort-3.35
+    pathname: W/WO/WOLFSAGE/Devel-PPPort-3.35.tar.gz
+    provides:
+      Devel::PPPort 3.35
+    requirements:
+      ExtUtils::MakeMaker 0
   Devel-StackTrace-2.01
     pathname: D/DR/DROLSKY/Devel-StackTrace-2.01.tar.gz
     provides:
@@ -981,6 +1006,7 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Mail::Address 0
+      Net::DNS 0
       Scalar::Util 0
       Test::More 0
       perl 5.006
@@ -1143,7 +1169,6 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Fcntl 0
       POSIX 0
-      perl 5.004
   File-Which-1.21
     pathname: P/PL/PLICEASE/File-Which-1.21.tar.gz
     provides:
@@ -1398,6 +1423,14 @@ DISTRIBUTIONS
       Encode 2.10
       Exporter 5.57
       ExtUtils::MakeMaker 6.30
+  IO-Socket-IP-0.38
+    pathname: P/PE/PEVANS/IO-Socket-IP-0.38.tar.gz
+    provides:
+      IO::Socket::IP 0.38
+    requirements:
+      IO::Socket 0
+      Socket 1.97
+      Test::More 0.88
   IO-Socket-SSL-2.038
     pathname: S/SU/SULLR/IO-Socket-SSL-2.038.tar.gz
     provides:
@@ -1427,7 +1460,6 @@ DISTRIBUTIONS
       JSON::MaybeXS 1.003008
     requirements:
       Carp 0
-      Cpanel::JSON::XS 2.3310
       ExtUtils::CBuilder 0.27
       ExtUtils::MakeMaker 0
       File::Spec 0
@@ -1435,6 +1467,15 @@ DISTRIBUTIONS
       JSON::PP 2.27300
       Scalar::Util 0
       perl 5.006
+  JSON-PP-2.27400
+    pathname: M/MA/MAKAMAKA/JSON-PP-2.27400.tar.gz
+    provides:
+      JSON::PP 2.27400
+      JSON::PP::Boolean 2.27400
+      JSON::PP::IncrParser 2.27400
+    requirements:
+      ExtUtils::MakeMaker 0
+      Test::More 0
   JSON-XS-3.02
     pathname: M/ML/MLEHMANN/JSON-XS-3.02.tar.gz
     provides:
@@ -1647,7 +1688,7 @@ DISTRIBUTIONS
   Mouse-v2.4.5
     pathname: S/SY/SYOHEX/Mouse-v2.4.5.tar.gz
     provides:
-      Mouse v2.4.5
+      Mouse 2.004005
       Mouse::Exporter undef
       Mouse::Meta::Attribute undef
       Mouse::Meta::Class undef
@@ -1665,11 +1706,10 @@ DISTRIBUTIONS
       Mouse::Meta::TypeConstraint undef
       Mouse::Object undef
       Mouse::PurePerl undef
-      Mouse::Role v2.4.5
-      Mouse::Spec v2.4.5
-      Mouse::Tiny v2.4.5
+      Mouse::Role 2.004005
+      Mouse::Spec 2.004005
       Mouse::TypeRegistry undef
-      Mouse::Util v2.4.5
+      Mouse::Util undef
       Mouse::Util::MetaRole undef
       Mouse::Util::TypeConstraints undef
       Squirrel undef
@@ -1692,6 +1732,109 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Test 0
       perl 5.006
+  Net-DNS-1.06
+    pathname: N/NL/NLNETLABS/Net-DNS-1.06.tar.gz
+    provides:
+      Net::DNS 1.06
+      Net::DNS::Domain 1456
+      Net::DNS::DomainName 1456
+      Net::DNS::DomainName1035 1456
+      Net::DNS::DomainName2535 1456
+      Net::DNS::Header 1381
+      Net::DNS::Mailbox 1406
+      Net::DNS::Mailbox1035 1406
+      Net::DNS::Mailbox2535 1406
+      Net::DNS::Nameserver 1406
+      Net::DNS::Packet 1446
+      Net::DNS::Parameters 1484
+      Net::DNS::Question 1381
+      Net::DNS::RR 1475
+      Net::DNS::RR::A 1388
+      Net::DNS::RR::AAAA 1441
+      Net::DNS::RR::AFSDB 1406
+      Net::DNS::RR::APL 1390
+      Net::DNS::RR::APL::Item 1390
+      Net::DNS::RR::CAA 1406
+      Net::DNS::RR::CDNSKEY 1339
+      Net::DNS::RR::CDS 1339
+      Net::DNS::RR::CERT 1390
+      Net::DNS::RR::CNAME 1406
+      Net::DNS::RR::CSYNC 1390
+      Net::DNS::RR::DHCID 1390
+      Net::DNS::RR::DLV 1339
+      Net::DNS::RR::DNAME 1456
+      Net::DNS::RR::DNSKEY 1468
+      Net::DNS::RR::DS 1456
+      Net::DNS::RR::EUI48 1390
+      Net::DNS::RR::EUI64 1390
+      Net::DNS::RR::GPOS 1382
+      Net::DNS::RR::HINFO 1406
+      Net::DNS::RR::HIP 1390
+      Net::DNS::RR::IPSECKEY 1390
+      Net::DNS::RR::ISDN 1406
+      Net::DNS::RR::KEY 1381
+      Net::DNS::RR::KX 1406
+      Net::DNS::RR::L32 1408
+      Net::DNS::RR::L64 1408
+      Net::DNS::RR::LOC 1390
+      Net::DNS::RR::LP 1406
+      Net::DNS::RR::MB 1406
+      Net::DNS::RR::MG 1406
+      Net::DNS::RR::MINFO 1406
+      Net::DNS::RR::MR 1406
+      Net::DNS::RR::MX 1406
+      Net::DNS::RR::NAPTR 1406
+      Net::DNS::RR::NID 1408
+      Net::DNS::RR::NS 1406
+      Net::DNS::RR::NSEC 1406
+      Net::DNS::RR::NSEC3 1456
+      Net::DNS::RR::NSEC3PARAM 1390
+      Net::DNS::RR::NULL 1348
+      Net::DNS::RR::OPENPGPKEY 1390
+      Net::DNS::RR::OPT 1474
+      Net::DNS::RR::PTR 1406
+      Net::DNS::RR::PX 1406
+      Net::DNS::RR::RP 1406
+      Net::DNS::RR::RRSIG 1456
+      Net::DNS::RR::RT 1406
+      Net::DNS::RR::SIG 1456
+      Net::DNS::RR::SMIMEA 1456
+      Net::DNS::RR::SOA 1408
+      Net::DNS::RR::SPF 1382
+      Net::DNS::RR::SRV 1406
+      Net::DNS::RR::SSHFP 1456
+      Net::DNS::RR::TKEY 1406
+      Net::DNS::RR::TLSA 1456
+      Net::DNS::RR::TSIG 1475
+      Net::DNS::RR::TXT 1382
+      Net::DNS::RR::URI 1406
+      Net::DNS::RR::X25 1406
+      Net::DNS::Resolver 1480
+      Net::DNS::Resolver::Base 1482
+      Net::DNS::Resolver::MSWin32 1456
+      Net::DNS::Resolver::Recurse 1472
+      Net::DNS::Resolver::UNIX 1408
+      Net::DNS::Resolver::android 1406
+      Net::DNS::Resolver::cygwin 1406
+      Net::DNS::Resolver::os2 1406
+      Net::DNS::Text 1406
+      Net::DNS::Update 1455
+      Net::DNS::ZoneFile 1466
+      Net::DNS::ZoneFile::Generator 1466
+      Net::DNS::ZoneFile::Text 1466
+    requirements:
+      Digest::HMAC 1.03
+      Digest::MD5 2.13
+      Digest::SHA 5.23
+      ExtUtils::MakeMaker 0
+      File::Spec 0.86
+      IO::Socket 1.16
+      IO::Socket::INET 1.25
+      IO::Socket::IP 0.32
+      MIME::Base64 2.11
+      Test::More 0.52
+      Time::Local 1.19
+      perl 5.00404
   Net-HTTP-6.09
     pathname: E/ET/ETHER/Net-HTTP-6.09.tar.gz
     provides:
@@ -2413,6 +2556,65 @@ DISTRIBUTIONS
       Test::Builder::Module 0
       Test::More 0.88
       perl 5.008_001
+  Test-Simple-1.302062
+    pathname: E/EX/EXODIST/Test-Simple-1.302062.tar.gz
+    provides:
+      Test2 1.302062
+      Test2::API 1.302062
+      Test2::API::Breakage 1.302062
+      Test2::API::Context 1.302062
+      Test2::API::Instance 1.302062
+      Test2::API::Stack 1.302062
+      Test2::Event 1.302062
+      Test2::Event::Bail 1.302062
+      Test2::Event::Diag 1.302062
+      Test2::Event::Exception 1.302062
+      Test2::Event::Generic 1.302062
+      Test2::Event::Info 1.302062
+      Test2::Event::Note 1.302062
+      Test2::Event::Ok 1.302062
+      Test2::Event::Plan 1.302062
+      Test2::Event::Skip 1.302062
+      Test2::Event::Subtest 1.302062
+      Test2::Event::Waiting 1.302062
+      Test2::Formatter 1.302062
+      Test2::Formatter::TAP 1.302062
+      Test2::Hub 1.302062
+      Test2::Hub::Interceptor 1.302062
+      Test2::Hub::Interceptor::Terminator 1.302062
+      Test2::Hub::Subtest 1.302062
+      Test2::IPC 1.302062
+      Test2::IPC::Driver 1.302062
+      Test2::IPC::Driver::Files 1.302062
+      Test2::Util 1.302062
+      Test2::Util::ExternalMeta 1.302062
+      Test2::Util::HashBase 1.302062
+      Test2::Util::Trace 1.302062
+      Test::Builder 1.302062
+      Test::Builder::Formatter 1.302062
+      Test::Builder::IO::Scalar 2.113
+      Test::Builder::Module 1.302062
+      Test::Builder::Tester 1.302062
+      Test::Builder::Tester::Color 1.302062
+      Test::Builder::Tester::Tie 1.302062
+      Test::Builder::TodoDiag 1.302062
+      Test::More 1.302062
+      Test::Simple 1.302062
+      Test::Tester 1.302062
+      Test::Tester::Capture 1.302062
+      Test::Tester::CaptureRunner 1.302062
+      Test::Tester::Delegate 1.302062
+      Test::use::ok 1.302062
+      ok 1.302062
+    requirements:
+      ExtUtils::MakeMaker 0
+      File::Spec 0
+      File::Temp 0
+      PerlIO 0
+      Scalar::Util 1.13
+      Storable 0
+      perl 5.008001
+      utf8 0
   Test-TCP-2.17
     pathname: S/SY/SYOHEX/Test-TCP-2.17.tar.gz
     provides:
@@ -2864,11 +3066,18 @@ DISTRIBUTIONS
       XML::XPath::LocationPath 1.39
       XML::XPath::Node 1.39
       XML::XPath::Node::Attribute 1.39
+      XML::XPath::Node::AttributeImpl 1.39
       XML::XPath::Node::Comment 1.39
+      XML::XPath::Node::CommentImpl 1.39
       XML::XPath::Node::Element 1.39
+      XML::XPath::Node::ElementImpl 1.39
       XML::XPath::Node::Namespace 1.39
+      XML::XPath::Node::NamespaceImpl 1.39
       XML::XPath::Node::PI 1.39
+      XML::XPath::Node::PIImpl 1.39
       XML::XPath::Node::Text 1.39
+      XML::XPath::Node::TextImpl 1.39
+      XML::XPath::NodeImpl 1.39
       XML::XPath::NodeSet 1.39
       XML::XPath::Number 1.39
       XML::XPath::Parser 1.39
@@ -2887,7 +3096,7 @@ DISTRIBUTIONS
   XSLoader-0.24
     pathname: S/SA/SAPER/XSLoader-0.24.tar.gz
     provides:
-      XSLoader 0.24
+      XSLoader undef
     requirements:
       ExtUtils::MakeMaker 0
       Test::More 0.47
