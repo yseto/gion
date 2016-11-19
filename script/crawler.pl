@@ -343,8 +343,8 @@ sub parser_rss {
  
     foreach ( @{ $rss->{items} } ) {
         my $dt;
-        if ( defined $_->{pubdate} ) {
-            $dt = from_feed_datetime($_->{pubdate});
+        if ( defined $_->{pubDate} ) {
+            $dt = from_feed_datetime($_->{pubDate});
         } elsif ( defined $_->{$ns_dc}->{date} ) {
             $dt = from_feed_datetime($_->{$ns_dc}{date});
         } else {
