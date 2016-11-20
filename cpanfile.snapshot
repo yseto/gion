@@ -204,6 +204,14 @@ DISTRIBUTIONS
       Module::Build 0.38
       URI::Escape 0
       perl 5.008001
+  Cookie-Baker-XS-0.07
+    pathname: K/KA/KAZEBURO/Cookie-Baker-XS-0.07.tar.gz
+    provides:
+      Cookie::Baker::XS 0.07
+    requirements:
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      perl 5.008001
   Crypt-OpenSSL-RSA-0.28
     pathname: P/PE/PERLER/Crypt-OpenSSL-RSA-0.28.tar.gz
     provides:
@@ -2716,6 +2724,13 @@ DISTRIBUTIONS
       Module::Build 0.38
       Set::Crontab 1.03
       perl 5.008005
+  Time-TZOffset-0.04
+    pathname: K/KA/KAZEBURO/Time-TZOffset-0.04.tar.gz
+    provides:
+      Time::TZOffset 0.04
+    requirements:
+      Module::Build 0.38
+      perl 5.008004
   TimeDate-2.30
     pathname: G/GB/GBARR/TimeDate-2.30.tar.gz
     provides:
@@ -2883,6 +2898,14 @@ DISTRIBUTIONS
     requirements:
       Exporter 0
       Module::Build 0.38
+      perl 5.008001
+  WWW-Form-UrlEncoded-XS-0.23
+    pathname: K/KA/KAZEBURO/WWW-Form-UrlEncoded-XS-0.23.tar.gz
+    provides:
+      WWW::Form::UrlEncoded::XS 0.23
+    requirements:
+      Exporter 0
+      Module::Build::Tiny 0.035
       perl 5.008001
   WWW-RobotRules-6.02
     pathname: G/GA/GAAS/WWW-RobotRules-6.02.tar.gz
