@@ -117,7 +117,12 @@ sub dbh {
         my $conf = config->param('db');
         DBIx::Handler->new( $conf->{dsn}, $conf->{username}, $conf->{password}, {
             RootClass => 'DBIx::Sunny',
-            on_connect_do => 'SET NAMES utf8mb4'
+            Callbacks => {
+                connected => sub {
+                    $_[0]->do('SET NAMES utf8mb4');
+                    return;
+                },
+            },
         });
     }
 }
@@ -126,7 +131,12 @@ sub cli_dbh {
     my $conf = config->param('db');
     DBIx::Handler->new( $conf->{dsn}, $conf->{username}, $conf->{password}, {
         RootClass => 'DBIx::Sunny',
-        on_connect_do => 'SET NAMES utf8mb4'
+        Callbacks => {
+            connected => sub {
+                $_[0]->do('SET NAMES utf8mb4');
+                return;
+            },
+        },
     });
 }
 
