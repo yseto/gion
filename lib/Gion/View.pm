@@ -17,6 +17,9 @@ use Gion::Config;
 my $XSLATE = Text::Xslate->new(
     syntax => 'TTerse',
     path => [ File::Spec->catdir(config->root,'templates') ],
+    function => {
+        __boolean => sub { (shift) ? 'true' : 'false'; } # XXX
+    },
 );
 
 sub render {

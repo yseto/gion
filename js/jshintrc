@@ -6,5 +6,9 @@
     "browser": true,
     "jquery": true,
     "devel": true,
-    "debug": true
+    "debug": true,
+    "esversion": 6,
+    "globals": {
+      "Vue": false
+    }
 }

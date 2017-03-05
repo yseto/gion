@@ -521,12 +521,12 @@ sub set_pin {
 
     my $validator = FormValidator::Lite->new($r->req);
     my $res = $validator->check(
-        flag => [ 'NOT_NULL', 'UINT' ],
+        readflag => [ 'NOT_NULL', 'UINT' ],
         pinid => ['NOT_NULL'],
     );
     return $r->json([]) if $validator->has_error;
 
-    my $flag = $r->req->param('flag') == 1 ? 2 : 1;
+    my $readflag = $r->req->param('readflag') == 2 ? 1 : 2;
 
     warn sprintf "PIN %s\t%s", $r->session->get('username'), $r->req->param('pinid');
 
@@ -539,11 +539,13 @@ sub set_pin {
         WHERE user_id = ?
             AND guid = ?
     ",
-        $flag,
+        $readflag,
         $r->session->get('username'),
         $r->req->param('pinid'),
     );
-    $r->text('OK');
+    $r->json({
+        readflag => $readflag
+    });
 }
 
 sub remove_all_pin {

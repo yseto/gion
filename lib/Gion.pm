@@ -20,11 +20,6 @@ route '/login', { controller => 'Gion', action => 'login' };
 route '/logout', { controller => 'Gion', action => 'logout' };
 route '/robots.txt', { controller => 'Gion', action => 'robots_txt' };
 
-route '/entry/', { controller => 'Gion', action => 'static', page => 'entry' };
-route '/add/', { controller => 'Gion', action => 'static', page => 'add' };
-route '/subscription/', { controller => 'Gion', action => 'static', page => 'subscription' };
-route '/settings/', { controller => 'Gion', action => 'static', page => 'settings' };
-
 route '/api/:action', { controller => 'Gion::Api' };
 route '/opml/:action', { controller => 'Gion::Opml' };
 route '/external_api/hatena/:action', { controller => 'Gion::ExternalAPI::Hatena' };
@@ -33,9 +28,16 @@ route '/external_api/pocket/:action', { controller => 'Gion::ExternalAPI::Pocket
 sub index {
     my ($class, $r) = @_;
 
-    $r->is_login ?
-        $r->html('entrance.html') :
-        $r->html('welcome.html');
+    return $r->html('welcome.html') unless $r->is_login;
+
+    my $db = $r->dbh->dbh;
+    my $rs = $db->select_row('SELECT nopinlist FROM user WHERE id = ?',
+        $r->session->get('username')
+    );
+
+    $r->html('index.html', {
+        nopinlist => $rs->{nopinlist},
+    });
 }
 
 sub login {
