@@ -1,53 +1,59 @@
-
-jQuery.ajaxSetup({
-    cache: false,
-    error: function() {
-        $('#myModal').modal('show');
-    },
-    beforeSend: function (xhr) {
-        xhr.setRequestHeader('X-CSRF-Token', $('[name=csrf-token]').attr('content'));
-    }
-});
-
 var Gion = Gion || {};
 
-Vue.component('gion-header', { template: '#tmpl_header' });
+Gion.Agent = window.superagent;
+Gion.PostAgent = function(args, then) {
+    var agent = Gion.Agent.post(args.url);
+    agent = args.json_request ? agent : agent.type('form');
+
+    agent.set({
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-Token': document.getElementsByName('csrf-token')[0].content,
+        'Cache-Control': 'no-cache'
+    })
+        .send(args.data)
+        .on('error', function() {
+        Gion.app.error = true;
+    })
+        .end(then);
+};
+
+Vue.component('gion-header', {
+    template: '#tmpl_header'
+});
 
 // ピンリストに追加されているエントリの一覧を表示する
 Gion.Home = {
     template: '#tmpl_home',
-    data: function () {
+    data: function() {
         return {
             list: [],
         };
     },
-    created: function () {
+    created: function() {
         //console.log('created');
         var self = this;
-        if ($('#app').data('nopin')) {
+        if (document.getElementById('app') &&
+            document.getElementById('app').getAttribute('data-nopin') === 'true') {
             self.$root.go('#entry');
         }
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/get_pinlist',
-            datatype: 'json',
-        }).then(function(a) {
-            self.list = a;
+
+        Gion.PostAgent({
+            url: '/api/get_pinlist'
+        }, function(error, res) {
+            self.list = res.body;
         });
     },
     methods: {
         // 既読にするをクリックされた時の処理
-        apply_read: function (event) {
+        apply_read: function(event) {
             var self = this;
-            jQuery.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/api/set_pin',
                 data: {
                     'readflag': 2,
                     'pinid': encodeURI(event.target.getAttribute('data-guid'))
                 },
-                datatype: 'text'
-            }).then(function() {
+            }, function() {
                 self.list.splice(event.target.getAttribute('data-index'), 1);
             });
         }
@@ -57,64 +63,56 @@ Gion.Home = {
 // 購読フィードの追加
 Gion.add_app = {
     template: '#tmpl_add_app',
-    data: function () {
+    data: function() {
         return {
             list: [],
             search_state: false,
             field: {},
             success_feed: false,
             category: null,
+
+            inputCategoryName: null
         };
     },
-    created: function () {
+    created: function() {
         //console.log('created');
         this.fetch_list();
-    },
-    updated: function () {
-        var self = this;
-        $('#inputURL').focusout(function() {
-            self.feed_detail();
-        });
     },
     methods: {
         fetch_list: function() {
             var self = this;
-            jQuery.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/api/get_targetlist',
-                datatype: 'json',
-            }).then(function(data) {
+            }, function(err, _data) {
+                var data = _data.body;
                 self.list = data.category;
                 self.category = data.category[0].id;
             });
         },
         // カテゴリの登録
-        register_category: function () {
+        register_category: function() {
             var self = this;
-            var name = $('#inputCategoryName').val();
-            if (name.length === 0) {
+            if (self.inputCategoryName.length === 0) {
                 return false;
             }
 
-            $.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/api/register_category',
-                data: { 'name': name },
-                datatype: 'json',
-            }).then(function(j) {
-                if (j.r === "ERROR_ALREADY_REGISTER") {
+                data: {
+                    'name': self.inputCategoryName
+                },
+            }, function(err, j) {
+                if (j.body.r === "ERROR_ALREADY_REGISTER") {
                     alert("すでに登録されています。");
                 } else {
                     self.fetch_list();
-                    $('#return_cat').text('Thanks! add your request.');
+                    alert("登録しました。");
                 }
             });
         },
         register_feed: function() {
             var self = this;
-            $('#return').empty();
-            $.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/api/register_target',
                 data: {
                     'url': self.field.url,
@@ -122,13 +120,12 @@ Gion.add_app = {
                     'title': self.field.title,
                     'category': self.category,
                 },
-                datatype: 'json',
-            }).then(function(j) {
-                if (j === null) {
+            }, function(error, j) {
+                if (j.body === null) {
                     alert('Failure: Get information.\n please check url... :(');
                     return false;
                 }
-                if (j.r === "ERROR_ALREADY_REGISTER") {
+                if (j.body.r === "ERROR_ALREADY_REGISTER") {
                     alert("すでに登録されています。");
                     return false;
                 }
@@ -150,19 +147,19 @@ Gion.add_app = {
             self.success_feed = false;
             self.search_state = true;
 
-            $.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/api/examine_target',
-                data: { url: self.field.url },
-                datatype: 'json',
-            }).then(function(j) {
+                data: {
+                    url: self.field.url
+                },
+            }, function(err, _j) {
+                var j = _j.body;
                 if (j === null) {
                     alert('Failure: Get information.\n please check url... :(');
                     return false;
                 }
                 self.field.rss = j.u;
                 self.field.title = j.t;
-            }).always(function() {
                 setTimeout(function() {
                     self.search_state = false;
                 }, 500);
@@ -174,7 +171,7 @@ Gion.add_app = {
 // エントリーを表示する
 Gion.reader = {
     template: '#tmpl_reader',
-    data: function () {
+    data: function() {
         return {
             category: Gion.category_store,
             category_list: [],
@@ -186,23 +183,23 @@ Gion.reader = {
             move_flag: true, // ピン立てでは移動しない
         };
     },
-    created: function () {
+    created: function() {
         //console.log('created');
         var self = this;
-        jQuery.ajax({
-            type: 'POST',
+        Gion.PostAgent({
             url: '/api/get_connect',
-            datatype: 'json',
-        }).then(function(data) {
-            $.each(data.e, function(index){ self.external_api[data.e[index].service] = true; });
+        }, function(err, _data) {
+            var data = _data.body;
+            data.e.forEach(function(_, index) {
+                self.external_api[data.e[index].service] = true;
+            });
         });
 
         // CATEGORY
-        jQuery.ajax({
-            type: 'POST',
+        Gion.PostAgent({
             url: '/api/get_category',
-            datatype: 'json',
-        }).then(function(data) {
+        }, function(err, _data) {
+            var data = _data.body;
             self.category_list = data;
             if (data.length === 0) {
                 self.category.clear();
@@ -214,34 +211,18 @@ Gion.reader = {
             self.content_update();
         });
     },
-    destroyed: function () {
+    destroyed: function() {
         //console.log('destroyed');
-        $(document).unbind('keypress');
+        document.removeEventListener('keypress', this.keypress_handler);
     },
-    mounted: function () {
-        var app = this;
+    mounted: function() {
         // キーボードのイベント
-        $(document).keypress(function(e) {
-            e.preventDefault();
-            // http://www.programming-magic.com/file/20080205232140/keycode_table.html
-            switch (e.keyCode || e.which) {
-                case 97: app.category_previous(); break; // A
-                case 115: app.category_next(); break; // S
-                case 111: app.pin_list_switch(); break; // O
-                case 112: app.toggle_pin(); break; // P
-                case 114: app.content_update(); break; // R
-                case 107: app.content_previous(); break; // K
-                case 106: app.content_next(); break; // J 
-                case 118: app.item_view(); break; // V
-                case 105: app.add_bookmark_keyboard('hatena'); break; // I
-                case 108: app.add_bookmark_keyboard('pocket'); break; // L
-            }
-        });
+        document.addEventListener("keypress", this.keypress_handler);
     },
     // 移動
-    updated: function () {
+    updated: function() {
         //console.log('updated');
-        if ( $('.tw--active').length === 0 ) {
+        if (document.querySelectorAll('.tw--active').length === 0) {
             return false;
         }
         //console.log('updated', 'exists');
@@ -251,12 +232,53 @@ Gion.reader = {
             return false;
         }
 
-        var topoffset = -80;
-        $($.browser.msie || $.browser.mozilla || ($.browser.opera && !$.browser.webkit) ? 'html' : 'body').animate({ // XXX
-            scrollTop: $('.tw--active').offset().top + topoffset,
-        }, 0);
+        var element = document.querySelectorAll('.tw--active');
+        if (element.length !== 1) {
+            return false;
+        }
+        var rect = element[0].getBoundingClientRect();
+        var positionY = rect.top + window.pageYOffset - 80; // offset: 80
+        window.scrollTo(0, positionY);
     },
     methods: {
+        keypress_handler: function(e) {
+            console.log('keypress');
+            e.preventDefault();
+            // http://www.programming-magic.com/file/20080205232140/keycode_table.html
+            switch (e.keyCode || e.which) {
+                case 97:
+                    this.category_previous();
+                    break; // A
+                case 115:
+                    this.category_next();
+                    break; // S
+                case 111:
+                    this.pin_list_switch();
+                    break; // O
+                case 112:
+                    this.toggle_pin();
+                    break; // P
+                case 114:
+                    this.content_update();
+                    break; // R
+                case 107:
+                    this.content_previous();
+                    break; // K
+                case 106:
+                    this.content_next();
+                    break; // J 
+                case 118:
+                    this.item_view();
+                    break; // V
+                case 105:
+                    this.add_bookmark_keyboard('hatena');
+                    break; // I
+                case 108:
+                    this.add_bookmark_keyboard('pocket');
+                    break; // L
+            }
+        },
+
         // ::: CATEGORY :::
         // カテゴリの移動
         category_next: function() {
@@ -286,16 +308,15 @@ Gion.reader = {
             var self = this;
             //console.info('category_update');
 
-            jQuery.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/api/get_category',
-                datatype: 'json',
-            }).then(function(data) {
+            }, function(err, _data) {
+                var data = _data.body;
                 var updated = false;
                 self.category_list = data;
 
                 // Vue の dataを更新する
-                $.each(data, function(index){
+                data.forEach(function(_, index) {
                     // category_id が一致するものがある
                     // 画面描画を更新する必要がある
                     if (self.category.category() === data[index].i) {
@@ -330,19 +351,20 @@ Gion.reader = {
             this.content.set(this.content_list, index);
         },
         // エントリ一覧の更新
-        content_update: function () {
+        content_update: function() {
             var self = this;
             //console.info('content_update');
 
             // 初期値は0に設定すると、初期状態(カテゴリリストの先頭)のカテゴリを示す
             var id = (self.category.category() === null) ? 0 : self.category.category();
 
-            jQuery.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/api/get_entry',
-                data: { 'category': id },
-                datatype: 'json',
-            }).then(function(data) {
+                data: {
+                    'category': id
+                },
+            }, function(err, _data) {
+                var data = _data.body;
                 self.content_list = (typeof data.entry !== 'undefined') ? data.entry : [];
                 if (self.content_list.length > 0) {
                     self.read_it();
@@ -361,14 +383,14 @@ Gion.reader = {
             var self = this;
             //console.warn('flagged');
 
-            var param = [], id = this.category.category();
-            $.each(self.content_list, function() {
+            var param = [],
+                id = this.category.category();
+            self.content_list.forEach(function(item) {
                 // 未読ステータスのものだけ送るため、
                 // フィードのアイテム既読リストを作成をする
-                if (this.readflag !== "0") {
-                    return true;
+                if (item.readflag === "0") {
+                    param.push(item.guid);
                 }
-                param.push(this.guid);
             });
 
             //console.warn('read_it > param', param);
@@ -379,19 +401,19 @@ Gion.reader = {
 
             // ダブルタップやキーボードの連続押下で、誤ってしまった場合、送信前にカテゴリを確認する。
             setTimeout(function() {
-                if (id !== Gion.category_store.category() ) {
+                if (id !== Gion.category_store.category()) {
                     //console.warn(id, Gion.category_store.category() );
                     //console.warn('read_it', 'no send');
                     return false;
                 }
                 //console.warn('read_it', 'send');
-                jQuery.ajax({
-                    type: 'POST',
+                Gion.PostAgent({
                     url: '/api/set_asread',
-                    contentType: 'application/json; charset=utf-8',
-                    data: JSON.stringify({ 'guid': param }),
-                    datatype: 'json',
-                }).done(function() {
+                    json_request: true,
+                    data: JSON.stringify({
+                        'guid': param
+                    }),
+                }, function() {
                     //console.log('read_it', 'send.done');
                 });
             }, 500);
@@ -403,32 +425,28 @@ Gion.reader = {
             index = (typeof index !== 'undefined') ? index : self.content.selected();
             // サーバーにピン立てを通知する
             //console.log(self.content_list[index].readflag);
-            jQuery.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/api/set_pin',
                 data: {
                     'readflag': self.content_list[index].readflag,
                     'pinid': self.content.guid()
                 },
-                datatype: 'json',
-            }).then(function(data) {
+            }, function(err, data) {
                 //console.log(data);
-                self.content_list[index].readflag = data.readflag;
+                self.content_list[index].readflag = data.body.readflag;
                 self.move_flag = false;
             });
         },
         // ピンリストに追加されているエントリの一覧を表示する
-        pin_list_update: function () {
+        pin_list_update: function() {
             var self = this;
-            jQuery.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/api/get_pinlist',
-                datatype: 'json'
-            }).then(function(data) {
-                self.pin_list = data;
+            }, function(err, data) {
+                self.pin_list = data.body;
             });
         },
-        pin_list_switch: function () {
+        pin_list_switch: function() {
             this.pin_list_state = (this.pin_list_state === true) ? false : true;
             if (this.pin_list_state === true) {
                 this.pin_list_update();
@@ -436,16 +454,14 @@ Gion.reader = {
         },
         pin_list_clean: function() {
             var self = this;
-            if (! confirm('ピンをすべて外しますか?')) {
+            if (!confirm('ピンをすべて外しますか?')) {
                 return false;
             }
 
             self.pin_list_state = false;
-            jQuery.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/api/remove_all_pin',
-                datatype: 'json',
-            }).then(function() {
+            }, function() {
                 self.pin_list = [];
             });
         },
@@ -459,20 +475,13 @@ Gion.reader = {
                 comment = window.prompt("type a comment", "");
             }
 
-            jQuery.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/external_api/' + service + '/post',
-                datatype: 'json',
                 data: {
                     'url': event.target.getAttribute('data-url'),
                     'comment': comment,
                 },
-            }).then(function(a) {
-                if (a.e !== 'ok') {
-                    return false;
-                }
-                $(event.target).text('posted').attr('disabled', 'disabled');
-            });
+            }, function() {});
         },
         add_bookmark_keyboard: function(service) {
             var self = this;
@@ -482,16 +491,13 @@ Gion.reader = {
                 comment = window.prompt("type a comment", "");
             }
 
-            jQuery.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/external_api/' + service + '/post',
-                datatype: 'json',
                 data: {
                     'url': self.content.url(),
                     'comment': comment,
                 },
-            }).then(function() {
-            });
+            }, function() {});
         }
     },
 };
@@ -499,14 +505,20 @@ Gion.reader = {
 // 設定ページ
 Gion.settings = {
     template: '#tmpl_settings',
-    data: function () {
+    data: function() {
         return {
             checked: [],
             numentry: 0,
             numsubstr: 0,
             external_api: {
-                pocket: { name: 'Pocket (formerly read it later)', state: false, },
-                hatena: { name: 'Hatena Bookmark', state: false, },
+                pocket: {
+                    name: 'Pocket (formerly read it later)',
+                    state: false,
+                },
+                hatena: {
+                    name: 'Hatena Bookmark',
+                    state: false,
+                },
             },
             finished: false,
             password: null,
@@ -516,14 +528,13 @@ Gion.settings = {
             user_password: null
         };
     },
-    created: function () {
+    created: function() {
         //console.log('created');
         var self = this;
-        $.ajax({
-            type: 'POST',
+        Gion.PostAgent({
             url: '/api/get_numentry',
-            datatype: 'json',
-        }).then(function(a) {
+        }, function(err, _a) {
+            var a = _a.body;
             if (a.noreferrer === 1) {
                 self.checked.push('noreferrer');
             }
@@ -533,62 +544,57 @@ Gion.settings = {
             self.numsubstr = a.numsubstr;
             self.numentry = a.numentry;
         });
-        $.ajax({
-            type: 'POST',
+        Gion.PostAgent({
             url: '/api/get_connect',
-            datatype: 'json',
-        }).then(function(data) {
-            $.each(data.e, function(index){
+        }, function(err, _data) {
+            var data = _data.body;
+            data.e.forEach(function(_, index) {
                 self.external_api[data.e[index].service].state = true;
                 self.external_api[data.e[index].service].username = data.e[index].username;
             });
         });
     },
     methods: {
-        apply: function () {
+        apply: function() {
             var self = this;
-            $.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/api/set_numentry',
-                datatype: 'json',
                 data: {
                     'numentry': self.numentry,
-                    'noreferrer': ($.inArray('noreferrer', self.checked) >= 0) ? 1 : 0,
-                    'nopinlist': ($.inArray('nopinlist', self.checked) >= 0) ? 1 : 0,
+                    'noreferrer': (self.checked.indexOf('noreferrer') >= 0) ? 1 : 0,
+                    'nopinlist': (self.checked.indexOf('nopinlist') >= 0) ? 1 : 0,
                     'numsubstr': self.numsubstr,
                 },
-            }).then(function() {
+            }, function() {
                 self.finished = true;
-                setTimeout(function(){ self.finished = false; }, 1000);
+                setTimeout(function() {
+                    self.finished = false;
+                }, 1000);
             });
         },
         update_password: function() {
             var self = this;
-            $.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/api/update_password',
-                datatype: 'json',
                 data: {
                     password_old: self.password_old,
                     password: self.password,
                     passwordc: self.passwordc
                 }
-            }).then(function(p) {
-                alert(p.e);
+            }, function(err, p) {
+                alert(p.body.e);
             });
         },
         create_user: function() {
             var self = this;
-            $.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/api/create_user',
-                datatype: 'json',
                 data: {
                     username: self.username,
                     password: self.user_password
                 }
-            }).then(function(p) {
-                alert(p.e);
+            }, function(err, p) {
+                alert(p.body.e);
             });
         }
     }
@@ -597,15 +603,17 @@ Gion.settings = {
 // 購読フィード一覧を表示する
 Gion.subscription = {
     template: '#tmpl_subscription',
-    data: function () {
+    data: function() {
         return {
             category: [],
             target: [],
             lists: [],
             field_category: null,
+            field_id: null,
+            categoryModal: false
         };
     },
-    created: function () {
+    created: function() {
         //console.log('created');
         this.fetch_list();
     },
@@ -614,74 +622,72 @@ Gion.subscription = {
         change_category: function(id, category) {
             this.field_category = category;
             this.field_id = id;
-            $('#categoryModal').modal('show');
+            this.categoryModal = true;
         },
         remove_it: function(id, type, name) {
             var self = this;
             if (!confirm(name + ' を削除しますか')) {
                 return false;
             }
-            $.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/api/delete_it',
-                data: { target: type, id: id },
-                datatype: 'json',
-                success: function() {
-                    self.fetch_list();
+                data: {
+                    target: type,
+                    id: id
                 }
+            }, function() {
+                self.fetch_list();
             });
         },
         // カテゴリの変更
         submit: function() {
             var self = this;
-            $.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/api/change_it',
                 data: {
                     id: self.field_id,
                     category: self.field_category,
                 },
-                datatype: 'json'
-            }).then(function(){
-                $('#categoryModal').modal('hide');
+            }, function() {
+                self.categoryModal = false;
                 self.fetch_list();
             });
         },
         fetch_list: function() {
             var self = this;
-            var tmp = [], list = {};
-            jQuery.ajax({
-                type: 'POST',
-                url: '/api/get_targetlist', // XXX
-                datatype: 'json',
-            }).then(function(a) {
+            var tmp = [],
+                list = {};
+            Gion.PostAgent({
+                url: '/api/get_targetlist'
+            }, function(err, _a) {
+                var a = _a.body;
                 self.category = a.category;
                 self.target = a.target;
 
-                $.each(self.category, function(i){
+                self.category.forEach(function(_, i) {
                     list[self.category[i].id] = {
                         id: self.category[i].id,
                         list: [],
                         name: self.category[i].name
                     };
                 });
-                $.each(self.target, function(i){
+                self.target.forEach(function(_, i) {
                     list[self.target[i].category_id].list.push(self.target[i]);
                 });
 
                 // combined
-                $.each(list, function(i){
+                Object.keys(list).forEach(function(i) {
                     tmp.push({
                         id: list[i].id,
                         name: list[i].name,
                         type: 'title',
                     });
-                    $.each(list[i].list, function(j){
+                    list[i].list.forEach(function(_, j) {
                         var value = list[i].list[j];
                         value.type = 'item';
                         tmp.push(value);
                     });
-                });
+                }, list);
                 self.lists = tmp;
             });
         }
@@ -690,7 +696,10 @@ Gion.subscription = {
 
 // 状態管理 ref. https://jp.vuejs.org/v2/guide/state-management.html
 Gion.category_store = {
-    state: { category: null, selected: 0 },
+    state: {
+        category: null,
+        selected: 0
+    },
     set: function(list, index) {
         this.state.category = list[index].i;
         this.state.selected = index;
@@ -710,7 +719,10 @@ Gion.category_store = {
     }
 };
 Gion.content_store = {
-    state: { guid: null, selected: 0 },
+    state: {
+        guid: null,
+        selected: 0
+    },
     set: function(list, index) {
         this.state.guid = list[index].guid;
         this.state.url = list[index].raw_url;
@@ -734,35 +746,42 @@ Gion.content_store = {
 
 // ref https://jp.vuejs.org/v2/guide/routing.html
 
-Gion.NotFound = { template: '<div><gion-header></gion-header><div class="container"><h1>Not Found <small>oops...</small></h1></div></div>' };
-const routes = {
+Gion.NotFound = {
+    template: '<div><gion-header></gion-header><div class="container"><h1>Not Found <small>oops...</small></h1></div></div>'
+};
+
+Gion.routes = {
     '': Gion.Home,
     '#add': Gion.add_app,
     '#entry': Gion.reader,
     '#settings': Gion.settings,
-    '#subscription': Gion.subscription,
+    '#subscription': Gion.subscription
 };
 
 Gion.app = new Vue({
     el: '#app',
     data: {
-        currentRoute: window.location.hash
+        currentRoute: window.location.hash,
+        helpModal: false,
+        error: false,
+        navbarState: false
     },
     computed: {
-        ViewComponent: function () {
-            return routes[this.currentRoute] || Gion.NotFound;
+        ViewComponent: function() {
+            return Gion.routes[this.currentRoute] || Gion.NotFound;
         }
     },
     methods: {
-        go: function (value) {
+        go: function(value) {
             window.location.hash = value;
             this.currentRoute = value;
-        },
-        help: function() {
-            $('#helpModal').modal('show');
+            this.navbarState = false;
         },
         returntop: function() {
-            $('html,body').animate({ scrollTop: 0 }, 'fast');
+            window.scrollTo(0, 0);
+        },
+        navbar: function() {
+            this.navbarState = this.navbarState ? false : true;
         },
     },
     render: function(h) {
@@ -771,5 +790,3 @@ Gion.app = new Vue({
         return h(this.ViewComponent);
     }
 });
-
-

@@ -84,7 +84,7 @@ sub callback {
         $data->{display_name},
         $access_token->as_encoded,
     );
-    $r->res->redirect("/settings/");
+    $r->res->redirect("/#settings"); # XXX
 };
 
 sub post {
@@ -134,7 +134,7 @@ sub disconnect {
         DELETE FROM connection WHERE user_id = ? AND service = 'hatena'
     ", $r->session->get('username'));
 
-    $r->res->redirect("/settings/");
+    $r->res->redirect("/#settings"); # XXX
 }
 
 1;
