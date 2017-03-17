@@ -429,7 +429,7 @@ Gion.reader = {
                 url: '/api/set_pin',
                 data: {
                     'readflag': self.content_list[index].readflag,
-                    'pinid': self.content.guid()
+                    'pinid': self.content_list[index].guid
                 },
             }, function(err, data) {
                 //console.log(data);
