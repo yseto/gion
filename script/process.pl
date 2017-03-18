@@ -8,7 +8,7 @@ use Proclet;
 my $proclet = Proclet->new(color => 1);
 
 $proclet->service(
-    code => 'plackup -s Starlet --max-workers 5 app.psgi',
+    code => 'plackup -E deployment --access-log /dev/stderr -s Starlet --max-workers 5 app.psgi',
     tag => 'web',
 );
 
