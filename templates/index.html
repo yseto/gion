@@ -10,27 +10,26 @@
       body {
         padding-top: 60px;
         padding-bottom: 40px;
-        overflow-y:scroll;
+        overflow-y: scroll;
       }
       .tw {
-        margin:0 0 5px !important;
-        padding:0 10px;
+        margin: 0 0 5px !important;
+        padding: 0 15px;
+        box-sizing: border-box;
       }
       .tw--active {
-        border-color: #339 !important;
+        padding-left: 8px;
+        border-left-width: 8px !important;
       }
       #cat_list .list-group-item, #pinlist_ul .list-group-item {
-        padding:4px 10px;
+        padding: 4px 10px;
         cursor: pointer;
       }
-      .viewpage__pinned {
-        background-color: #6cf;
-      }
       .navbar-nav li {
-        cursor:pointer;
+        cursor: pointer;
       }
     </style>
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   </head>
   <body>
     <div class="container" id="app" data-nopin="[% nopinlist | __boolean %]"></div>
@@ -267,8 +266,8 @@
         <h3>Nothing Entries.</h3>
       </div>
       <div v-for="(item, index) in content_list">
-        <div class="tw panel panel-default" v-bind:class="{ 'tw--active': index == content.selected() }">
-          <h4 class="viewpage" v-bind:class="{ viewpage__pinned : item.readflag == 2 }">
+        <div class="tw panel panel-default" v-bind:class="{ 'tw--active panel-info': index == content.selected() }">
+          <h4 class="viewpage" v-bind:class="{ 'bg-info' : item.readflag == 2 }">
             <a v-bind:href="item.url" target="blank" rel="noreferrer" style="color: #333;">
             <span v-if="item.title.length > 0">{{ item.title }}</span>
             <span v-else>[nothing title...]</span>
@@ -292,12 +291,17 @@
               v-if="item.readflag == 2"
               class="pull-right visible-md visible-lg"
               >
-              <span class="glyphicon glyphicon-ok"></span> Pin!
+              <span class="glyphicon glyphicon-ok"></span> 
+              Pin!
             </p>
-            <a
-              class="hidden-md hidden-lg btn btn-info btn-sm"
-              v-on:click.prevent="toggle_pin(index)"
-            >Pin!</a> <!-- //スマホ用ピン立て -->
+            <!-- //スマホ用ピン立て -->
+            <br class="hidden-md hidden-lg">
+            <button
+              class="hidden-md hidden-lg btn btn-info btn-sm btn-block"
+              v-on:click="toggle_pin(index)"
+            >
+            Pin!
+            </button>
           </div>
           <p>{{ item.date + " - " + item.site_title}}</p>
         </div>
