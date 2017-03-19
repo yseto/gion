@@ -54,10 +54,10 @@ sub before_dispatch {
 
         if (my $token = $r->req->$attr($param)) {
             if ($r->csrf_token ne $token) {
-                die 'Invalid session';
+                throw code => 500, body => 'Invalid session';
             }
         } else {
-            die 'Require session';
+            throw code => 403, body => 'Require session';
         }
     }
     $r->res->header('X-XSS-Protection' => '1');
