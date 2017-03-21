@@ -3,6 +3,7 @@
         dsn => '',
         username => '',
         password => '',
+        on_connect_do => ['SET NAMES utf8mb4'],
     },
 
     #パスワード

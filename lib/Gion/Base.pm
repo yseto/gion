@@ -119,7 +119,7 @@ sub dbh {
             RootClass => 'DBIx::Sunny',
             Callbacks => {
                 connected => sub {
-                    $_[0]->do('SET NAMES utf8mb4');
+                    $_[0]->do($_) for @{$conf->{on_connect_do}};
                     return;
                 },
             },
@@ -133,7 +133,7 @@ sub cli_dbh {
         RootClass => 'DBIx::Sunny',
         Callbacks => {
             connected => sub {
-                $_[0]->do('SET NAMES utf8mb4');
+                $_[0]->do($_) for @{$conf->{on_connect_do}};
                 return;
             },
         },
