@@ -1,1064 +1,792 @@
 var Gion = Gion || {};
 
-$(function(G) {
+Gion.Agent = window.superagent;
+Gion.PostAgent = function(args, then) {
+    var agent = Gion.Agent.post(args.url);
+    agent = args.json_request ? agent : agent.type('form');
 
-G.option = {
-    // Read Page
-    selection: 0,
-    prev_selection: 0,
-    service_state: {},
-    cat_idx_prev: '',
-    cat_idx_next: '',
-    cat_idx_selected: '0',
-    colour_selected: '#339',
-    colour_nonselected: '#999',
-    timer_asread: 500,
-    service: [{
-        name: 'Pocket (formerly read it later)',
-        id: 'pocket'
-    },{
-        name: 'Hatena Bookmark',
-        id: 'hatena'
-    }],
-    actions: function() {},
-    /*
-     * 外部サービスの接続状態を取得する
-     */
-    // ref. http://qiita.com/kawanamiyuu/items/9312e5d99b2b26bd6074
-    service_connection: function(arg) {
+    agent.set({
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-Token': document.getElementsByName('csrf-token')[0].content,
+        'Cache-Control': 'no-cache'
+    })
+        .send(args.data)
+        .on('error', function() {
+        Gion.app.error = true;
+    })
+        .end(then);
+};
+
+Vue.component('gion-header', {
+    template: '#tmpl_header'
+});
+
+// ピンリストに追加されているエントリの一覧を表示する
+Gion.Home = {
+    template: '#tmpl_home',
+    data: function() {
+        return {
+            list: [],
+        };
+    },
+    created: function() {
+        //console.log('created');
         var self = this;
-        var opt = $.extend({}, $.ajaxSettings, arg);
-        opt.type= 'POST';
-        opt.url= '/api/get_connect';
-        opt.datatype= 'json';
-        opt.success = (function(func) {
-            return function(data, statusText, jqXHR) {
-                if (data.e !== null) {
-                    $.each(data.e, function() {
-                        self.service_state[this.service] = this.username;
-                    });
+        if (document.getElementById('app') &&
+            document.getElementById('app').getAttribute('data-nopin') === 'true') {
+            self.$root.go('#entry');
+        }
+
+        Gion.PostAgent({
+            url: '/api/get_pinlist'
+        }, function(error, res) {
+            self.list = res.body;
+        });
+    },
+    methods: {
+        // 既読にするをクリックされた時の処理
+        apply_read: function(event) {
+            var self = this;
+            Gion.PostAgent({
+                url: '/api/set_pin',
+                data: {
+                    'readflag': 2,
+                    'pinid': encodeURI(event.target.getAttribute('data-guid'))
+                },
+            }, function() {
+                self.list.splice(event.target.getAttribute('data-index'), 1);
+            });
+        }
+    }
+};
+
+// 購読フィードの追加
+Gion.add_app = {
+    template: '#tmpl_add_app',
+    data: function() {
+        return {
+            list: [],
+            search_state: false,
+            field: {},
+            success_feed: false,
+            category: null,
+
+            inputCategoryName: null
+        };
+    },
+    created: function() {
+        //console.log('created');
+        this.fetch_list();
+    },
+    methods: {
+        fetch_list: function() {
+            var self = this;
+            Gion.PostAgent({
+                url: '/api/get_targetlist',
+            }, function(err, _data) {
+                var data = _data.body;
+                self.list = data.category;
+                self.category = data.category[0].id;
+            });
+        },
+        // カテゴリの登録
+        register_category: function() {
+            var self = this;
+            if (self.inputCategoryName.length === 0) {
+                return false;
+            }
+
+            Gion.PostAgent({
+                url: '/api/register_category',
+                data: {
+                    'name': self.inputCategoryName
+                },
+            }, function(err, j) {
+                if (j.body.r === "ERROR_ALREADY_REGISTER") {
+                    alert("すでに登録されています。");
+                } else {
+                    self.fetch_list();
+                    alert("登録しました。");
                 }
-                if (func) {
-                    func(data, statusText, jqXHR);
+            });
+        },
+        register_feed: function() {
+            var self = this;
+            Gion.PostAgent({
+                url: '/api/register_target',
+                data: {
+                    'url': self.field.url,
+                    'rss': self.field.rss,
+                    'title': self.field.title,
+                    'category': self.category,
+                },
+            }, function(error, j) {
+                if (j.body === null) {
+                    alert('Failure: Get information.\n please check url... :(');
+                    return false;
                 }
-            };
-        })(opt.success);
-        return $.ajax(opt);
+                if (j.body.r === "ERROR_ALREADY_REGISTER") {
+                    alert("すでに登録されています。");
+                    return false;
+                }
+                self.success_feed = true;
+                self.field = {};
+            });
+
+        },
+        // ページの詳細を取得する
+        feed_detail: function() {
+            var self = this;
+            if (typeof self.field.url === 'undefined') {
+                return false;
+            }
+            if (self.field.url.match(/^http/g) === null) {
+                return false;
+            }
+
+            self.success_feed = false;
+            self.search_state = true;
+
+            Gion.PostAgent({
+                url: '/api/examine_target',
+                data: {
+                    url: self.field.url
+                },
+            }, function(err, _j) {
+                var j = _j.body;
+                if (j === null) {
+                    alert('Failure: Get information.\n please check url... :(');
+                    return false;
+                }
+                self.field.rss = j.u;
+                self.field.title = j.t;
+                setTimeout(function() {
+                    self.search_state = false;
+                }, 500);
+            });
+        }
+    }
+};
+
+// エントリーを表示する
+Gion.reader = {
+    template: '#tmpl_reader',
+    data: function() {
+        return {
+            category: Gion.category_store,
+            category_list: [],
+            content: Gion.content_store,
+            content_list: [],
+            pin_list_state: false,
+            pin_list: [],
+            external_api: {},
+            move_flag: true, // ピン立てでは移動しない
+        };
+    },
+    created: function() {
+        //console.log('created');
+        var self = this;
+        Gion.PostAgent({
+            url: '/api/get_connect',
+        }, function(err, _data) {
+            var data = _data.body;
+            data.e.forEach(function(_, index) {
+                self.external_api[data.e[index].service] = true;
+            });
+        });
+
+        // CATEGORY
+        Gion.PostAgent({
+            url: '/api/get_category',
+        }, function(err, _data) {
+            var data = _data.body;
+            self.category_list = data;
+            if (data.length === 0) {
+                self.category.clear();
+                return false;
+            }
+            self.category.set(self.category_list, 0);
+            //console.log(self.category_list);
+            //console.log(self.category.category());
+            self.content_update();
+        });
+    },
+    destroyed: function() {
+        //console.log('destroyed');
+        document.removeEventListener('keypress', this.keypress_handler);
+    },
+    mounted: function() {
+        // キーボードのイベント
+        document.addEventListener("keypress", this.keypress_handler);
+    },
+    // 移動
+    updated: function() {
+        //console.log('updated');
+        if (document.querySelectorAll('.tw--active').length === 0) {
+            return false;
+        }
+        //console.log('updated', 'exists');
+
+        if (this.move_flag === false) {
+            this.move_flag = true;
+            return false;
+        }
+
+        var element = document.querySelectorAll('.tw--active');
+        if (element.length !== 1) {
+            return false;
+        }
+        var rect = element[0].getBoundingClientRect();
+        var positionY = rect.top + window.pageYOffset - 80; // offset: 80
+        window.scrollTo(0, positionY);
+    },
+    methods: {
+        keypress_handler: function(e) {
+            console.log('keypress');
+            e.preventDefault();
+            // http://www.programming-magic.com/file/20080205232140/keycode_table.html
+            switch (e.keyCode || e.which) {
+                case 97:
+                    this.category_previous();
+                    break; // A
+                case 115:
+                    this.category_next();
+                    break; // S
+                case 111:
+                    this.pin_list_switch();
+                    break; // O
+                case 112:
+                    this.toggle_pin();
+                    break; // P
+                case 114:
+                    this.content_update();
+                    break; // R
+                case 107:
+                    this.content_previous();
+                    break; // K
+                case 106:
+                    this.content_next();
+                    break; // J 
+                case 118:
+                    this.item_view();
+                    break; // V
+                case 105:
+                    this.add_bookmark_keyboard('hatena');
+                    break; // I
+                case 108:
+                    this.add_bookmark_keyboard('pocket');
+                    break; // L
+            }
+        },
+
+        // ::: CATEGORY :::
+        // カテゴリの移動
+        category_next: function() {
+            if (this.category_list.length === 0) {
+                return false;
+            }
+            var index = this.category.selected() + 1;
+            if (index === this.category_list.length) {
+                index = 0;
+            }
+            this.category.set(this.category_list, index);
+            this.content_update();
+        },
+        category_previous: function() {
+            if (this.category_list.length === 0) {
+                return false;
+            }
+            var index = this.category.selected() - 1;
+            if (0 > index) {
+                index = this.category_list.length - 1;
+            }
+            this.category.set(this.category_list, index);
+            this.content_update();
+        },
+        // カテゴリ一覧の更新
+        category_update: function() {
+            var self = this;
+            //console.info('category_update');
+
+            Gion.PostAgent({
+                url: '/api/get_category',
+            }, function(err, _data) {
+                var data = _data.body;
+                var updated = false;
+                self.category_list = data;
+
+                // Vue の dataを更新する
+                data.forEach(function(_, index) {
+                    // category_id が一致するものがある
+                    // 画面描画を更新する必要がある
+                    if (self.category.category() === data[index].i) {
+                        self.category.set_index(index); // 更新
+                        updated = true; // 更新したフラグ
+                        return false;
+                    }
+                });
+                // 更新していない場合は、カテゴリ一覧を一番上に設定する
+                // ただし、選択可能なカテゴリがない場合は実行しない
+                if (data.length > 0 && !updated) {
+                    self.category.set(self.category_list, 0);
+                    self.content_update();
+                }
+                //console.log('done');
+            });
+        },
+        // ::: CONTENT :::
+        // エントリの移動
+        content_next: function() {
+            var index = this.content.selected() + 1;
+            if (index === this.content_list.length) {
+                return false;
+            }
+            this.content.set(this.content_list, index);
+        },
+        content_previous: function() {
+            var index = this.content.selected() - 1;
+            if (0 > index) {
+                return false;
+            }
+            this.content.set(this.content_list, index);
+        },
+        // エントリ一覧の更新
+        content_update: function() {
+            var self = this;
+            //console.info('content_update');
+
+            // 初期値は0に設定すると、初期状態(カテゴリリストの先頭)のカテゴリを示す
+            var id = (self.category.category() === null) ? 0 : self.category.category();
+
+            Gion.PostAgent({
+                url: '/api/get_entry',
+                data: {
+                    'category': id
+                },
+            }, function(err, _data) {
+                var data = _data.body;
+                self.content_list = (typeof data.entry !== 'undefined') ? data.entry : [];
+                if (self.content_list.length > 0) {
+                    self.read_it();
+                    self.content.set(self.content_list, 0);
+                }
+                self.category_update();
+            });
+        },
+        // アイテムを閲覧する
+        item_view: function() {
+            var index = this.content.selected();
+            window.open(this.content_list[index].url);
+        },
+        // フィードのアイテム既読リストを作成し、既読フラグを付加する
+        read_it: function() {
+            var self = this;
+            //console.warn('flagged');
+
+            var param = [],
+                id = this.category.category();
+            self.content_list.forEach(function(item) {
+                // 未読ステータスのものだけ送るため、
+                // フィードのアイテム既読リストを作成をする
+                if (item.readflag === "0") {
+                    param.push(item.guid);
+                }
+            });
+
+            //console.warn('read_it > param', param);
+            // 未読ステータスのものがなければ抜ける
+            if (param.length === 0) {
+                return false;
+            }
+
+            // ダブルタップやキーボードの連続押下で、誤ってしまった場合、送信前にカテゴリを確認する。
+            setTimeout(function() {
+                if (id !== Gion.category_store.category()) {
+                    //console.warn(id, Gion.category_store.category() );
+                    //console.warn('read_it', 'no send');
+                    return false;
+                }
+                //console.warn('read_it', 'send');
+                Gion.PostAgent({
+                    url: '/api/set_asread',
+                    json_request: true,
+                    data: JSON.stringify({
+                        'guid': param
+                    }),
+                }, function() {
+                    //console.log('read_it', 'send.done');
+                });
+            }, 500);
+        },
+        // ::: PINLIST :::
+        // ピン立て
+        toggle_pin: function(index) {
+            var self = this;
+            index = (typeof index !== 'undefined') ? index : self.content.selected();
+            // サーバーにピン立てを通知する
+            //console.log(self.content_list[index].readflag);
+            Gion.PostAgent({
+                url: '/api/set_pin',
+                data: {
+                    'readflag': self.content_list[index].readflag,
+                    'pinid': self.content_list[index].guid
+                },
+            }, function(err, data) {
+                //console.log(data);
+                self.content_list[index].readflag = data.body.readflag;
+                self.move_flag = false;
+            });
+        },
+        // ピンリストに追加されているエントリの一覧を表示する
+        pin_list_update: function() {
+            var self = this;
+            Gion.PostAgent({
+                url: '/api/get_pinlist',
+            }, function(err, data) {
+                self.pin_list = data.body;
+            });
+        },
+        pin_list_switch: function() {
+            this.pin_list_state = (this.pin_list_state === true) ? false : true;
+            if (this.pin_list_state === true) {
+                this.pin_list_update();
+            }
+        },
+        pin_list_clean: function() {
+            var self = this;
+            if (!confirm('ピンをすべて外しますか?')) {
+                return false;
+            }
+
+            self.pin_list_state = false;
+            Gion.PostAgent({
+                url: '/api/remove_all_pin',
+            }, function() {
+                self.pin_list = [];
+            });
+        },
+        // ::: BOOKMARK :::
+        // 外部サービスへポストする
+        add_bookmark: function(event) {
+            var comment;
+            var service = event.target.getAttribute('data-service');
+
+            if (service === 'hatena') {
+                comment = window.prompt("type a comment", "");
+            }
+
+            Gion.PostAgent({
+                url: '/external_api/' + service + '/post',
+                data: {
+                    'url': event.target.getAttribute('data-url'),
+                    'comment': comment,
+                },
+            }, function() {});
+        },
+        add_bookmark_keyboard: function(service) {
+            var self = this;
+            var comment;
+
+            if (service === 'hatena') {
+                comment = window.prompt("type a comment", "");
+            }
+
+            Gion.PostAgent({
+                url: '/external_api/' + service + '/post',
+                data: {
+                    'url': self.content.url(),
+                    'comment': comment,
+                },
+            }, function() {});
+        }
     },
 };
 
-G.main = function() {
-    jQuery.ajaxSetup({
-        cache: false,
-        error: function() {
-            $('#myModal').modal('show');
+// 設定ページ
+Gion.settings = {
+    template: '#tmpl_settings',
+    data: function() {
+        return {
+            checked: [],
+            numentry: 0,
+            numsubstr: 0,
+            external_api: {
+                pocket: {
+                    name: 'Pocket (formerly read it later)',
+                    state: false,
+                },
+                hatena: {
+                    name: 'Hatena Bookmark',
+                    state: false,
+                },
+            },
+            finished: false,
+            password: null,
+            password_old: null,
+            passwordc: null,
+            username: null,
+            user_password: null
+        };
+    },
+    created: function() {
+        //console.log('created');
+        var self = this;
+        Gion.PostAgent({
+            url: '/api/get_numentry',
+        }, function(err, _a) {
+            var a = _a.body;
+            if (a.noreferrer === 1) {
+                self.checked.push('noreferrer');
+            }
+            if (a.nopinlist === 1) {
+                self.checked.push('nopinlist');
+            }
+            self.numsubstr = a.numsubstr;
+            self.numentry = a.numentry;
+        });
+        Gion.PostAgent({
+            url: '/api/get_connect',
+        }, function(err, _data) {
+            var data = _data.body;
+            data.e.forEach(function(_, index) {
+                self.external_api[data.e[index].service].state = true;
+                self.external_api[data.e[index].service].username = data.e[index].username;
+            });
+        });
+    },
+    methods: {
+        apply: function() {
+            var self = this;
+            Gion.PostAgent({
+                url: '/api/set_numentry',
+                data: {
+                    'numentry': self.numentry,
+                    'noreferrer': (self.checked.indexOf('noreferrer') >= 0) ? 1 : 0,
+                    'nopinlist': (self.checked.indexOf('nopinlist') >= 0) ? 1 : 0,
+                    'numsubstr': self.numsubstr,
+                },
+            }, function() {
+                self.finished = true;
+                setTimeout(function() {
+                    self.finished = false;
+                }, 1000);
+            });
         },
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('X-CSRF-Token', $('[name=csrf-token]').attr('content'));
+        update_password: function() {
+            var self = this;
+            Gion.PostAgent({
+                url: '/api/update_password',
+                data: {
+                    password_old: self.password_old,
+                    password: self.password,
+                    passwordc: self.passwordc
+                }
+            }, function(err, p) {
+                alert(p.body.e);
+            });
         },
-        complete: function() {},
-    });
-
-    var active = location.pathname;
-    if (/^\/$/.test(active)){
-        G.root();
+        create_user: function() {
+            var self = this;
+            Gion.PostAgent({
+                url: '/api/create_user',
+                data: {
+                    username: self.username,
+                    password: self.user_password
+                }
+            }, function(err, p) {
+                alert(p.body.e);
+            });
+        }
     }
-    if (/entry/.test(active)){
-        G.reader();
-    }
-    if (/add/.test(active)){
-        G.add();
-    }
-    if (/subscription/.test(active)){
-        G.subscription();
-    }
-    if (/settings/.test(active)){
-        G.settings();
-    }
-
-    $('#helpmodal').click(function() {
-        $('#helpModal').modal('show');
-    });
-
-    $('#returntop').click(function() {
-        $('html,body').animate({
-            scrollTop: 0
-        }, 'fast');
-    });
-
 };
 
-G.subscription = function() {
-
-    /*
-     * 購読フィード一覧を表示する
-     */
-    var list = function() {
-        $('.appendlist').remove();
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/get_targetlist',
-            datatype: 'json',
-            success: function(b) {
-                $('#selectCat').empty();
-
-                jQuery.each(b.category, function() {
-                    var tr = $('<tr>').attr('id', 'child_' + this.id).addClass('appendlist');
-
-                    tr.append($('<td>').attr('colspan', 2).append($('<button>').addClass('deletebtn btn btn-danger btn-xs')
-                        .data('name', this.name).data('target', 'category').data('id', this.id).text('削除')));
-                    tr.append($('<th>').text(this.name));
-
-                    $('#cat_list').append(tr);
-
-                    $('#selectCat').append($('<option>').val(this.id).text(this.name));
-                });
-
-                jQuery.each(b.target, function() {
-                    var tr = $('<tr>').addClass('appendlist');
-
-                    tr.append($('<td>').append($('<button>').addClass('deletebtn btn btn-danger btn-xs')
-                        .data('name', this.title).data('target', 'entry').data('id', this.id).text('削除')));
-
-                    tr.append($('<td>').append($('<button>').addClass('categorybtn btn btn-info btn-xs')
-                        .data('name', this.category_id).data('id', this.id).text('変更')));
-
-                    var cutstr = this.title.substr(0, 20);
-                    if (cutstr !== this.title) {
-                        cutstr = cutstr + '...';
-                    }
-
-                    var linkage = $('<a>').addClass('btn btn-link btn-xs').attr({
-                        href: this.siteurl,
-                        target: 'blank',
-                        title: this.title,
-                    }).append($('<span>').addClass('visible-xs').text(cutstr))
-                        .append($('<span>').addClass('visible-sm visible-md visible-lg').text(this.title));
-
-                    if (this.http_status < -5 || this.http_status === "404") {
-                        linkage.append($('<span>').addClass('badge ').text('取得に失敗しました'));
-                        tr.addClass('danger');
-                    }
-                    tr.append($('<td>').append(linkage));
-
-                    $('#child_' + this.category_id).after(tr);
-                });
+// 購読フィード一覧を表示する
+Gion.subscription = {
+    template: '#tmpl_subscription',
+    data: function() {
+        return {
+            category: [],
+            target: [],
+            lists: [],
+            field_category: null,
+            field_id: null,
+            categoryModal: false
+        };
+    },
+    created: function() {
+        //console.log('created');
+        this.fetch_list();
+    },
+    methods: {
+        // エントリのカテゴリの変更ウィンドウを表示する
+        change_category: function(id, category) {
+            this.field_category = category;
+            this.field_id = id;
+            this.categoryModal = true;
+        },
+        remove_it: function(id, type, name) {
+            var self = this;
+            if (!confirm(name + ' を削除しますか')) {
+                return false;
             }
-        });
-    };
-
-    /*
-     * カテゴリの変更決定ボタン
-     */
-    $(document).on('click', '#change-category', function() {
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/change_it',
-            data: {
-                'id': $('#target-id').val(),
-                'category': $('#selectCat').val(),
-            },
-            datatype: 'json',
-            success: function() {
-                $('#categoryModal').modal('hide');
-                list();
-            }
-        });
-    });
-
-    /*
-     * 削除ボタンを表示する
-     */
-    $(document).on('click', '.deletebtn', function() {
-        if (confirm($(this).data('name') + ' を削除しますか')) {
-            jQuery.ajax({
-                type: 'POST',
+            Gion.PostAgent({
                 url: '/api/delete_it',
                 data: {
-                    'target': $(this).data('target'),
-                    'id': $(this).data('id'),
+                    target: type,
+                    id: id
+                }
+            }, function() {
+                self.fetch_list();
+            });
+        },
+        // カテゴリの変更
+        submit: function() {
+            var self = this;
+            Gion.PostAgent({
+                url: '/api/change_it',
+                data: {
+                    id: self.field_id,
+                    category: self.field_category,
                 },
-                datatype: 'json',
-                success: function() {
-                    list();
-                }
+            }, function() {
+                self.categoryModal = false;
+                self.fetch_list();
             });
-        }
-    });
+        },
+        fetch_list: function() {
+            var self = this;
+            var tmp = [],
+                list = {};
+            Gion.PostAgent({
+                url: '/api/get_targetlist'
+            }, function(err, _a) {
+                var a = _a.body;
+                self.category = a.category;
+                self.target = a.target;
 
-    /*
-     * エントリのカテゴリの変更ウィンドウを表示する
-     */
-    $(document).on('click', '.categorybtn', function() {
-        $('#selectCat').val($(this).data('name'));
-        $('#target-id').val($(this).data('id'));
-        $('#categoryModal').modal('show');
-    });
-
-    list();
-};
-
-
-G.settings = function() {
-    var self = this.option;
-
-    /*
-     * 設定を取得
-     */
-    jQuery.ajax({
-        type: 'POST',
-        url: '/api/get_numentry',
-        datatype: 'json',
-        success: function(b) {
-            $('#numentry').val(b.numentry);
-            $('#numsubstr').val(b.numsubstr);
-            if (b.noreferrer === 0) {
-                $('#noreferrer').attr('checked', false);
-                $('#noreferrer').val(0);
-            } else {
-                $('#noreferrer').attr('checked', true);
-                $('#noreferrer').val(1);
-            }
-
-            if (b.nopinlist === 0) {
-                $('#nopinlist').attr('checked', false);
-                $('#nopinlist').val(0);
-            } else {
-                $('#nopinlist').attr('checked', true);
-                $('#nopinlist').val(1);
-            }
-
-        }
-    });
-    $('#txt_numentry').hide();
-    $('.disconnect').hide();
-
-    /*
-     * 外部サービスの設定を取得する
-     */
-    var set_external_service_state = function() {
-    jQuery.each(self.service, function() {
-        var connect = 0;
-        var set_connect = '連携する';
-        var set_disconnect = 'hide';
-        var set_connect_state;
-
-        if (self.service_state[this.id]) {
-            connect = 1;
-            set_connect = self.service_state[this.id];
-            set_disconnect = '';
-            set_connect_state = 'disabled';
-        }
-        var table = $('#service_list');
-        var td = $('<td>');
-        td.append(
-            $('<span>').text(this.name)
-        )
-            .append(
-                $('<a>').addClass('disconnect ' + set_disconnect).attr({
-                    id: 'disconnect' + this.id,
-                    href: '/external_api/' + this.id + '/disconnect'
-                })
-                .append($('<span>').addClass('glyphicon glyphicon-remove')
-                    .append($('<span>').text('連携の解除'))
-                )
-        );
-
-        var td2 = $('<td>');
-        td2.append(
-            $('<a>').addClass('btn btn-default').attr({
-                id: 'btn' + this.id,
-                href: '/external_api/' + this.id + '/connect',
-                disabled: set_connect_state
-            })
-            .append($('<span>').addClass('glyphicon glyphicon-link')
-                .append($('<span>').text(set_connect))
-            )
-        );
-        var tr = $('<tr>');
-        tr.append(td).append(td2);
-        table.append(tr);
-    });
-    };
-    self.service_connection({ success: set_external_service_state });
-
-    /*
-     * サービスの切断をする
-     */
-    $('.disconnect').click(function() {
-        if (confirm('続行しますか?')) {} else {
-            return false;
-        }
-    });
-
-    $('#btn_numentry').click(function() {
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/set_numentry',
-            datatype: 'json',
-            data: {
-                'numentry': $('#numentry').val(),
-                'noreferrer': $('#noreferrer').val(),
-                'nopinlist': $('#nopinlist').val(),
-                'numsubstr': $('#numsubstr').val()
-            },
-            success: function() {
-                $('#txt_numentry').show();
-            }
-        });
-    });
-
-    $('.noreferrer').click(function() {
-        if ($('#noreferrer').prop('checked') === true) {
-            $('#noreferrer').val(1);
-        } else {
-            $('#noreferrer').val(0);
-        }
-    });
-
-    $('.nopinlist').click(function() {
-        if ($('#nopinlist').prop('checked') === true) {
-            $('#nopinlist').val(1);
-        } else {
-            $('#nopinlist').val(0);
-        }
-    });
-
-    $('#update_password').click(function() {
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/update_password',
-            datatype: 'json',
-            data: {
-                'password_old': $('#password_old').val(),
-                'password': $('#password').val(),
-                'passwordc': $('#passwordc').val(),
-            },
-            success: function(p) {
-                alert(p.e);
-            }
-        });
-    });
-
-    $('#create_user').click(function() {
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/create_user',
-            datatype: 'json',
-            data: {
-                'username': $('#username').val(),
-                'password': $('#user_password').val(),
-            },
-            success: function(p) {
-                alert(p.e);
-            }
-        });
-    });
-
-};
-
-
-
-G.root = function() {
-    // var self = this.option;
-    /*
-     * ピンリストに追加されているエントリの一覧を表示する
-     */
-    var refresh = function() {
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/get_pinlist',
-            datatype: 'json',
-            success: function(a) {
-                var count = 0;
-                $('#pinlist_ul').empty();
-                jQuery.each(a, function() {
-                    var li = $('<a>').attr({
-                        id: this.guid
-                    }).addClass('read glyphicon glyphicon-check').text('');
-                    li.css('cursor', 'pointer');
-                    var lic = $('<span>').text(' ')
-                        .append($('<span>').text(this.update_at))
-                        .append($('<span>').text(' '))
-                        .append($('<a>').attr({
-                            href: this.url,
-                            target: 'blank',
-                        }).text(this.title));
-                    $('#pinlist_ul').append($('<li>').append(li).append(lic).addClass('list-group-item'));
-                    count++;
+                self.category.forEach(function(_, i) {
+                    list[self.category[i].id] = {
+                        id: self.category[i].id,
+                        list: [],
+                        name: self.category[i].name
+                    };
                 });
-                $('#pincount').text(count);
-            },
-        });
-    };
-
-    /*
-     * 設定を参照して、ピンリストを表示するか調べる
-     */
-    jQuery.ajax({
-        type: 'POST',
-        url: '/api/get_numentry',
-        datatype: 'json',
-        success: function(b) {
-            if (b.nopinlist === 1) {
-                location.href = "/entry/";
-            } else {
-                refresh();
-            }
-        }
-    });
-
-    /*
-     * 既読にするをクリックされた時の処理
-     */
-    $(document).on('click', '.read', function() {
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/set_pin',
-            data: {
-                'flag': 0,
-                'pinid': encodeURI($(this).attr('id'))
-            },
-            datatype: 'text',
-            success: function() {
-                refresh();
-            },
-        });
-    });
-};
-
-G.add = function() {
-    // var self = this.option;
-
-    /*
-     * カテゴリリスト
-     */
-    var get_targetlist = function() {
-        $('#selectCat').empty();
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/get_targetlist',
-            datatype: 'json',
-            success: function(b) {
-                jQuery.each(b.category, function() {
-                    $('#selectCat').append($('<option>').val(this.id).text(this.name));
+                self.target.forEach(function(_, i) {
+                    list[self.target[i].category_id].list.push(self.target[i]);
                 });
-            },
-        });
-    };
 
-    /*
-     * ページの詳細を取得する
-     */
-    var get_detail = function() {
-        if ($('#inputURL').val().match(/^http/g) === null) {
-            return false;
-        }
-        $('#url-search').show();
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/examine_target',
-            data: {
-                'url': $('#inputURL').val()
-            },
-            datatype: 'json',
-        })
-            .done(function(j) {
-                if (j === null) {
-                    alert('Failure: Get information.\n please check url... :(');
-                } else {
-                    $('#inputRSS').val(j.u);
-                    $('#inputTitle').val(j.t);
-                }
-            })
-            .always(function() {
-                $('#url-search').delay(400).fadeOut();
-            });
-    };
-
-    /*
-     * 初期化
-     */
-
-    /*
-     * カテゴリの登録
-     */
-    $('#cat_submit').click(function() {
-        if ($('#inputCategoryName').val().length === 0) {
-            return false;
-        }
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/register_category',
-            data: {
-                'name': $('#inputCategoryName').val(),
-            },
-            datatype: 'json',
-            success: function(j) {
-                if (j.r === "ERROR_ALREADY_REGISTER") {
-                    alert("すでに登録されています。");
-                } else {
-                    get_targetlist();
-                    $('#return_cat').text('Thanks! add your request.');
-                }
-            }
-        });
-    });
-
-    /*
-     * フィードエントリの登録
-     */
-    $('#submit').click(function() {
-
-        $('#return').empty();
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/register_target',
-            data: {
-                'url': $('#inputURL').val(),
-                'rss': $('#inputRSS').val(),
-                'title': $('#inputTitle').val(),
-                'category': $('#selectCat option:selected').val(),
-            },
-            datatype: 'json',
-            success: function(j) {
-                if (j === null) {
-                    alert('Failure: Get information.\n please check url... :(');
-                } else {
-                    if (j.r === "ERROR_ALREADY_REGISTER") {
-                        alert("すでに登録されています。");
-                    } else {
-                        $('#return').text('Thanks! add your request.');
-                    }
-                }
-            }
-        });
-    });
-
-    $('#inputURL').focusout(function() {
-        get_detail();
-    });
-
-    $('#get_detail').click(function() {
-        get_detail();
-    });
-
-    get_targetlist();
-    $('#url-search').hide();
-};
-
-
-
-G.reader = function() {
-    var self = this.option;
-
-    /*
-     * フォーカス移動
-     */
-    var moveselector = function() {
-        var topoffset = -80;
-        var selector = '.tw:eq(' + self.selection + ')';
-
-        // 移動を許されている範囲を逸脱している場合、return
-        if (!(self.selection >= 0 && $('.tw').length > self.selection)) {
-            self.selection = 0;
-            return;
-        }
-
-        // 色換え
-        $(selector).css("border-color", self.colour_selected);
-        if (self.prev_selection !== self.selection) {
-            $('.tw:eq(' + self.prev_selection + ')').css("border-color", self.colour_nonselected);
-        }
-
-        // 移動
-        $($.browser.msie || $.browser.mozilla || ($.browser.opera && !$.browser.webkit) ? 'html' : 'body').animate({
-            scrollTop: $(selector).offset().top + topoffset,
-        }, 0);
-    };
-
-    /*
-     * カテゴリリストの作成
-     */
-    var cat_list = function(qp) {
-        var q;
-        if (typeof qp !== 'undefined') {
-            q = parseInt(qp);
-        }
-        var frag = document.createDocumentFragment();
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/get_category',
-            datatype: 'json',
-            success: function(b) {
-                var link = [];
-                jQuery.each(b, function(i, data) {
-                    var li = $('<a>').addClass('category_link list-group-item').attr({
-                        id: 'category_link_' + data.i,
-                        href: '/#' + data.i
-                    }).text(data.n).append($('<span>').addClass('badge hidden-sm').text(data.c));
-                    frag.appendChild(li[0]);
-                    link[i] = '/#' + data.i;
-                });
-                $('#cat_list').empty().append(frag);
-
-                jQuery.each(b, function(i, data) {
-                    if (q === undefined) { // not selected (first)
-                        self.cat_idx_prev = link[b.length - 1];
-                        self.cat_idx_next = link[1];
-                    }else if(q === parseInt(data.i)) { // selected
-                        if(link[i-1] !== undefined) {
-                            self.cat_idx_prev = link[i-1];
-                        }else{ // when nothing previous
-                            self.cat_idx_prev = link[b.length - 1];
-                        }
-                        if(link[i+1] !== undefined) {
-                            self.cat_idx_next = link[i+1];
-                        }else{ // when nothing next
-                            self.cat_idx_next = link[0];
-                        }
-                    }
-                });
-            },
-            complete: function() {
-              $('.category_link').removeClass('active');
-              if (q === undefined) {
-                $('.category_link:first').addClass('active');
-                get_contents(0);
-              } else {
-                if (q === 0) {
-                    $('.category_link:first').addClass('active');
-                } else {
-                    $('#category_link_' + q).addClass('active');
-                }
-                get_contents(q);
-              }
-              self.selection = 0;
-              moveselector();
-            }
-        });
-    };
-
-    /*
-     * フィードのアイテムを表示する
-     */
-    var entry = function(b) {
-
-        if (typeof b === 'undefined' || b.length === 0 ) {
-            var div = $('<div>').addClass('tw panel panel-default');
-            div.append($('<h3>').text('Nothing Entries.'));
-            $('#contents_view_box').empty().append(div);
-            return false;
-        }
-
-        var frag = document.createDocumentFragment();
-
-        jQuery.each(b, function() {
-
-            var div = $('<div>');
-            div.addClass('tw panel panel-default');
-
-            div.attr({
-                id: this.guid // ピン立てなどに利用する
-            });
-
-            var texttitle = '[nothing title...]';
-            if (this.title.length > 0) {
-                texttitle = this.title;
-            }
-
-            var titleh4 = $('<h4>').addClass('viewpage').append($('<a>').attr({
-                href: this.url,
-                target: 'blank',
-                rel: 'noreferrer', // リファラを送らない(だめな時はリファラを抑制するオプションを使って外部リダイレクタを利用する)
-            }).text(texttitle).click(function() {
-                window.open(this.href);
-                return false;
-            }).css('color', '#333'));
-
-            if (this.readflag === "2") { // ピン立てしているアイテム
-                titleh4.css('background-color', '#6cf');
-            }
-
-            div.append(titleh4);
-
-            div.append($('<p>').text(this.description)); // description
-
-            var pintarget = $('<p>').addClass('add pull-right').append($('<span>').addClass('glyphicon glyphicon-ok')).append(' Pin!');
-
-            if (this.readflag !== "2") { //ピン立てしていない時の状態
-                pintarget.hide();
-            }
-
-            div.append($('<a>').addClass('pinlink hidden-md hidden-lg btn btn-info btn-sm').text('Pin!')); //スマホ用ピン立て
-
-            // 外部サービスごとのボタンを生成する
-            var btn = $('<div>').addClass('text-right').prepend($('<br>').addClass('hidden-md hidden-lg'));
-            var service_link = this.raw_url;
-            $.each(self.service_state, function(i) {
-                btn.append($('<span>').css('margin-left', '1em'));
-                btn.append($('<button>').addClass('service btn btn-danger btn-sm').text(i).data('service', i).data('url', service_link));
-            });
-
-            div.append(btn);
-            div.append(pintarget);
-            div.append($('<p>').text(this.date + " - " + this.site_title));
-
-            frag.appendChild(div[0]);
-        });
-
-        $('#contents_view_box').empty().append(frag);
-    };
-
-    /*
-     * フィードのアイテム既読リストを作成をする
-     */
-    var send_read = function(param, id) {
-        /*
-         * ダブルタップやキーボードの連続押下で、
-         * 誤ってしまった場合、送信前にカテゴリを確認する。
-         */
-        if ('/#' + id !== self.cat_idx_selected) {
-            return false;
-        }
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/set_asread',
-            contentType: 'application/json; charset=utf-8',
-            data: JSON.stringify({ 'guid': param }),
-            datatype: 'json',
-            success: function() {},
-        });
-    };
-
-    /*
-     * フィードのアイテム既読リストを作成をする
-     */
-    var send_read_register = function(content, id) {
-        if ( content === undefined ) {
-            return false;
-        }
-        var param = [];
-        jQuery.each(content, function() {
-            if (this.readflag === "0") { // 未読ステータスのものだけ送る
-                param.push(this.guid);
-            }
-        });
-        if (param.length > 0) { // 未読ステータスのものがあるか
-            setTimeout(function() {
-                send_read(param, id);
-            }, self.timer_asread);
-        }
-    };
-
-    /*
-     * コンテンツを取得する
-     */
-    var get_contents = function(id) {
-
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/get_entry',
-            data: {
-                'category': id
-            },
-            datatype: 'json',
-            success: function(res) {
-                entry(res.entry);
-                moveselector();
-                self.cat_idx_selected = '/#' + res.id;
-                send_read_register(res.entry, res.id);
-            },
-        });
-    };
-
-    // カテゴリ移動
-    var category_link = function(q) {
-        q = q.replace('/#', '');
-        if (jQuery.isNumeric(q)) {
-            cat_list(q);
-       }
-    };
-
-    /*
-     * サーバーにピン立てを通知する
-     */
-    var post_pin = function(id) {
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/set_pin',
-            data: {
-                'flag': is_toggle_pin(id),
-                'pinid': encodeURI(id.attr('id'))
-            },
-            datatype: 'text',
-            success: function() {},
-        });
-    };
-
-    /*
-     * ピン立て
-     */
-    var item_pin = function() {
-        var it = $('.tw:eq(' + self.selection + ')');
-        it.children('.add').toggle();
-        post_pin(it);
-    };
-
-    /*
-     * アイテムを閲覧する
-     */
-    var item_view = function() {
-        $('.tw:eq(' + self.selection + ') > .viewpage > a').click();
-    };
-
-    /*
-     * フォーカスを戻す
-     */
-    var item_prev_focus = function() {
-        self.prev_selection = self.selection; //色換えのため
-        self.selection--;
-
-        //範囲を超えた場合
-        if (self.selection < 0) {
-            self.selection = 0;
-        }
-
-        moveselector();
-    };
-
-    /*
-     * フォーカスを進める
-     */
-    var item_next_focus = function() {
-
-        //最終端を指定している場合、次はないので抑制
-        if (self.selection === $('.tw').length - 1 && $('.tw').length - 1 > 0) {
-            self.selection--;
-        }
-
-        self.prev_selection = self.selection; //色換えのため
-        self.selection++;
-
-        //範囲を超えた場合
-        if ($('.tw').length - 1 < self.selection) {
-            self.selection = $('.tw').length - 1;
-        }
-
-        moveselector();
-    };
-
-    /*
-     * ピンの状態を検出する
-     */
-    var is_toggle_pin = function(id) {
-        var titleh4 = id.children('h4');
-        if (id.children('.add').css("display") === "block") {
-            titleh4.css('background-color', '#6cf');
-            return 1;
-        }
-        titleh4.css('background-color', 'inherit');
-        return 0;
-    };
-
-    /*
-     * 次のカテゴリへ移動する
-     */
-    var category_next = function() {
-        if (self.cat_idx_next !== undefined) {
-            category_link(self.cat_idx_next);
-        }
-    };
-
-    $('#btn_category_next').click(function() {
-        category_next();
-    });
-
-    /*
-     * 前のカテゴリへ移動する
-     */
-    var category_prev = function() {
-        if (self.cat_idx_prev !== undefined) {
-            category_link(self.cat_idx_prev);
-        }
-    };
-
-    $('#btn_category_prev').click(function() {
-        category_prev();
-    });
-
-    /*
-     * 指定された外部サービスのボタンをクリックしたことにする
-     */
-    var item_service = function(service_name) {
-        var it = $('.tw:eq(' + self.selection + ') * ');
-        var scope = it.children('.service');
-        for (var i = 0; i < scope.length; i++) {
-            if (scope.eq(i).text() === service_name) {
-                scope.eq(i).click();
-            }
-        }
-    };
-
-    // 外部サービスの状態を取得
-    self.service_connection();
-
-    /*
-     * カテゴリリストを取得し、先頭一件目を選択状態にする
-     * またそのコンテンツを取得する
-     */
-    cat_list();
-    $('#pinlist').hide();
-
-    /*
-     * カテゴリリストのリンクをクリック
-     */
-    $('#cat_list').on('click', '.category_link', function(e) {
-        category_link($(this).attr('href'));
-        e.preventDefault();
-    });
-
-    /*
-     *  ピンリスト
-     */
-    $('#toggle_pinlist').click(function() {
-        if ($('#pinlist').css("display") !== "block") {
-
-            jQuery.ajax({
-                type: 'POST',
-                url: '/api/get_pinlist',
-                datatype: 'json',
-                success: function(a) {
-                    var count = 0;
-                    $('#pinlist_ul').empty();
-                    jQuery.each(a, function() {
-                        $('#pinlist_ul').append($('<a>').attr({
-                            href: this.url
-                        }).text(this.title).addClass('list-group-item'));
-                        count++;
+                // combined
+                Object.keys(list).forEach(function(i) {
+                    tmp.push({
+                        id: list[i].id,
+                        name: list[i].name,
+                        type: 'title',
                     });
-                    $('#pincount').text(count);
-                },
+                    list[i].list.forEach(function(_, j) {
+                        var value = list[i].list[j];
+                        value.type = 'item';
+                        tmp.push(value);
+                    });
+                }, list);
+                self.lists = tmp;
             });
-
         }
-        $('#pinlist').toggle();
-    });
-
-    /*
-     * すべてのピンを外す
-     */
-    $('#remove_all_pin').click(function() {
-        if (!confirm('ピンをすべて外しますか?')) {
-            return false;
-        }
-        $('#pinlist').hide();
-        jQuery.ajax({
-            type: 'POST',
-            url: '/api/remove_all_pin',
-            datatype: 'json',
-            success: function() {
-                cat_list();
-            },
-        });
-    });
-
-    /*
-     * ピン立てのボタン
-     */
-    $(document).on('click', '.pinlink', function() {
-        var it = $(this).closest('div');
-        it.children('.add').toggle();
-        post_pin(it);
-    });
-
-    /*
-     * 外部サービスへポストする
-     */
-    $(document).on('click', '.service', function() {
-        var r = $(this), comment;
-        if ($(this).data('service') === 'hatena') {
-            comment = window.prompt("type a comment", "");
-        }
-        jQuery.ajax({
-            type: 'POST',
-            url: '/external_api/' + $(this).data('service') + '/post',
-            datatype: 'json',
-            data: {
-                'url': $(this).data('url'),
-                'comment': comment,
-            },
-            success: function(a) {
-                if (a.e === 'ok') {
-                    r.text('posted').attr('disabled', 'disabled');
-                }
-            }
-        });
-    });
-
-    /*
-     * キーボードのイベント
-     */
-    $(document).keypress(function(e) {
-
-        e.preventDefault();
-
-        // http://www.programming-magic.com/file/20080205232140/keycode_table.html
-
-        switch (e.keyCode || e.which) {
-            case 97:
-                // A
-                category_prev();
-                break;
-
-            case 115:
-                // S
-                category_next();
-                break;
-
-            case 111:
-                // O
-                $('#toggle_pinlist').click();
-                break;
-
-            case 112:
-                // P
-                item_pin();
-                //item_next_focus();
-                break;
-
-            case 114:
-                // R
-                category_link(self.cat_idx_selected);
-                break;
-
-            case 107:
-                // K
-                item_prev_focus();
-                break;
-
-            case 106:
-                // J
-                item_next_focus();
-                break;
-
-            case 118:
-                // V
-                item_view();
-                break;
-
-            case 105:
-                // I
-                item_service('hatena');
-                break;
-
-            case 108:
-                // L
-                item_service('pocket');
-                break;
-        }
-    });
+    }
 };
 
-}(Gion));
-Gion.main();
+// 状態管理 ref. https://jp.vuejs.org/v2/guide/state-management.html
+Gion.category_store = {
+    state: {
+        category: null,
+        selected: 0
+    },
+    set: function(list, index) {
+        this.state.category = list[index].i;
+        this.state.selected = index;
+    },
+    set_index: function(index) {
+        this.state.selected = index;
+    },
+    clear: function() {
+        this.state.category = null;
+        this.state.selected = 0;
+    },
+    selected: function() {
+        return this.state.selected;
+    },
+    category: function() {
+        return this.state.category;
+    }
+};
+Gion.content_store = {
+    state: {
+        guid: null,
+        selected: 0
+    },
+    set: function(list, index) {
+        this.state.guid = list[index].guid;
+        this.state.url = list[index].raw_url;
+        this.state.selected = index;
+    },
+    clear: function() {
+        this.state.guid = null;
+        this.state.url = null;
+        this.state.selected = 0;
+    },
+    selected: function() {
+        return this.state.selected;
+    },
+    guid: function() {
+        return this.state.guid;
+    },
+    url: function() {
+        return this.state.url;
+    }
+};
+
+// ref https://jp.vuejs.org/v2/guide/routing.html
+
+Gion.NotFound = {
+    template: '<div><gion-header></gion-header><div class="container"><h1>Not Found <small>oops...</small></h1></div></div>'
+};
+
+Gion.routes = {
+    '': Gion.Home,
+    '#add': Gion.add_app,
+    '#entry': Gion.reader,
+    '#settings': Gion.settings,
+    '#subscription': Gion.subscription
+};
+
+Gion.app = new Vue({
+    el: '#app',
+    data: {
+        currentRoute: window.location.hash,
+        helpModal: false,
+        error: false,
+        navbarState: false
+    },
+    computed: {
+        ViewComponent: function() {
+            return Gion.routes[this.currentRoute] || Gion.NotFound;
+        }
+    },
+    methods: {
+        go: function(value) {
+            window.location.hash = value;
+            this.currentRoute = value;
+            this.navbarState = false;
+        },
+        returntop: function() {
+            window.scrollTo(0, 0);
+        },
+        navbar: function() {
+            this.navbarState = this.navbarState ? false : true;
+        },
+    },
+    render: function(h) {
+        //console.log(this.ViewComponent);
+        //console.log(this.currentRoute);
+        return h(this.ViewComponent);
+    }
+});

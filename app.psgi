@@ -18,6 +18,8 @@ builder {
         path => qr{^/(static/|favicon.ico|apple-touch-icon-precomposed.png)},
         root => "$FindBin::Bin/public";
 
+    enable 'HTTPExceptions';
+
     enable 'Session',
         state => Plack::Session::State::Cookie->new(
             secure => ($ENV{SECURE_COOKIE} || 0),

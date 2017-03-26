@@ -49,7 +49,7 @@ sub opml_import {
     $r->require_login;
     my $file = $r->req->uploads->{file};
     unless ($file) {
-        return $r->res->redirect('/settings/');
+        return $r->res->redirect('/#settings'); # XXX
     }
 
     my $db = $r->dbh->dbh;
@@ -147,7 +147,7 @@ sub opml_import {
             $r->session->get('username'),
         );
     }
-    $r->res->redirect('/settings/');
+    $r->res->redirect('/#settings'); # XXX
 }
 
 1;

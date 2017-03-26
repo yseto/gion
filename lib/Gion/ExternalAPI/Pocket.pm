@@ -41,7 +41,7 @@ sub connect {
                 $params{access_token},
             );
         }
-        return $r->res->redirect("/settings/");
+        return $r->res->redirect("/#settings"); # XXX
     } else {
         my $req = HTTP::Request->new(POST => "https://getpocket.com/v3/oauth/request");
         $req->content_type('application/x-www-form-urlencoded');
@@ -102,7 +102,7 @@ sub disconnect {
     $db->query("
         DELETE FROM connection WHERE user_id = ? AND service = 'pocket'
     ", $r->session->get('username'));
-    $r->res->redirect("/settings/");
+    $r->res->redirect("/#settings"); # XXX
 }
 
 1;
