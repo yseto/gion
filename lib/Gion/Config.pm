@@ -20,8 +20,8 @@ common +{
     token => "csrf-token",
 
     crawler => {
-        ua => "Gion Crawler/0.1 (https://github.com/yseto/gion)",
-        timeout => 5,
+        agent => "Gion Crawler/0.1 (https://github.com/yseto/gion)",
+        timeout => 10,
     },
 
     redirector => 'https://www.google.com/url?sa=D&q=',
