@@ -430,7 +430,7 @@ sub set_asread {
             WHERE readflag = 0
                 AND user_id = ?
                 AND guid = ?
-        ", $r->session->get('username'), $_
+        ", $r->session->get('username'), decode_utf8($_)
         );
     }
     $r->text("OK");
