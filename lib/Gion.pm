@@ -44,11 +44,9 @@ sub login {
     my ($class, $r) = @_;
     my $db = $r->dbh->dbh;
 
-    my $auth = Gion::Util->auth(
-        strech => config->param('strech'),
-        salt => config->param('salt'),
-        id => encode_utf8 $r->req->param('id'),
-        password => encode_utf8 $r->req->param('password'),
+    my $auth = Gion::Util::auth(
+        id => encode_utf8($r->req->param('id')),
+        password => encode_utf8($r->req->param('password')),
     );
 
     if ( my $c = $db->select_row('SELECT * FROM user WHERE password = ?', $auth) ) {

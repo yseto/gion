@@ -24,7 +24,7 @@ unless (defined $data{user} || defined $data{password}) {
     exit();
 }
 
-my $auth = Gion::Util->auth(
+my $auth = Gion::Util::auth(
     salt => config->param('salt'),
     strech => config->param('strech'),
     id => $data{user},
