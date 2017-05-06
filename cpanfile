@@ -9,6 +9,7 @@ requires 'DBD::mysql';
 requires 'DBIx::Handler';
 requires 'DBIx::Sunny';
 requires 'Digest::HMAC_SHA1';
+requires 'ExtUtils::MakeMaker', '>= 7.06';
 requires 'FormValidator::Lite';
 requires 'Furl';
 requires 'HTML::Scrubber';
