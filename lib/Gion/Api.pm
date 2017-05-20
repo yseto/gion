@@ -5,17 +5,11 @@ use warnings;
 use utf8;
 
 use Encode;
-use Encode::Guess qw/sjis euc-jp 7bit-jis/;
 use FormValidator::Lite;
 use FormValidator::Lite::Constraint::URL;
-use Furl;
 use HTML::Scrubber;
 use Time::Piece;
-use Try::Tiny;
-use URI;
-use XML::LibXML;
 
-use Gion::Config;
 use Gion::Util;
 
 sub register_category {
@@ -114,54 +108,10 @@ sub examine_target {
 
     my ($success, $resource);
     if ($validator->is_valid) {
-        ($success, $resource) = $class->examine_url($r->req->param('url'));
+        ($success, $resource) = Gion::Util::examine_url($r->req->param('url'));
     }
     
     $r->json($success ? $resource : { t => '', u => '' });
-}
-
-sub examine_url {
-    my $class = shift;
-    my $page_url = shift;
-
-    my $res = Furl->new->get($page_url);
-
-    return 0 unless defined $res;
-
-    my $xml = XML::LibXML->new;
-    $xml->recover_silently(1);
-
-    my $doc;
-
-    try {
-        $doc = $xml->parse_html_string( $res->content );
-    } catch {
-        return 0;
-    };
-
-    return 0 unless defined $doc;
-
-    my $title = $doc->findvalue('//title');
-
-    try {
-        my $decoder = Encode::Guess->guess( $res->content );
-        die $decoder unless ref $decoder;
-        $title = $decoder->decode($title);
-    } catch {
-        return 0;
-    };
-
-    $title =~ s/\r|\n//g;
-
-    # ref. http://blog.livedoor.jp/dankogai/archives/51568463.html
-    my $tmp = $doc->findvalue('/html/head/link[@type="application/rss+xml"][1]/@href');
-    my $resource = $tmp ? $tmp : $doc->findvalue('/html/head/link[@type="application/atom+xml"][1]/@href');
-
-    return 0 unless $resource;
-    return 1, {
-        t => $title,
-        u => URI->new_abs( $resource, $page_url )->as_string
-    };
 }
 
 sub delete_it {
@@ -285,13 +235,6 @@ sub set_connect {
     $r->json({ r => "ok" });
 }
 
-sub redirect_url {
-    my $url = shift;
-    $url = encode( 'utf-8', $url );
-    $url =~ s/([^0-9A-Za-z!'()*\-._~])/sprintf("%%%02X", ord($1))/eg;
-    return config->param('redirector') . $url;
-}
-
 sub get_category {
     my ($class, $r) = @_;
     $r->require_login;
@@ -394,7 +337,7 @@ sub get_entry {
             date => $pubdate,
             site_title => $rs2->{title},
             readflag => $_->{readflag},
-            url => $user_config->{noreferrer} ? redirect_url($_->{url}) : $_->{url},
+            url => $user_config->{noreferrer} ? Gion::Util::redirect_url($_->{url}) : $_->{url},
             raw_url => $_->{url},
         );
         push @info, \%row;
@@ -430,7 +373,7 @@ sub set_asread {
             WHERE readflag = 0
                 AND user_id = ?
                 AND guid = ?
-        ", $r->session->get('username'), $_
+        ", $r->session->get('username'), decode_utf8($_)
         );
     }
     $r->text("OK");
@@ -470,7 +413,7 @@ sub get_targetlist {
     my @target;
     for my $row (@$rs) {
         $row->{siteurl} = $user_config->{noreferrer} ?
-            redirect_url($row->{siteurl}) :
+            Gion::Util::redirect_url($row->{siteurl}) :
             $row->{siteurl};
         push @target, $row;
     }
@@ -508,7 +451,7 @@ sub get_pinlist {
 
     my @list_r;
     for my $row (@$list) {
-        $row->{url} = redirect_url($row->{url});
+        $row->{url} = Gion::Util::redirect_url($row->{url});
         push @list_r, $row;
     }
     $r->json(\@list_r);
@@ -582,9 +525,7 @@ sub update_password {
     my $db = $r->dbh;
     my $user_config = $db->dbh->select_row("SELECT * FROM user WHERE id = ?", $r->session->get('username'));
 
-    my $current = Gion::Util->auth(
-        strech => config->param('strech'),
-        salt => config->param('salt'),
+    my $current = Gion::Util::auth(
         id => $user_config->{name},
         password => encode_utf8($r->req->param('password_old')),
     );
@@ -592,9 +533,7 @@ sub update_password {
     return $r->json({ e => 'unmatch now password' })
       if $user_config->{password} ne $current;
 
-    my $renew = Gion::Util->auth(
-        strech => config->param('strech'),
-        salt => config->param('salt'),
+    my $renew = Gion::Util::auth(
         id => $user_config->{name},
         password => encode_utf8($r->req->param('password')),
     );
@@ -628,9 +567,7 @@ sub create_user {
     return $r->json({ e => 'error' }) if $validator->has_error;
 
     my $username = encode_utf8($r->req->param('username'));
-    my $auth = Gion::Util->auth(
-        strech => config->param('strech'),
-        salt => config->param('salt'),
+    my $auth = Gion::Util::auth(
         id => $username,
         password => encode_utf8($r->req->param('password')),
     );

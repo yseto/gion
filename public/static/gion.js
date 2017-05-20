@@ -242,7 +242,7 @@ Gion.reader = {
     },
     methods: {
         keypress_handler: function(e) {
-            console.log('keypress');
+            //console.log('keypress');
             e.preventDefault();
             // http://www.programming-magic.com/file/20080205232140/keycode_table.html
             switch (e.keyCode || e.which) {
@@ -388,7 +388,7 @@ Gion.reader = {
             self.content_list.forEach(function(item) {
                 // 未読ステータスのものだけ送るため、
                 // フィードのアイテム既読リストを作成をする
-                if (item.readflag === "0") {
+                if (item.readflag === 0) {
                     param.push(item.guid);
                 }
             });

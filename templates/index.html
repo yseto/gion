@@ -262,8 +262,8 @@
 
     <!-- CONTENT -->
     <div class="col-sm-9" id="contents_list">
-      <div class="tw panel panel-default" v-if="content_list === undefined">
-        <h3>Nothing Entries.</h3>
+      <div class="tw panel panel-default well" v-if="content_list.length === 0">
+        <p class="text-center">No unreading entries.</p>
       </div>
       <div v-for="(item, index) in content_list">
         <div class="tw panel panel-default" v-bind:class="{ 'tw--active panel-info': index == content.selected() }">
