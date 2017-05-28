@@ -55,11 +55,11 @@ $ua->env_proxy;
 #取得先を取得
 my $rs;
 if (@$eid) {
-    $rs = $db->dbh->select_all('SELECT * FROM feed WHERE id IN (?)', $eid);
+    $rs = $db->select_all("SELECT * FROM feed WHERE id IN :entry_id", { entry_id => $eid });
 } elsif ($term) {
-    $rs = $db->dbh->select_all('SELECT * FROM feed WHERE term = ?', $term);
+    $rs = $db->select_all('SELECT * FROM feed WHERE term = ?', $term);
 } else {
-    $rs = $db->dbh->select_all('SELECT * FROM feed');
+    $rs = $db->select_all('SELECT * FROM feed');
 }
 
 my $now = Time::Piece->new()->epoch;
@@ -72,7 +72,7 @@ for my $c (@$rs) {
 
     # 結果が得られない場合、次の対象を処理する
     if ($res->{headers}{code} eq '404' or $res->{headers}{code} =~ /5\d\d/) {
-        $db->dbh->query('
+        $db->query('
             UPDATE feed SET http_status = 404, term = 4, cache = ? WHERE id = ?
         ', JSON::to_json($res->{headers}), $c->{id});
         logger(sprintf "404 %4d %s",
@@ -83,7 +83,7 @@ for my $c (@$rs) {
 
     # 301 Moved Permanentlyの場合
     if (defined $res->{headers}{_code} and $res->{headers}{_code} eq '301') {
-        $db->dbh->query('
+        $db->query('
             UPDATE feed SET url = ? WHERE id = ?
         ', $res->{headers}->{location}, $c->{id});
         logger(sprintf "301 %s -> %s",
@@ -101,7 +101,7 @@ for my $c (@$rs) {
     # 304 Not Modifiedの場合更新しない場合次の対象を処理する
     if ($res->{headers}{code} eq '304') {
         # 更新
-        $db->dbh->query('
+        $db->query('
             UPDATE feed SET http_status = 304, term = ?, cache = ? WHERE id = ?
         ',
             update_term(from_mysql_datetime($c->{pubdate})->epoch),
@@ -132,7 +132,7 @@ for my $c (@$rs) {
 
         # パースにいずれも失敗した場合、パーサーの設定を初期化する。
         # 次回のクロール時にクロールする
-        $db->dbh->query('
+        $db->query('
             UPDATE feed
             SET http_status = ?,
                 parser = 0,
@@ -147,7 +147,7 @@ for my $c (@$rs) {
     };
 
     # パーサ種類を保存
-    $db->dbh->query('
+    $db->query('
         UPDATE feed SET parser = ? WHERE id = ?
     ', ($errorcount + 1), $c->{id});
 
@@ -178,14 +178,14 @@ for my $c (@$rs) {
         $import_counter++;
 
         #購読リストを取得する
-        my $target = $db->dbh->select_all('
+        my $target = $db->select_all('
             SELECT * FROM target WHERE feed_id = ?
         ', $c->{id});
 
         for (@$target) {
 
             # 既読管理から最終既読を参照
-            my $entry = $db->dbh->select_row('
+            my $entry = $db->select_one('
                 SELECT pubdate
                 FROM entry
                 WHERE target_id = ? 
@@ -199,12 +199,12 @@ for my $c (@$rs) {
                 # 既読データが存在しない場合
                 $state = 1;
             } else {
-                $state = from_mysql_datetime($entry->{pubdate}) < $d->{pubdate};
+                $state = from_mysql_datetime($entry) < $d->{pubdate};
             }
 
             if ($state) {
                 # 購読リストに基づいて、更新情報をユーザーごとへ挿入
-                $db->dbh->query('
+                $db->query('
                     INSERT IGNORE INTO entry 
                     (guid, pubdate, readflag, target_id, update_at, user_id)
                     VALUES (?,?,0,?,CURRENT_TIMESTAMP,?)
@@ -220,7 +220,7 @@ for my $c (@$rs) {
         }
 
         # エントリに対するストーリーを挿入
-        $db->dbh->query('
+        $db->query('
             INSERT IGNORE INTO story
             (guid, title, description, url)
             VALUES (?,?,?,?)
@@ -240,7 +240,7 @@ for my $c (@$rs) {
         $_term = update_term($last_modified);
     }
 
-    $db->dbh->query('
+    $db->query('
         UPDATE feed 
         SET http_status = ?,
             pubdate = ?,

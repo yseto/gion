@@ -52,7 +52,7 @@ sub callback {
     my ($class, $r) = @_;
     $r->require_login;
 
-    my $db = $r->dbh->dbh;
+    my $db = $r->dbh;
     my $consumer = $class->_consumer;
 
     my $verifier = $r->req->param('oauth_verifier');
@@ -91,7 +91,7 @@ sub post {
     my ($class, $r) = @_;
     $r->require_login;
 
-    my $db = $r->dbh->dbh;
+    my $db = $r->dbh;
     my $rs = $db->select_row("
         SELECT `key` FROM connection WHERE user_id = ? AND service = 'hatena'
     ", $r->session->get('username'));
@@ -129,7 +129,7 @@ sub disconnect {
     my ($class, $r) = @_;
     $r->require_login;
 
-    my $db = $r->dbh->dbh;
+    my $db = $r->dbh;
     $db->query("
         DELETE FROM connection WHERE user_id = ? AND service = 'hatena'
     ", $r->session->get('username'));

@@ -32,7 +32,7 @@ sub connect {
         }
 
         if ( defined $params{access_token} and defined $params{username} ) {
-            my $db = $r->dbh->dbh;
+            my $db = $r->dbh;
             $db->query("
                 INSERT INTO connection (user_id, service, username, `key`) VALUES (?,'pocket',?,?)
             ",
@@ -67,7 +67,7 @@ sub post {
     my ($class, $r) = @_;
     $r->require_login;
 
-    my $db = $r->dbh->dbh;
+    my $db = $r->dbh;
     my $rs = $db->select_row("
         SELECT `key` FROM connection WHERE user_id = ? AND service = 'pocket'
     ", $r->session->get('username'));
@@ -98,7 +98,7 @@ sub disconnect {
     my ($class, $r) = @_;
     $r->require_login;
 
-    my $db = $r->dbh->dbh;
+    my $db = $r->dbh;
     $db->query("
         DELETE FROM connection WHERE user_id = ? AND service = 'pocket'
     ", $r->session->get('username'));

@@ -11,7 +11,7 @@ use XML::LibXML;
 sub opml_export {
     my ($class, $r) = @_;
     $r->require_login;
-    my $db = $r->dbh->dbh;
+    my $db = $r->dbh;
     my $category = $db->select_all("
         SELECT
             id,
@@ -52,7 +52,7 @@ sub opml_import {
         return $r->res->redirect('/#settings'); # XXX
     }
 
-    my $db = $r->dbh->dbh;
+    my $db = $r->dbh;
     my $xml = XML::LibXML->new;
     my $dom = $xml->parse_file($file->path);
 

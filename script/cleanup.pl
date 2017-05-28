@@ -20,16 +20,16 @@ my %cmp;
 
 my $db = Gion->cli_dbh;
 
-$count = $db->dbh->select_row('SELECT COUNT(guid) AS t FROM entry');
+$count = $db->select_row('SELECT COUNT(guid) AS t FROM entry');
 $cmp{olde} = $count->{t};
-$count = $db->dbh->select_row('SELECT COUNT(guid) AS t FROM story');
+$count = $db->select_row('SELECT COUNT(guid) AS t FROM story');
 $cmp{olds} = $count->{t};
 
-my $rs = $db->dbh->select_all('SELECT id FROM target');
+my $rs = $db->select_all('SELECT id FROM target');
 
 for (@$rs) {
     my $id = $_->{id};
-    $db->dbh->query("
+    $db->query("
         DELETE
         FROM entry
         WHERE target_id = ?
@@ -45,39 +45,39 @@ for (@$rs) {
     # print $id . "\n";
 }
 
-my $entry = $db->dbh->select_all("SELECT * FROM entry;");
+my $entry = $db->select_all("SELECT * FROM entry;");
 for (@$entry) {
-    my $target = $db->dbh->select_row("
+    my $target = $db->select_row("
         SELECT COUNT(*) AS t FROM target WHERE id = ?
     ", $_->{target_id});
 
     unless ($target->{t} > 0) {
-        $db->dbh->query("
+        $db->query("
             DELETE FROM entry WHERE target_id = ?
         ", $_->{target_id} );
     }
 }
 
-my $feed = $db->dbh->select_all("SELECT * FROM feed;");
+my $feed = $db->select_all("SELECT * FROM feed;");
 for (@$feed) {
-    my $target = $db->dbh->select_row("
+    my $target = $db->select_row("
         SELECT COUNT(*) AS t FROM target WHERE feed_id = ?
     ", $_->{id});
     unless ($target->{t} > 0) {
         printf "remove target: %s\n", $_->{siteurl};
-        $db->dbh->query("
+        $db->query("
             DELETE FROM feed WHERE id = ?
         ", $_->{id});
     }
 }
 
-$db->dbh->query('OPTIMIZE TABLE entry');
-$db->dbh->query('DELETE FROM story WHERE guid NOT IN (SELECT guid FROM entry)');
-$db->dbh->query('OPTIMIZE TABLE story');
+$db->query('OPTIMIZE TABLE entry');
+$db->query('DELETE FROM story WHERE guid NOT IN (SELECT guid FROM entry)');
+$db->query('OPTIMIZE TABLE story');
 
-$count = $db->dbh->select_row('SELECT COUNT(guid) AS t FROM entry');
+$count = $db->select_row('SELECT COUNT(guid) AS t FROM entry');
 $cmp{e} = $count->{t};
-$count = $db->dbh->select_row('SELECT COUNT(guid) AS t FROM story');
+$count = $db->select_row('SELECT COUNT(guid) AS t FROM story');
 $cmp{s} = $count->{t};
 
 printf "entry %d -> %d \n", $cmp{olde}, $cmp{e};

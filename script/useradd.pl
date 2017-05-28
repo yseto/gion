@@ -38,7 +38,7 @@ my %sql = (
 
 my $mode = defined $data{force} ? 'force' : 'normal';
 my $db = Gion->cli_dbh;
-$db->dbh->query($sql{$mode}, $auth, $data{user} );
+$db->query($sql{$mode}, $auth, $data{user} );
 
 say "Apply: " . $data{user};
 

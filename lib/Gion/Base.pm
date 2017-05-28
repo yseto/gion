@@ -12,8 +12,7 @@ use Plack::Request;
 use Plack::Response;
 use Plack::Session;
 
-use DBIx::Handler;
-use DBIx::Sunny;
+use DBIx::Handler::Sunny;
 use Digest::HMAC_SHA1 qw(hmac_sha1_hex);
 use Module::Load;
 use Router::Simple;
@@ -115,30 +114,13 @@ sub run {
 sub dbh {
     $_[0]->{dbh} //= do {
         my $conf = config->param('db');
-        DBIx::Handler->new( $conf->{dsn}, $conf->{username}, $conf->{password}, {
-            RootClass => 'DBIx::Sunny',
-            Callbacks => {
-                connected => sub {
-                    $_[0]->do($_) for @{$conf->{on_connect_do}};
-                    return;
-                },
-            },
+        DBIx::Handler::Sunny->new($conf->{dsn}, $conf->{username}, $conf->{password}, {
+            mysql_enable_utf8mb4 => 1,
         });
-    }
+    };
 }
 
-sub cli_dbh {
-    my $conf = config->param('db');
-    DBIx::Handler->new( $conf->{dsn}, $conf->{username}, $conf->{password}, {
-        RootClass => 'DBIx::Sunny',
-        Callbacks => {
-            connected => sub {
-                $_[0]->do($_) for @{$conf->{on_connect_do}};
-                return;
-            },
-        },
-    });
-}
+sub cli_dbh { $_[0]->new({})->dbh }
 
 sub session {
     $_[0]->{session} //= do {
