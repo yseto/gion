@@ -351,23 +351,14 @@ DISTRIBUTIONS
       DBIx::TransactionManager 1.09
       Module::Build::Tiny 0.035
       perl 5.008_001
-  DBIx-Sunny-0.23
-    pathname: K/KA/KAZEBURO/DBIx-Sunny-0.23.tar.gz
+  DBIx-Handler-Sunny-0.02
+    pathname: T/TA/TARAO/DBIx-Handler-Sunny-0.02.tar.gz
     provides:
-      DBIx::Sunny 0.23
-      DBIx::Sunny::Schema undef
-      DBIx::Sunny::db 0.23
-      DBIx::Sunny::st 0.23
+      DBIx::Handler::Sunny 0.02
     requirements:
-      Class::Accessor::Lite 0.05
-      Class::Data::Inheritable 0
-      DBI 1.615
-      DBIx::TransactionManager 0.13
-      Data::Validator 0
+      DBIx::Handler 0
       Module::Build::Tiny 0.035
-      Scalar::Util 0
-      parent 0
-      perl 5.008005
+      perl 5.008001
   DBIx-TransactionManager-1.13
     pathname: N/NE/NEKOKAK/DBIx-TransactionManager-1.13.tar.gz
     provides:
