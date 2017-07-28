@@ -29,5 +29,9 @@ common +{
     load('gion.conf'),
 };
 
+config test => +{
+};
+
+
 1;
 

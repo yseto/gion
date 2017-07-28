@@ -35,3 +35,10 @@ requires 'WWW::Form::UrlEncoded::XS';
 requires 'XML::Atom';
 requires 'XML::LibXML';
 requires 'XML::RSS::LibXML';
+
+on 'test' => sub {
+    requires 'LWP::Protocol::PSGI';
+    requires 'Test::More', '>= 0.96, < 2.0';
+    requires 'Test::mysqld';
+    requires 'Test::WWW::Mechanize::PSGI';
+};
