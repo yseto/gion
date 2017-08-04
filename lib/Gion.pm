@@ -30,7 +30,7 @@ sub index {
 
     return $r->html('welcome.html') unless $r->is_login;
 
-    my $db = $r->dbh->dbh;
+    my $db = $r->dbh;
     my $rs = $db->select_row('SELECT nopinlist FROM user WHERE id = ?',
         $r->session->get('username')
     );
@@ -42,7 +42,7 @@ sub index {
 
 sub login {
     my ($class, $r) = @_;
-    my $db = $r->dbh->dbh;
+    my $db = $r->dbh;
 
     my $auth = Gion::Util::auth(
         id => encode_utf8($r->req->param('id')),

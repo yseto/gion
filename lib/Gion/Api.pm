@@ -17,22 +17,24 @@ sub register_category {
     $r->require_login;
     $r->require_xhr;
 
-    my $db = $r->dbh->dbh;
+    my $db = $r->dbh;
 
     my $validator = FormValidator::Lite->new($r->req);
     my $res = $validator->check( name => ['NOT_NULL'], );
     return $r->json([]) if $validator->has_error;
 
-    my $rs = $db->select_row("SELECT COUNT(*) AS t FROM category WHERE user_id = ? AND name = ?",
+    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/name/;
+
+    my $rs = $db->select_one("SELECT COUNT(*) FROM category WHERE user_id = ? AND name = ?",
         $r->session->get('username'),
-        $r->req->param('name')
+        $values{name},
     );
 
-    return $r->json({ r => "ERROR_ALREADY_REGISTER" }) if $rs->{t} > 0;
+    return $r->json({ r => "ERROR_ALREADY_REGISTER" }) if $rs > 0;
 
     $db->query("INSERT INTO category (id,user_id,name) VALUES (null,?,?)",
         $r->session->get('username'),
-        $r->req->param('name')
+        $values{name},
     );
 
     $r->json({ r => "OK" });
@@ -43,7 +45,7 @@ sub register_target {
     $r->require_login;
     $r->require_xhr;
 
-    my $db = $r->dbh->dbh;
+    my $db = $r->dbh;
 
     my $validator = FormValidator::Lite->new($r->req);
     my $res = $validator->check(
@@ -54,42 +56,44 @@ sub register_target {
     );
     return $r->json([]) if $validator->has_error;
 
-    my $feed = $db->select_row("SELECT id FROM feed WHERE url = ? AND siteurl = ? ",
-        $r->req->param('rss'),
-        $r->req->param('url')
+    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/rss url title category/;
+
+    my $feed = $db->select_one("SELECT id FROM feed WHERE url = ? AND siteurl = ? ",
+        $values{rss},
+        $values{url},
     );
 
-    unless ( defined $feed->{id} ) {
+    unless ( defined $feed ) {
         my $dt = Time::Piece->new;
         $db->query("INSERT INTO feed (url,siteurl,title,http_status,pubdate) VALUES (?,?,?,0,?);",
-            $r->req->param('rss'),
-            $r->req->param('url'),
-            $r->req->param('title'),
-            $dt->epoch
+            $values{rss},
+            $values{url},
+            $values{title},
+            $dt->epoch,
         );
-        $feed = $db->select_row("SELECT id FROM feed WHERE url = ? AND siteurl = ? ",
-            $r->req->param('rss'),
-            $r->req->param('url')
+        $feed = $db->select_one("SELECT id FROM feed WHERE url = ? AND siteurl = ? ",
+            $values{rss},
+            $values{url},
         );
     }
 
-    my $rs = $db->select_row("SELECT COUNT(*) AS t FROM target WHERE user_id = ? AND feed_id = ?",
+    my $rs = $db->select_one("SELECT COUNT(*) FROM target WHERE user_id = ? AND feed_id = ?",
         $r->session->get('username'),
-        $feed->{id}
+        $feed
     );
 
-    return $r->json({ r => "ERROR_ALREADY_REGISTER" }) if $rs->{t} > 0;
+    return $r->json({ r => "ERROR_ALREADY_REGISTER" }) if $rs > 0;
 
-    $rs = $db->select_row("SELECT COUNT(*) AS t FROM category WHERE user_id = ? AND id = ?",
+    $rs = $db->select_one("SELECT COUNT(*) FROM category WHERE user_id = ? AND id = ?",
         $r->session->get('username'),
-        $r->req->param('category')
+        $values{category},
     );
 
-    return if $rs->{t} == 0;
+    return if $rs == 0;
 
     $db->query("INSERT INTO target (category_id,feed_id,user_id) VALUES (?,?,?);",
-        $r->req->param('category'),
-        $feed->{id},
+        $values{category},
+        $feed,
         $r->session->get('username')
     );
 
@@ -130,9 +134,11 @@ sub delete_it {
         category => "DELETE FROM category WHERE id = ? AND user_id = ?",
         entry => "DELETE FROM target WHERE feed_id = ? AND user_id = ?"
     );
+
+    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/id target/;
     
-    my $db = $r->dbh->dbh;
-    $db->query($sql{$r->req->param('target')}, $r->req->param('id'), $r->session->get('username'));
+    my $db = $r->dbh;
+    $db->query($sql{$values{target}}, $values{id}, $r->session->get('username'));
     $r->json({ r => "OK" });
 }
 
@@ -148,10 +154,12 @@ sub change_it {
     );
     return $r->json([]) if $validator->has_error;
 
-    my $db = $r->dbh->dbh;
+    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/id category/;
+
+    my $db = $r->dbh;
     $db->query("UPDATE target SET category_id = ? WHERE feed_id = ? AND user_id = ?",
-        $r->req->param('category'),
-        $r->req->param('id'),
+        $values{category},
+        $values{id},
         $r->session->get('username')
     );
 
@@ -163,7 +171,7 @@ sub get_numentry {
     $r->require_login;
     $r->require_xhr;
 
-    my $db = $r->dbh->dbh;
+    my $db = $r->dbh;
     my $rs = $db->select_row("SELECT numentry, noreferrer, nopinlist, numsubstr FROM user WHERE id = ?",
         $r->session->get('username')
     );
@@ -190,12 +198,15 @@ sub set_numentry {
     );
     return $r->json([]) if $validator->has_error;
 
-    my $db = $r->dbh->dbh;
+    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) }
+        qw/numentry noreferrer nopinlist numsubstr/;
+
+    my $db = $r->dbh;
     $db->query("UPDATE user SET numentry = ?, noreferrer = ?, nopinlist = ?, numsubstr = ? WHERE id = ?",
-        $r->req->param('numentry'),
-        $r->req->param('noreferrer'),
-        $r->req->param('nopinlist'),
-        $r->req->param('numsubstr'),
+        $values{numentry},
+        $values{noreferrer},
+        $values{nopinlist},
+        $values{numsubstr},
         $r->session->get('username')
     );
 
@@ -207,7 +218,7 @@ sub get_connect {
     $r->require_login;
     $r->require_xhr;
 
-    my $db = $r->dbh->dbh;
+    my $db = $r->dbh;
     my $rs = $db->select_all("SELECT username , service FROM connection WHERE user_id = ?",
         $r->session->get('username')
     );
@@ -226,10 +237,11 @@ sub set_connect {
     );
     return $r->json([]) if $validator->has_error;
 
-    my $db = $r->dbh->dbh;
+    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/service/;
+    my $db = $r->dbh;
     $db->query("DELETE FROM connection WHERE user_id = ? AND service = ?",
         $r->session->get('username'),
-        $r->req->param('service'),
+        $values{service},
     );
 
     $r->json({ r => "ok" });
@@ -242,7 +254,7 @@ sub get_category {
 
     my $db = $r->dbh;
 
-    my $rs = $db->dbh->select_all("
+    my $rs = $db->select_all("
         SELECT
             COUNT(0) AS c,
             category.id AS i,
@@ -270,13 +282,14 @@ sub get_entry {
     );
     return $r->json([]) if $validator->has_error;
 
-    my $id = $r->req->param('category');
+    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/category/;
+    my $id = $values{category};
     my $db = $r->dbh;
 
     if ( $id == 0 ) {
-        my $rs = $db->dbh->select_row("
+        my $rs = $db->select_one("
             SELECT
-                category.id AS id
+                category.id
             FROM entry 
             INNER JOIN target ON target_id = target.id
             INNER JOIN category ON category.id = target.category_id
@@ -288,14 +301,14 @@ sub get_entry {
         ", $r->session->get('username'));
 
         return $r->json([]) unless defined $rs;
-        $id = $rs->{id};
+        $id = $rs;
     }
 
     my $scrubber = HTML::Scrubber->new;
     my @info;
     my $count = 0;
 
-    my $rs = $db->dbh->select_all("
+    my $rs = $db->select_all("
         SELECT
             entry.guid,
             story.title,
@@ -316,15 +329,19 @@ sub get_entry {
         $r->session->get('username')
     );
 
-    my $user_config = $db->dbh->select_row("SELECT * FROM user WHERE id = ?", $r->session->get('username'));
+    my $user_config = $db->select_row("SELECT * FROM user WHERE id = ?", $r->session->get('username'));
 
+    my %site_title;
     for (@$rs) {
-        my $rs2 = $db->dbh->select_row("
-            SELECT feed.title
-            FROM target
-            INNER JOIN feed ON target.feed_id = feed.id
-            WHERE target.id = ?
-        ", $_->{target_id});
+        unless ($site_title{$_->{target_id}}) {
+            my $rs2 = $db->select_one("
+                SELECT feed.title
+                FROM target
+                INNER JOIN feed ON target.feed_id = feed.id
+                WHERE target.id = ?
+            ", $_->{target_id});
+            $site_title{$_->{target_id}} = $rs2 || "";
+        }
 
         my $pubdate = Time::Piece->strptime($_->{pubdate}, '%Y-%m-%d %H:%M:%S')->strftime('%m/%d %H:%M');
         my $description = $scrubber->scrub($_->{description});
@@ -335,7 +352,7 @@ sub get_entry {
             title => $_->{title},
             description => $description,
             date => $pubdate,
-            site_title => $rs2->{title},
+            site_title => $site_title{$_->{target_id}},
             readflag => $_->{readflag},
             url => $user_config->{noreferrer} ? Gion::Util::redirect_url($_->{url}) : $_->{url},
             raw_url => $_->{url},
@@ -386,9 +403,9 @@ sub get_targetlist {
 
     my $db = $r->dbh;
 
-    my $user_config = $db->dbh->select_row("SELECT * FROM user WHERE id = ?", $r->session->get('username'));
+    my $user_config = $db->select_row("SELECT * FROM user WHERE id = ?", $r->session->get('username'));
 
-    my $category = $db->dbh->select_all("
+    my $category = $db->select_all("
         SELECT id, name
         FROM category
         WHERE user_id = ?
@@ -396,7 +413,7 @@ sub get_targetlist {
     ", $r->session->get('username')
     );
 
-    my $rs = $db->dbh->select_all("
+    my $rs = $db->select_all("
         SELECT
             feed.id,
             feed.title,
@@ -430,7 +447,7 @@ sub get_pinlist {
 
     my $db = $r->dbh;
 
-    my $list = $db->dbh->select_all("
+    my $list = $db->select_all("
         SELECT
             story.title,
             story.url,
@@ -444,7 +461,7 @@ sub get_pinlist {
         ORDER BY pubdate DESC
     ", $r->session->get('username'));
 
-    my $user_config = $db->dbh->select_row("SELECT * FROM user WHERE id = ?", $r->session->get('username'));
+    my $user_config = $db->select_row("SELECT * FROM user WHERE id = ?", $r->session->get('username'));
 
     return $r->json($list)
         if $user_config->{noreferrer} == 0;
@@ -473,8 +490,10 @@ sub set_pin {
 
     warn sprintf "PIN %s\t%s", $r->session->get('username'), $r->req->param('pinid');
 
+    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/pinid/;
+
     my $db = $r->dbh;
-    $db->dbh->query("
+    $db->query("
         UPDATE entry
         SET
             readflag = ?,
@@ -484,7 +503,7 @@ sub set_pin {
     ",
         $readflag,
         $r->session->get('username'),
-        $r->req->param('pinid'),
+        $values{pinid},
     );
     $r->json({
         readflag => $readflag
@@ -497,7 +516,7 @@ sub remove_all_pin {
     $r->require_xhr;
 
     my $db = $r->dbh;
-    $db->dbh->query("
+    $db->query("
         UPDATE entry
         SET
             readflag = 1,
@@ -523,7 +542,7 @@ sub update_password {
     return $r->json({ e => 'error' }) if $validator->has_error;
 
     my $db = $r->dbh;
-    my $user_config = $db->dbh->select_row("SELECT * FROM user WHERE id = ?", $r->session->get('username'));
+    my $user_config = $db->select_row("SELECT * FROM user WHERE id = ?", $r->session->get('username'));
 
     my $current = Gion::Util::auth(
         id => $user_config->{name},
@@ -540,7 +559,7 @@ sub update_password {
 
     warn "Update Passwd: " . $renew . "," . $r->session->get('username');
 
-    $db->dbh->query("
+    $db->query("
         UPDATE user
         SET password = ?
         WHERE id = ?
@@ -573,7 +592,7 @@ sub create_user {
     );
 
     my $db = $r->dbh;
-    $db->dbh->query('
+    $db->query('
         INSERT INTO user (id,password,name) VALUES (null,?,?)
     ',
         $auth,
