@@ -41,4 +41,5 @@ on 'test' => sub {
     requires 'Test::More', '>= 0.96, < 2.0';
     requires 'Test::mysqld';
     requires 'Test::WWW::Mechanize::PSGI';
+    requires 'Data::Section::Simple';
 };
