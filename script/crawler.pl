@@ -43,7 +43,8 @@ if (@$eid) {
     $list = $db->select_all('SELECT * FROM feed');
 }
 
-my $ua = Gion::Crawler::UserAgent->new;
+my $ua_config = config->param('crawler');
+my $ua = Gion::Crawler::UserAgent->new(%$ua_config);
 
 my $feed_model = Gion::Crawler::Feed->new(
     db => $db,
