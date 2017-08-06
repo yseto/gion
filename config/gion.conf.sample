@@ -3,22 +3,8 @@
         dsn => '',
         username => '',
         password => '',
-        on_connect_do => ['SET NAMES utf8mb4'],
     },
 
-    #パスワード
-    salt => '25a467b753ff0368d0dd4f4bd962914be2c790e3ddd74f048f80991bf8fc4f7a',
-    strech => 100,
-
-    #リファラを秘匿にする際のリダイレクタ
-    redirector => 'https://www.google.com/url?sa=D&q=',
-
-    #クローラの設定
-    crawler => {
-        #HTTPクライアントに設定するユーザーエージェント
-        ua =>
-          'Opera/9.80 (Windows NT 6.2; WOW64) Presto/2.12.388 Version/12.14',
-    },
     service => {
         pocket => '',
         hatena => {
