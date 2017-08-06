@@ -23,7 +23,7 @@ my $guard = config->local(db => {dsn => $dsn});
 
 # load schema.
 my $dbh = DBI->connect($dsn);
-my $source = read_file('templates/config/mysql.sql');
+my $source = read_file('config/mysql.sql');
 for my $stmt (split /;/, $source) {
     next unless $stmt =~ /\S/;
     $dbh->do($stmt) or die $dbh->errstr;
