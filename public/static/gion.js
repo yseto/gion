@@ -187,7 +187,7 @@ Gion.reader = {
         //console.log('created');
         var self = this;
         Gion.PostAgent({
-            url: '/api/get_connect',
+            url: '/api/get_social_service',
         }, function(err, _data) {
             var data = _data.body;
             data.e.forEach(function(_, index) {
@@ -545,7 +545,7 @@ Gion.settings = {
             self.numentry = a.numentry;
         });
         Gion.PostAgent({
-            url: '/api/get_connect',
+            url: '/api/get_social_service',
         }, function(err, _data) {
             var data = _data.body;
             data.e.forEach(function(_, index) {

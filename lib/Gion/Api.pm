@@ -213,20 +213,20 @@ sub set_numentry {
     $r->json({ r => "OK" });
 }
 
-sub get_connect {
+sub get_social_service {
     my ($class, $r) = @_;
     $r->require_login;
     $r->require_xhr;
 
     my $db = $r->dbh;
-    my $rs = $db->select_all("SELECT username , service FROM connection WHERE user_id = ?",
+    my $rs = $db->select_all("SELECT username , service FROM social_service WHERE user_id = ?",
         $r->session->get('username')
     );
 
     $r->json({ e => $rs });
 }
 
-sub set_connect {
+sub delete_social_service {
     my ($class, $r) = @_;
     $r->require_login;
     $r->require_xhr;
@@ -239,7 +239,7 @@ sub set_connect {
 
     my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/service/;
     my $db = $r->dbh;
-    $db->query("DELETE FROM connection WHERE user_id = ? AND service = ?",
+    $db->query("DELETE FROM social_service WHERE user_id = ? AND service = ?",
         $r->session->get('username'),
         $values{service},
     );

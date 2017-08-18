@@ -279,8 +279,8 @@ subtest 'api - get/set numentry', sub {
 };
 
 # TODO
-# get_connect
-# set_connect
+# get_social_service
+# delete_social_service
 
 subtest 'api - update_password - unmatch now', sub {
     my $req = POST 'http://localhost/api/update_password',

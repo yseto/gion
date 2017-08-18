@@ -75,15 +75,13 @@ CREATE TABLE IF NOT EXISTS `story` (
   PRIMARY KEY (`guid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- TODO RENAME connection to social_service
-
-CREATE TABLE IF NOT EXISTS `connection` (
+CREATE TABLE IF NOT EXISTS `social_service` (
   `user_id` int(11) NOT NULL,
   `service` varchar(60) NOT NULL,
   `username` varchar(60) NOT NULL,
   `key` varchar(120) NOT NULL,
   UNIQUE KEY `userservice` (`user_id`,`service`),
-  CONSTRAINT `connection_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `social_service_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 

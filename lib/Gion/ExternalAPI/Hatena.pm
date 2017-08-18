@@ -79,7 +79,7 @@ sub callback {
  
     # save access_token
     $db->query(
-        "INSERT INTO connection (user_id, service, username, `key`) VALUES (?,'hatena',?,?)",
+        "INSERT INTO social_service (user_id, service, username, `key`) VALUES (?,'hatena',?,?)",
         $r->session->get('username'),
         $data->{display_name},
         $access_token->as_encoded,
@@ -93,7 +93,7 @@ sub post {
 
     my $db = $r->dbh;
     my $rs = $db->select_row("
-        SELECT `key` FROM connection WHERE user_id = ? AND service = 'hatena'
+        SELECT `key` FROM social_service WHERE user_id = ? AND service = 'hatena'
     ", $r->session->get('username'));
 
     return $r->json({e => "ng"}) unless $rs;
@@ -131,7 +131,7 @@ sub disconnect {
 
     my $db = $r->dbh;
     $db->query("
-        DELETE FROM connection WHERE user_id = ? AND service = 'hatena'
+        DELETE FROM social_service WHERE user_id = ? AND service = 'hatena'
     ", $r->session->get('username'));
 
     $r->res->redirect("/#settings"); # XXX
