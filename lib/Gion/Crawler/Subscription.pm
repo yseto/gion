@@ -1,4 +1,4 @@
-package Gion::Crawler::Target;
+package Gion::Crawler::Subscription;
 
 use strict;
 use warnings;
@@ -30,7 +30,7 @@ sub latest_entry {
     my $latest_entry_pubdate = $self->db->select_one('
         SELECT pubdate
         FROM entry
-        WHERE target_id = ? 
+        WHERE subscription_id = ?
             AND readflag = 1
         ORDER BY pubdate DESC
         LIMIT 1

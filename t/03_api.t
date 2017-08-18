@@ -92,8 +92,8 @@ my %headers = (
     'X-CSRF-Token' => $csrf_token,
 );
 
-subtest 'api - examine_target', sub {
-    my $req = POST 'http://localhost/api/examine_target',
+subtest 'api - examine_subscription', sub {
+    my $req = POST 'http://localhost/api/examine_subscription',
         Content => [ url => 'http://www.nhk.or.jp/news/' ],
         %headers;
     
@@ -125,7 +125,7 @@ subtest 'api - register_category', sub {
     
 };
 
-subtest 'api - register_target', sub {
+subtest 'api - register_subscription', sub {
     my ($id) = $dbh->selectrow_array(
         'SELECT id FROM category ORDER BY id DESC LIMIT 1'
     );
@@ -136,7 +136,7 @@ subtest 'api - register_target', sub {
         title => 'NHK NEWS',
         category => $id,
     );
-    my $req = POST 'http://localhost/api/register_target',
+    my $req = POST 'http://localhost/api/register_subscription',
         Content => [ %site ],
         %headers;
     
@@ -149,7 +149,7 @@ subtest 'api - register_target', sub {
     is $object2->{r}, 'ERROR_ALREADY_REGISTER';
 
     my ($feed_id) = $dbh->selectrow_array(
-        "SELECT feed_id FROM target WHERE category_id = $id ORDER BY id DESC LIMIT 1"
+        "SELECT feed_id FROM subscription WHERE category_id = $id ORDER BY id DESC LIMIT 1"
     );
 
     my ($rss, $url) = $dbh->selectrow_array(
@@ -162,11 +162,11 @@ subtest 'api - register_target', sub {
 
 subtest 'api - delete_it entry', sub {
     my ($id) = $dbh->selectrow_array(
-        'SELECT feed_id FROM target ORDER BY id DESC LIMIT 1'
+        'SELECT feed_id FROM subscription ORDER BY id DESC LIMIT 1'
     );
 
     my $req = POST 'http://localhost/api/delete_it',
-        Content => [ target => 'entry', id => $id ],
+        Content => [ subscription => 'entry', id => $id ],
         %headers;
     
     my $res = $ua->request($req);
@@ -174,7 +174,7 @@ subtest 'api - delete_it entry', sub {
     is $object->{r}, 'OK';
 
     my ($count) = $dbh->selectrow_array(
-        "SELECT COUNT(*) FROM target WHERE feed_id = $id"
+        "SELECT COUNT(*) FROM subscription WHERE feed_id = $id"
     );
 
     is $count, 0;
@@ -187,7 +187,7 @@ subtest 'api - delete_it category', sub {
     );
 
     my $req = POST 'http://localhost/api/delete_it',
-        Content => [ target => 'category', id => $id ],
+        Content => [ subscription => 'category', id => $id ],
         %headers;
     
     my $res = $ua->request($req);
@@ -228,13 +228,13 @@ subtest 'api - change_it', sub {
         title => 'NHK NEWS',
         category => $category1,
     );
-    my $req3 = POST 'http://localhost/api/register_target',
+    my $req3 = POST 'http://localhost/api/register_subscription',
         Content => [ %site ],
         %headers;
     $ua->request($req3);
 
     my ($feed_id) = $dbh->selectrow_array(
-        "SELECT feed_id FROM target WHERE category_id = $category1"
+        "SELECT feed_id FROM subscription WHERE category_id = $category1"
     );
 
     my $req = POST 'http://localhost/api/change_it',
@@ -245,7 +245,7 @@ subtest 'api - change_it', sub {
     is $object->{r}, 'OK';
 
     my ($category_id) = $dbh->selectrow_array(
-        "SELECT category_id FROM target WHERE feed_id = $feed_id"
+        "SELECT category_id FROM subscription WHERE feed_id = $feed_id"
     );
 
     is $category_id, $category2;
@@ -342,7 +342,7 @@ subtest 'api - create_user', sub {
 # get_category
 # get_entry
 # set_asread
-# get_targetlist
+# get_subscriptionlist
 # get_pinlist
 # set_pin
 # remove_all_pin

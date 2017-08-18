@@ -252,7 +252,7 @@ subtest 'parse_rss 1', sub {
     is $entries[0]->pubdate_epoch, 1501381353;
 
     $entries[0]->insert_entry(
-        target_id => 110,
+        subscription_id => 110,
         user_id => 1,
     );
 
@@ -263,7 +263,7 @@ subtest 'parse_rss 1', sub {
       'guid' => 'http://www.example.com/452275619.html',
       'pubdate' => '2017-07-30 11:22:33',
       'readflag' => 0,
-      'target_id' => 110,
+      'subscription_id' => 110,
       'user_id' => 1,
     };
 };
@@ -314,8 +314,8 @@ INSERT INTO `feed` VALUES
 ;
 UNLOCK TABLES;
 
-LOCK TABLES `target` WRITE;
-INSERT INTO `target` VALUES
+LOCK TABLES `subscription` WRITE;
+INSERT INTO `subscription` VALUES
 (110,1,22,1),
 (111,2,23,1)
 ;

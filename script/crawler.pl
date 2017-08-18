@@ -9,7 +9,7 @@ use Gion;
 use Gion::Config;
 use Gion::Crawler::Entry;
 use Gion::Crawler::Feed;
-use Gion::Crawler::Target;
+use Gion::Crawler::Subscription;
 use Gion::Crawler::Time;
 use Gion::Crawler::UserAgent;
 
@@ -165,18 +165,18 @@ PARSE_SUCCESS:
         # 取り込み対象となるため、次回取得対象としてマーク
         $import_counter++;
 
-        my $target_model = Gion::Crawler::Target->new(db => $db);
+        my $subscription_model = Gion::Crawler::Subscription->new(db => $db);
 
         # 購読リストを取得する
-        my $targets = $db->select_all('SELECT * FROM target WHERE feed_id = ?',
+        my $subscriptions = $db->select_all('SELECT * FROM subscription WHERE feed_id = ?',
             $feed_model->id);
 
-        for my $target (@$targets) {
+        for my $subscription (@$subscriptions) {
             # モデルに読み込み
-            $target_model->load(%$target);
+            $subscription_model->load(%$subscription);
 
             # 既読管理から最終既読の時刻を参照
-            my $latest_entry = $target_model->latest_entry;
+            my $latest_entry = $subscription_model->latest_entry;
 
             # 既読データがあれば、状態から取り込みを判断する
             my $state = $latest_entry ?
@@ -185,12 +185,12 @@ PARSE_SUCCESS:
             if ($state) {
                 # 購読リストに基づいて、更新情報をユーザーごとへ挿入
                 $entry->insert_entry(
-                    target_id => $target_model->id,
-                    user_id   => $target_model->user_id,
+                    subscription_id => $subscription_model->id,
+                    user_id   => $subscription_model->user_id,
                 );
 
                 $feed_model->logger('INSERT user_id:%4d guid: %s',
-                    $target_model->user_id,
+                    $subscription_model->user_id,
                     $entry->guid);
             }
         }

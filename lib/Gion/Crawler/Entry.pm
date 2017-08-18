@@ -30,17 +30,17 @@ sub pubdate_epoch {
 sub insert_entry {
     my ($self, %attr) = @_;
 
-    die 'missing: target_id' if not defined $attr{target_id};
+    die 'missing: subscription_id' if not defined $attr{subscription_id};
     die 'missing: user_id' if not defined $attr{user_id};
 
     $self->db->query('
         INSERT IGNORE INTO entry 
-        (guid, pubdate, readflag, target_id, update_at, user_id)
+        (guid, pubdate, readflag, subscription_id, update_at, user_id)
         VALUES (?,?,0,?,CURRENT_TIMESTAMP,?)
     ',
     $self->guid,
     to_mysql_datetime($self->pubdate),
-    $attr{target_id},
+    $attr{subscription_id},
     $attr{user_id},
     );
 
