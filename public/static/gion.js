@@ -82,7 +82,7 @@ Gion.add_app = {
         fetch_list: function() {
             var self = this;
             Gion.PostAgent({
-                url: '/api/get_subscriptionlist',
+                url: '/api/get_subscription',
             }, function(err, _data) {
                 var data = _data.body;
                 self.list = data.category;
@@ -658,7 +658,7 @@ Gion.subscription = {
             var tmp = [],
                 list = {};
             Gion.PostAgent({
-                url: '/api/get_subscriptionlist'
+                url: '/api/get_subscription'
             }, function(err, _a) {
                 var a = _a.body;
                 self.category = a.category;

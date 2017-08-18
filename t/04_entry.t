@@ -311,8 +311,8 @@ subtest 'api - remove_all_pin', sub {
     is $res->content, 'OK';
 };
 
-subtest 'api - get_subscriptionlist', sub {
-    my $req = POST 'http://localhost/api/get_subscriptionlist',
+subtest 'api - get_subscription', sub {
+    my $req = POST 'http://localhost/api/get_subscription',
         %headers;
     
     my $res = $ua->request($req);

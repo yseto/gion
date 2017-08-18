@@ -396,7 +396,7 @@ sub set_asread {
     $r->text("OK");
 }
 
-sub get_subscriptionlist {
+sub get_subscription {
     my ($class, $r) = @_;
     $r->require_login;
     $r->require_xhr;
