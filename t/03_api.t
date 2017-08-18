@@ -338,15 +338,6 @@ subtest 'api - create_user', sub {
     is $object->{e}, 'User Added: user1';
 };
 
-# TODO
-# get_category
-# get_entry
-# set_asread
-# get_subscriptionlist
-# get_pinlist
-# set_pin
-# remove_all_pin
-
 done_testing;
 
 __END__
