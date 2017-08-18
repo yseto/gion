@@ -140,7 +140,7 @@ Gion.add_app = {
             if (typeof self.field.url === 'undefined') {
                 return false;
             }
-            if (self.field.url.match(/^http/g) === null) {
+            if (self.field.url.match(/^https?:/g) === null) {
                 return false;
             }
 

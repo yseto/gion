@@ -74,7 +74,7 @@ sub _get {
     # 30[1237] についてはリダイレクトが必要
     if ($res->code =~ /^30[1237]$/) {
         my $location = $res->headers->{location}[0];
-        if ($location !~ /^http/) {
+        if ($location !~ /^https?:/) {
             $location = URI->new_abs($location, $url)->as_string;
         }
         # 301 は URL更新が必要
