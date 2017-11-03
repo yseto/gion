@@ -1593,6 +1593,14 @@ DISTRIBUTIONS
       IPC::Signal 1.00
     requirements:
       ExtUtils::MakeMaker 0
+  JSON-2.94
+    pathname: I/IS/ISHIGAKI/JSON-2.94.tar.gz
+    provides:
+      JSON 2.94
+      JSON::Backend::PP 2.94
+    requirements:
+      ExtUtils::MakeMaker 0
+      Test::More 0
   JSON-MaybeXS-1.003009
     pathname: E/ET/ETHER/JSON-MaybeXS-1.003009.tar.gz
     provides:
@@ -1616,6 +1624,15 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Test::More 0
+  JSON-Types-0.05
+    pathname: T/TY/TYPESTER/JSON-Types-0.05.tar.gz
+    provides:
+      JSON::Types 0.05
+    requirements:
+      ExtUtils::MakeMaker 6.36
+      JSON 0
+      Test::More 0.86
+      parent 0
   JSON-XS-3.03
     pathname: M/ML/MLEHMANN/JSON-XS-3.03.tar.gz
     provides:

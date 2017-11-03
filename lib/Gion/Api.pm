@@ -8,6 +8,7 @@ use Encode;
 use FormValidator::Lite;
 use FormValidator::Lite::Constraint::URL;
 use HTML::Scrubber;
+use JSON::Types;
 use Time::Piece;
 
 use Gion::Util;
@@ -30,14 +31,14 @@ sub register_category {
         $values{name},
     );
 
-    return $r->json({ r => "ERROR_ALREADY_REGISTER" }) if $rs > 0;
+    return $r->json({ result => "ERROR_ALREADY_REGISTER" }) if $rs > 0;
 
     $db->query("INSERT INTO category (id,user_id,name) VALUES (null,?,?)",
         $r->session->get('username'),
         $values{name},
     );
 
-    $r->json({ r => "OK" });
+    $r->json({ result => "OK" });
 }
 
 sub register_subscription {
@@ -64,12 +65,10 @@ sub register_subscription {
     );
 
     unless ( defined $feed ) {
-        my $dt = Time::Piece->new;
-        $db->query("INSERT INTO feed (url,siteurl,title,http_status,pubdate) VALUES (?,?,?,0,?);",
+        $db->query("INSERT INTO feed (url,siteurl,title,http_status,pubdate,cache) VALUES (?,?,?,0,NOW(),'{}');",
             $values{rss},
             $values{url},
             $values{title},
-            $dt->epoch,
         );
         $feed = $db->select_one("SELECT id FROM feed WHERE url = ? AND siteurl = ? ",
             $values{rss},
@@ -82,7 +81,7 @@ sub register_subscription {
         $feed
     );
 
-    return $r->json({ r => "ERROR_ALREADY_REGISTER" }) if $rs > 0;
+    return $r->json({ result => "ERROR_ALREADY_REGISTER" }) if $rs > 0;
 
     $rs = $db->select_one("SELECT COUNT(*) FROM category WHERE user_id = ? AND id = ?",
         $r->session->get('username'),
@@ -97,7 +96,7 @@ sub register_subscription {
         $r->session->get('username')
     );
 
-    $r->json({ r => "OK" });
+    $r->json({ result => "OK" });
 }
 
 sub examine_subscription {
@@ -115,7 +114,7 @@ sub examine_subscription {
         ($success, $resource) = Gion::Util::examine_url($r->req->param('url'));
     }
 
-    $r->json($success ? $resource : { t => '', u => '' });
+    $r->json($success ? $resource : { title => '', url => '' });
 }
 
 sub delete_it {
@@ -177,10 +176,10 @@ sub get_numentry {
     );
 
     $r->json({
-        numentry => $rs->{numentry},
-        noreferrer => $rs->{noreferrer} ? 1 : 0,
-        nopinlist => $rs->{nopinlist} ? 1 : 0,
-        numsubstr => $rs->{numsubstr},
+        numentry => number $rs->{numentry},
+        noreferrer => bool $rs->{noreferrer},
+        nopinlist => bool $rs->{nopinlist},
+        numsubstr => number $rs->{numsubstr},
     });
 }
 
@@ -223,7 +222,7 @@ sub get_social_service {
         $r->session->get('username')
     );
 
-    $r->json({ e => $rs });
+    $r->json({ resource => $rs });
 }
 
 sub delete_social_service {
@@ -256,9 +255,9 @@ sub get_category {
 
     my $rs = $db->select_all("
         SELECT
-            COUNT(0) AS c,
-            category.id AS i,
-            category.name AS n
+            COUNT(0) AS count,
+            category.id AS id,
+            category.name AS name
         FROM entry
         INNER JOIN subscription ON entry.subscription_id = subscription.id
         INNER JOIN category ON subscription.category_id = category.id
@@ -268,7 +267,15 @@ sub get_category {
         ORDER BY category.name ASC
         ", $r->session->get('username'));
 
-    $r->json($rs);
+    my @response;
+    foreach (@$rs) {
+        push @response, {
+            count   => number $_->{count},
+            id      => number $_->{id},
+            name    => string $_->{name},
+        };
+    }
+    $r->json(\@response);
 }
 
 sub get_entry {
@@ -348,14 +355,14 @@ sub get_entry {
         $description = substr($description, 0, $user_config->{numsubstr}) if $user_config->{numsubstr} > 0;
 
         my %row = (
-            guid => $_->{guid},
-            title => $_->{title},
+            guid        => $_->{guid},
+            title       => $_->{title},
             description => $description,
-            date => $pubdate,
-            site_title => $site_title{$_->{subscription_id}},
-            readflag => $_->{readflag},
-            url => $user_config->{noreferrer} ? Gion::Util::redirect_url($_->{url}) : $_->{url},
-            raw_url => $_->{url},
+            date        => $pubdate,
+            site_title  => $site_title{$_->{subscription_id}},
+            readflag    => number $_->{readflag},
+            url         => $user_config->{noreferrer} ? Gion::Util::redirect_url($_->{url}) : $_->{url},
+            raw_url     => $_->{url},
         );
         push @info, \%row;
 
@@ -367,7 +374,7 @@ sub get_entry {
 
     $r->json({
         entry => \@info,
-        id => $id
+        id => number $id,
     });
 }
 
@@ -413,6 +420,14 @@ sub get_subscription {
     ", $r->session->get('username')
     );
 
+    my @category;
+    for my $row (@$category) {
+        push @category, {
+            id => number $row->{id},
+            name => string $row->{name},
+        };
+    }
+
     my $rs = $db->select_all("
         SELECT
             feed.id,
@@ -429,13 +444,18 @@ sub get_subscription {
 
     my @subscription;
     for my $row (@$rs) {
-        $row->{siteurl} = $user_config->{noreferrer} ?
-            Gion::Util::redirect_url($row->{siteurl}) :
-            $row->{siteurl};
-        push @subscription, $row;
+        push @subscription, {
+            siteurl => $user_config->{noreferrer} ?
+                Gion::Util::redirect_url($row->{siteurl}) :
+                $row->{siteurl},
+            id      => number $row->{id},
+            title   => $row->{title},
+            category_id => number $row->{category_id},
+            http_status => number $row->{http_status},
+        };
     }
     $r->json({
-        category => $category,
+        category => \@category,
         subscription => \@subscription
     });
 }
@@ -506,7 +526,7 @@ sub set_pin {
         $values{pinid},
     );
     $r->json({
-        readflag => $readflag
+        readflag => number $readflag,
     });
 }
 
@@ -539,7 +559,7 @@ sub update_password {
         { password => [qw/password passwordc/] } => ['DUPLICATION'],
         password => [ 'NOT_NULL', [qw/LENGTH 8 255/] ],
     );
-    return $r->json({ e => 'error' }) if $validator->has_error;
+    return $r->json({ result => 'error' }) if $validator->has_error;
 
     my $db = $r->dbh;
     my $user_config = $db->select_row("SELECT * FROM user WHERE id = ?", $r->session->get('username'));
@@ -549,7 +569,7 @@ sub update_password {
         password => encode_utf8($r->req->param('password_old')),
     );
 
-    return $r->json({ e => 'unmatch now password' })
+    return $r->json({ result => 'unmatch now password' })
       if $user_config->{password} ne $current;
 
     my $renew = Gion::Util::auth(
@@ -565,7 +585,7 @@ sub update_password {
         WHERE id = ?
     ", $renew, $r->session->get('username'));
 
-    $r->json({ e => 'update password' });
+    $r->json({ result => 'update password' });
 }
 
 sub create_user {
@@ -575,7 +595,7 @@ sub create_user {
     $r->require_xhr;
 
     unless ($r->is_admin) {
-        return $r->json({ e => 'you are not superuser.' });
+        return $r->json({ result => 'you are not superuser.' });
     }
 
     my $validator = FormValidator::Lite->new( $r->req );
@@ -583,7 +603,7 @@ sub create_user {
         username => ['NOT_NULL'],
         password => [ 'NOT_NULL', [qw/LENGTH 8 255/] ],
     );
-    return $r->json({ e => 'error' }) if $validator->has_error;
+    return $r->json({ result => 'error' }) if $validator->has_error;
 
     my $username = encode_utf8($r->req->param('username'));
     my $auth = Gion::Util::auth(
@@ -598,7 +618,7 @@ sub create_user {
         $auth,
         $username,
     );
-    $r->json({ e => "User Added: " . $username });
+    $r->json({ result => "User Added: " . $username });
 }
 
 1;

@@ -16,6 +16,7 @@ requires 'HTML::Scrubber';
 requires 'HTTP::Date';
 requires 'HTTP::Parser::XS';
 requires 'IO::Socket::SSL';
+requires 'JSON::Types';
 requires 'JSON::XS';
 requires 'List::MoreUtils';
 requires 'LWP::Protocol::https';
