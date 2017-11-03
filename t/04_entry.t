@@ -311,8 +311,8 @@ subtest 'api - remove_all_pin', sub {
     is $res->content, 'OK';
 };
 
-subtest 'api - get_targetlist', sub {
-    my $req = POST 'http://localhost/api/get_targetlist',
+subtest 'api - get_subscription', sub {
+    my $req = POST 'http://localhost/api/get_subscription',
         %headers;
     
     my $res = $ua->request($req);
@@ -329,7 +329,7 @@ subtest 'api - get_targetlist', sub {
         }
     ];
 
-    is_deeply $object->{target}, [
+    is_deeply $object->{subscription}, [
         {
             'category_id' => 1,
             'http_status' => '200',
@@ -366,8 +366,8 @@ INSERT INTO `feed` VALUES
 ;
 UNLOCK TABLES;
 
-LOCK TABLES `target` WRITE;
-INSERT INTO `target` VALUES
+LOCK TABLES `subscription` WRITE;
+INSERT INTO `subscription` VALUES
 (110,1,22,1),
 (111,2,23,1)
 ;

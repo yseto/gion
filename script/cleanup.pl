@@ -25,20 +25,20 @@ $cmp{olde} = $count->{t};
 $count = $db->select_row('SELECT COUNT(guid) AS t FROM story');
 $cmp{olds} = $count->{t};
 
-my $rs = $db->select_all('SELECT id FROM target');
+my $rs = $db->select_all('SELECT id FROM subscription');
 
 for (@$rs) {
     my $id = $_->{id};
     $db->query("
         DELETE
         FROM entry
-        WHERE target_id = ?
+        WHERE subscription_id = ?
             AND readflag = 1
             AND update_at < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -1 DAY)
             AND 
             pubdate NOT IN (SELECT pubdate FROM 
                 (SELECT pubdate FROM entry
-                    WHERE target_id = ?  AND readflag = 1
+                    WHERE subscription_id = ?  AND readflag = 1
                     ORDER BY pubdate DESC LIMIT 1
                 ) x )
     ", $id, $id);
@@ -47,24 +47,24 @@ for (@$rs) {
 
 my $entry = $db->select_all("SELECT * FROM entry;");
 for (@$entry) {
-    my $target = $db->select_row("
-        SELECT COUNT(*) AS t FROM target WHERE id = ?
-    ", $_->{target_id});
+    my $subscription = $db->select_row("
+        SELECT COUNT(*) AS t FROM subscription WHERE id = ?
+    ", $_->{subscription_id});
 
-    unless ($target->{t} > 0) {
+    unless ($subscription->{t} > 0) {
         $db->query("
-            DELETE FROM entry WHERE target_id = ?
-        ", $_->{target_id} );
+            DELETE FROM entry WHERE subscription_id = ?
+        ", $_->{subscription_id} );
     }
 }
 
 my $feed = $db->select_all("SELECT * FROM feed;");
 for (@$feed) {
-    my $target = $db->select_row("
-        SELECT COUNT(*) AS t FROM target WHERE feed_id = ?
+    my $subscription = $db->select_row("
+        SELECT COUNT(*) AS t FROM subscription WHERE feed_id = ?
     ", $_->{id});
-    unless ($target->{t} > 0) {
-        printf "remove target: %s\n", $_->{siteurl};
+    unless ($subscription->{t} > 0) {
+        printf "remove subscription: %s\n", $_->{siteurl};
         $db->query("
             DELETE FROM feed WHERE id = ?
         ", $_->{id});

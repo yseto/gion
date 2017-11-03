@@ -25,7 +25,7 @@ sub opml_export {
     for (@$category) {
         my $rs = $db->select_all("
             SELECT feed_id
-            FROM target
+            FROM subscription
             WHERE category_id = ?
         ", $_->{id});
         my @items;
@@ -129,7 +129,7 @@ sub opml_import {
         my $rs = $db->select_row("
             SELECT
                 COUNT(*) AS t
-            FROM target
+            FROM subscription
             WHERE user_id = ?
                 AND feed_id = ?
         ", $r->session->get('username'), $feedid);
@@ -141,7 +141,7 @@ sub opml_import {
         }
 
         # register.
-        $db->query("INSERT INTO target (category_id,feed_id,user_id) VALUES (?,?,?);",
+        $db->query("INSERT INTO subscription (category_id,feed_id,user_id) VALUES (?,?,?);",
             $cid,
             $feedid,
             $r->session->get('username'),

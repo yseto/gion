@@ -40,7 +40,7 @@ sub register_category {
     $r->json({ r => "OK" });
 }
 
-sub register_target {
+sub register_subscription {
     my ($class, $r) = @_;
     $r->require_login;
     $r->require_xhr;
@@ -77,7 +77,7 @@ sub register_target {
         );
     }
 
-    my $rs = $db->select_one("SELECT COUNT(*) FROM target WHERE user_id = ? AND feed_id = ?",
+    my $rs = $db->select_one("SELECT COUNT(*) FROM subscription WHERE user_id = ? AND feed_id = ?",
         $r->session->get('username'),
         $feed
     );
@@ -91,7 +91,7 @@ sub register_target {
 
     return if $rs == 0;
 
-    $db->query("INSERT INTO target (category_id,feed_id,user_id) VALUES (?,?,?);",
+    $db->query("INSERT INTO subscription (category_id,feed_id,user_id) VALUES (?,?,?);",
         $values{category},
         $feed,
         $r->session->get('username')
@@ -100,7 +100,7 @@ sub register_target {
     $r->json({ r => "OK" });
 }
 
-sub examine_target {
+sub examine_subscription {
     my ($class, $r) = @_;
     $r->require_login;
     $r->require_xhr;
@@ -114,7 +114,7 @@ sub examine_target {
     if ($validator->is_valid) {
         ($success, $resource) = Gion::Util::examine_url($r->req->param('url'));
     }
-    
+
     $r->json($success ? $resource : { t => '', u => '' });
 }
 
@@ -125,20 +125,20 @@ sub delete_it {
 
     my $validator = FormValidator::Lite->new($r->req);
     my $res = $validator->check(
-        target => [ 'NOT_NULL', [ CHOICE => qw/category entry/ ] ],
+        subscription => [ 'NOT_NULL', [ CHOICE => qw/category entry/ ] ],
         id => [ 'UINT', 'NOT_NULL' ],
     );
     return $r->json([]) if $validator->has_error;
 
     my %sql = (
         category => "DELETE FROM category WHERE id = ? AND user_id = ?",
-        entry => "DELETE FROM target WHERE feed_id = ? AND user_id = ?"
+        entry => "DELETE FROM subscription WHERE feed_id = ? AND user_id = ?"
     );
 
-    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/id target/;
-    
+    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/id subscription/;
+
     my $db = $r->dbh;
-    $db->query($sql{$values{target}}, $values{id}, $r->session->get('username'));
+    $db->query($sql{$values{subscription}}, $values{id}, $r->session->get('username'));
     $r->json({ r => "OK" });
 }
 
@@ -157,7 +157,7 @@ sub change_it {
     my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/id category/;
 
     my $db = $r->dbh;
-    $db->query("UPDATE target SET category_id = ? WHERE feed_id = ? AND user_id = ?",
+    $db->query("UPDATE subscription SET category_id = ? WHERE feed_id = ? AND user_id = ?",
         $values{category},
         $values{id},
         $r->session->get('username')
@@ -213,20 +213,20 @@ sub set_numentry {
     $r->json({ r => "OK" });
 }
 
-sub get_connect {
+sub get_social_service {
     my ($class, $r) = @_;
     $r->require_login;
     $r->require_xhr;
 
     my $db = $r->dbh;
-    my $rs = $db->select_all("SELECT username , service FROM connection WHERE user_id = ?",
+    my $rs = $db->select_all("SELECT username , service FROM social_service WHERE user_id = ?",
         $r->session->get('username')
     );
 
     $r->json({ e => $rs });
 }
 
-sub set_connect {
+sub delete_social_service {
     my ($class, $r) = @_;
     $r->require_login;
     $r->require_xhr;
@@ -239,7 +239,7 @@ sub set_connect {
 
     my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/service/;
     my $db = $r->dbh;
-    $db->query("DELETE FROM connection WHERE user_id = ? AND service = ?",
+    $db->query("DELETE FROM social_service WHERE user_id = ? AND service = ?",
         $r->session->get('username'),
         $values{service},
     );
@@ -260,8 +260,8 @@ sub get_category {
             category.id AS i,
             category.name AS n
         FROM entry
-        INNER JOIN target ON entry.target_id = target.id
-        INNER JOIN category ON target.category_id = category.id 
+        INNER JOIN subscription ON entry.subscription_id = subscription.id
+        INNER JOIN category ON subscription.category_id = category.id
         WHERE readflag <> 1
             AND category.user_id = ?
         GROUP BY category.id
@@ -290,11 +290,11 @@ sub get_entry {
         my $rs = $db->select_one("
             SELECT
                 category.id
-            FROM entry 
-            INNER JOIN target ON target_id = target.id
-            INNER JOIN category ON category.id = target.category_id
+            FROM entry
+            INNER JOIN subscription ON subscription_id = subscription.id
+            INNER JOIN category ON category.id = subscription.category_id
             WHERE readflag <> 1
-                AND category.user_id = ? 
+                AND category.user_id = ?
             GROUP BY category.id
             ORDER BY category.name ASC
             LIMIT 1
@@ -312,15 +312,15 @@ sub get_entry {
         SELECT
             entry.guid,
             story.title,
-            description, 
+            description,
             pubdate,
             readflag,
             story.url,
-            target_id
+            subscription_id
         FROM entry
-        INNER JOIN target ON target_id = target.id
+        INNER JOIN subscription ON subscription_id = subscription.id
         INNER JOIN story ON story.guid = entry.guid
-        WHERE target.category_id = ?
+        WHERE subscription.category_id = ?
             AND readflag <> 1
             AND entry.user_id = ?
         ORDER BY pubdate DESC
@@ -333,14 +333,14 @@ sub get_entry {
 
     my %site_title;
     for (@$rs) {
-        unless ($site_title{$_->{target_id}}) {
+        unless ($site_title{$_->{subscription_id}}) {
             my $rs2 = $db->select_one("
                 SELECT feed.title
-                FROM target
-                INNER JOIN feed ON target.feed_id = feed.id
-                WHERE target.id = ?
-            ", $_->{target_id});
-            $site_title{$_->{target_id}} = $rs2 || "";
+                FROM subscription
+                INNER JOIN feed ON subscription.feed_id = feed.id
+                WHERE subscription.id = ?
+            ", $_->{subscription_id});
+            $site_title{$_->{subscription_id}} = $rs2 || "";
         }
 
         my $pubdate = Time::Piece->strptime($_->{pubdate}, '%Y-%m-%d %H:%M:%S')->strftime('%m/%d %H:%M');
@@ -352,7 +352,7 @@ sub get_entry {
             title => $_->{title},
             description => $description,
             date => $pubdate,
-            site_title => $site_title{$_->{target_id}},
+            site_title => $site_title{$_->{subscription_id}},
             readflag => $_->{readflag},
             url => $user_config->{noreferrer} ? Gion::Util::redirect_url($_->{url}) : $_->{url},
             raw_url => $_->{url},
@@ -396,7 +396,7 @@ sub set_asread {
     $r->text("OK");
 }
 
-sub get_targetlist {
+sub get_subscription {
     my ($class, $r) = @_;
     $r->require_login;
     $r->require_xhr;
@@ -417,26 +417,26 @@ sub get_targetlist {
         SELECT
             feed.id,
             feed.title,
-            target.category_id,
+            subscription.category_id,
             feed.http_status,
-            feed.siteurl 
-        FROM target
-        INNER JOIN feed ON feed_id = feed.id 
-        WHERE target.user_id = ?
+            feed.siteurl
+        FROM subscription
+        INNER JOIN feed ON feed_id = feed.id
+        WHERE subscription.user_id = ?
         ORDER BY title ASC
     ", $r->session->get('username')
     );
 
-    my @target;
+    my @subscription;
     for my $row (@$rs) {
         $row->{siteurl} = $user_config->{noreferrer} ?
             Gion::Util::redirect_url($row->{siteurl}) :
             $row->{siteurl};
-        push @target, $row;
+        push @subscription, $row;
     }
     $r->json({
         category => $category,
-        target => \@target
+        subscription => \@subscription
     });
 }
 
@@ -454,10 +454,10 @@ sub get_pinlist {
             entry.guid,
             entry.update_at
         FROM entry
-        INNER JOIN target ON entry.target_id = target.id
+        INNER JOIN subscription ON entry.subscription_id = subscription.id
         INNER JOIN story ON story.guid = entry.guid
         WHERE entry.readflag = 2
-            AND target.user_id = ?
+            AND subscription.user_id = ?
         ORDER BY pubdate DESC
     ", $r->session->get('username'));
 

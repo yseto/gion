@@ -507,7 +507,6 @@
                 <span v-if="item.http_status < -5 || item.http_status == '404'" class="badge">取得に失敗しました</span>
               </a> 
               <span class="pull-right">
-                <!-- data-name, data-target no use ? -->
                 <button
                   class="btn btn-info btn-xs"
                   v-on:click="change_category(item.id, item.category_id)"

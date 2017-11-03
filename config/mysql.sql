@@ -38,19 +38,17 @@ CREATE TABLE IF NOT EXISTS `feed` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 
--- TODO RENAME target to subscription
-
-CREATE TABLE IF NOT EXISTS `target` (
+CREATE TABLE IF NOT EXISTS `subscription` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `category_id` int(11) NOT NULL,
   `feed_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `category_id` (`category_id`),
-  CONSTRAINT `target_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `subscription_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   KEY `feed_id` (`feed_id`),
-  CONSTRAINT `target_ibfk_2` FOREIGN KEY (`feed_id`) REFERENCES `feed` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `target_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `subscription_ibfk_2` FOREIGN KEY (`feed_id`) REFERENCES `feed` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `subscription_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `entry` (
@@ -58,12 +56,12 @@ CREATE TABLE IF NOT EXISTS `entry` (
   `pubdate` datetime NOT NULL,
   `update_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `readflag` tinyint(4) NOT NULL,
-  `target_id` int(11) NOT NULL,
+  `subscription_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  UNIQUE KEY `guid_2` (`guid`,`target_id`),
-  KEY `target_id` (`target_id`),
+  UNIQUE KEY `guid_2` (`guid`,`subscription_id`),
+  KEY `subscription_id` (`subscription_id`),
   KEY `guid` (`guid`),
-  CONSTRAINT `entry_ibfk_1` FOREIGN KEY (`target_id`) REFERENCES `target` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `entry_ibfk_1` FOREIGN KEY (`subscription_id`) REFERENCES `subscription` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `entry_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -75,15 +73,13 @@ CREATE TABLE IF NOT EXISTS `story` (
   PRIMARY KEY (`guid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- TODO RENAME connection to social_service
-
-CREATE TABLE IF NOT EXISTS `connection` (
+CREATE TABLE IF NOT EXISTS `social_service` (
   `user_id` int(11) NOT NULL,
   `service` varchar(60) NOT NULL,
   `username` varchar(60) NOT NULL,
   `key` varchar(120) NOT NULL,
   UNIQUE KEY `userservice` (`user_id`,`service`),
-  CONSTRAINT `connection_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `social_service_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 

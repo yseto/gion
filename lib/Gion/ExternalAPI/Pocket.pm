@@ -34,7 +34,7 @@ sub connect {
         if ( defined $params{access_token} and defined $params{username} ) {
             my $db = $r->dbh;
             $db->query("
-                INSERT INTO connection (user_id, service, username, `key`) VALUES (?,'pocket',?,?)
+                INSERT INTO social_service (user_id, service, username, `key`) VALUES (?,'pocket',?,?)
             ",
                 $r->session->get('username'),
                 $params{username},
@@ -69,7 +69,7 @@ sub post {
 
     my $db = $r->dbh;
     my $rs = $db->select_row("
-        SELECT `key` FROM connection WHERE user_id = ? AND service = 'pocket'
+        SELECT `key` FROM social_service WHERE user_id = ? AND service = 'pocket'
     ", $r->session->get('username'));
     return $r->json({ e => "ng"}) unless $rs;
 
@@ -100,7 +100,7 @@ sub disconnect {
 
     my $db = $r->dbh;
     $db->query("
-        DELETE FROM connection WHERE user_id = ? AND service = 'pocket'
+        DELETE FROM social_service WHERE user_id = ? AND service = 'pocket'
     ", $r->session->get('username'));
     $r->res->redirect("/#settings"); # XXX
 }

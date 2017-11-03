@@ -51,10 +51,10 @@ Gion.Home = {
                 url: '/api/set_pin',
                 data: {
                     'readflag': 2,
-                    'pinid': encodeURI(event.target.getAttribute('data-guid'))
+                    'pinid': encodeURI(event.subscription.getAttribute('data-guid'))
                 },
             }, function() {
-                self.list.splice(event.target.getAttribute('data-index'), 1);
+                self.list.splice(event.subscription.getAttribute('data-index'), 1);
             });
         }
     }
@@ -82,7 +82,7 @@ Gion.add_app = {
         fetch_list: function() {
             var self = this;
             Gion.PostAgent({
-                url: '/api/get_targetlist',
+                url: '/api/get_subscription',
             }, function(err, _data) {
                 var data = _data.body;
                 self.list = data.category;
@@ -113,7 +113,7 @@ Gion.add_app = {
         register_feed: function() {
             var self = this;
             Gion.PostAgent({
-                url: '/api/register_target',
+                url: '/api/register_subscription',
                 data: {
                     'url': self.field.url,
                     'rss': self.field.rss,
@@ -148,7 +148,7 @@ Gion.add_app = {
             self.search_state = true;
 
             Gion.PostAgent({
-                url: '/api/examine_target',
+                url: '/api/examine_subscription',
                 data: {
                     url: self.field.url
                 },
@@ -187,7 +187,7 @@ Gion.reader = {
         //console.log('created');
         var self = this;
         Gion.PostAgent({
-            url: '/api/get_connect',
+            url: '/api/get_social_service',
         }, function(err, _data) {
             var data = _data.body;
             data.e.forEach(function(_, index) {
@@ -469,7 +469,7 @@ Gion.reader = {
         // 外部サービスへポストする
         add_bookmark: function(event) {
             var comment;
-            var service = event.target.getAttribute('data-service');
+            var service = event.subscription.getAttribute('data-service');
 
             if (service === 'hatena') {
                 comment = window.prompt("type a comment", "");
@@ -478,7 +478,7 @@ Gion.reader = {
             Gion.PostAgent({
                 url: '/external_api/' + service + '/post',
                 data: {
-                    'url': event.target.getAttribute('data-url'),
+                    'url': event.subscription.getAttribute('data-url'),
                     'comment': comment,
                 },
             }, function() {});
@@ -545,7 +545,7 @@ Gion.settings = {
             self.numentry = a.numentry;
         });
         Gion.PostAgent({
-            url: '/api/get_connect',
+            url: '/api/get_social_service',
         }, function(err, _data) {
             var data = _data.body;
             data.e.forEach(function(_, index) {
@@ -606,7 +606,7 @@ Gion.subscription = {
     data: function() {
         return {
             category: [],
-            target: [],
+            subscription: [],
             lists: [],
             field_category: null,
             field_id: null,
@@ -632,7 +632,7 @@ Gion.subscription = {
             Gion.PostAgent({
                 url: '/api/delete_it',
                 data: {
-                    target: type,
+                    subscription: type,
                     id: id
                 }
             }, function() {
@@ -658,11 +658,11 @@ Gion.subscription = {
             var tmp = [],
                 list = {};
             Gion.PostAgent({
-                url: '/api/get_targetlist'
+                url: '/api/get_subscription'
             }, function(err, _a) {
                 var a = _a.body;
                 self.category = a.category;
-                self.target = a.target;
+                self.subscription = a.subscription;
 
                 self.category.forEach(function(_, i) {
                     list[self.category[i].id] = {
@@ -671,8 +671,8 @@ Gion.subscription = {
                         name: self.category[i].name
                     };
                 });
-                self.target.forEach(function(_, i) {
-                    list[self.target[i].category_id].list.push(self.target[i]);
+                self.subscription.forEach(function(_, i) {
+                    list[self.subscription[i].category_id].list.push(self.subscription[i]);
                 });
 
                 // combined
