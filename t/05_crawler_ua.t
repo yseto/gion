@@ -25,7 +25,7 @@ subtest 'get 301', sub {
     $ua->get('http://httpstat.us/301');
 
     is $ua->code, 200;
-    is $ua->location, 'http://httpstat.us';
+    is $ua->location, 'https://httpstat.us';
     is_deeply $ua->response, {};
 };
 

@@ -124,9 +124,9 @@ subtest 'api - get_category', sub {
 
     is ref($object), 'ARRAY';
     is scalar(@$object), 2;
-    is @$object[0]->{n}, 'category1';
-    is @$object[0]->{c}, 4;
-    is @$object[0]->{i}, 1;
+    is @$object[0]->{name}, 'category1';
+    is @$object[0]->{count}, 4;
+    is @$object[0]->{id}, 1;
 };
 
 subtest 'api - get_entry / default_category', sub {

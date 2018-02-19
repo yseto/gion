@@ -71,8 +71,8 @@ sub examine_url {
 
     return 0 unless $resource;
     return 1, {
-        t => $title,
-        u => URI->new_abs( $resource, $page_url )->as_string
+        title => $title,
+        url   => URI->new_abs( $resource, $page_url )->as_string
     };
 }
 

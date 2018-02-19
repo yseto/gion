@@ -254,7 +254,7 @@
              v-for="(item, index) in category_list"
              v-bind:class="{ active: index == category.selected() }"
              v-on:click.prevent="category.set(category_list, index);content_update();"
-             >{{ item.n }} <span class="badge hidden-sm">{{ item.c }}</span></a>
+             >{{ item.name }} <span class="badge hidden-sm">{{ item.count }}</span></a>
         </div>
       </div>
     </div>

@@ -102,7 +102,7 @@ Gion.add_app = {
                     'name': self.inputCategoryName
                 },
             }, function(err, j) {
-                if (j.body.r === "ERROR_ALREADY_REGISTER") {
+                if (j.body.result === "ERROR_ALREADY_REGISTER") {
                     alert("すでに登録されています。");
                 } else {
                     self.fetch_list();
@@ -125,7 +125,7 @@ Gion.add_app = {
                     alert('Failure: Get information.\n please check url... :(');
                     return false;
                 }
-                if (j.body.r === "ERROR_ALREADY_REGISTER") {
+                if (j.body.result === "ERROR_ALREADY_REGISTER") {
                     alert("すでに登録されています。");
                     return false;
                 }
@@ -158,8 +158,8 @@ Gion.add_app = {
                     alert('Failure: Get information.\n please check url... :(');
                     return false;
                 }
-                self.field.rss = j.u;
-                self.field.title = j.t;
+                self.field.rss = j.url;
+                self.field.title = j.title;
                 setTimeout(function() {
                     self.search_state = false;
                 }, 500);
@@ -190,8 +190,8 @@ Gion.reader = {
             url: '/api/get_social_service',
         }, function(err, _data) {
             var data = _data.body;
-            data.e.forEach(function(_, index) {
-                self.external_api[data.e[index].service] = true;
+            data.resource.forEach(function(_, index) {
+                self.external_api[data.resource[index].service] = true;
             });
         });
 
@@ -319,7 +319,7 @@ Gion.reader = {
                 data.forEach(function(_, index) {
                     // category_id が一致するものがある
                     // 画面描画を更新する必要がある
-                    if (self.category.category() === data[index].i) {
+                    if (self.category.category() === data[index].id) {
                         self.category.set_index(index); // 更新
                         updated = true; // 更新したフラグ
                         return false;
@@ -548,9 +548,9 @@ Gion.settings = {
             url: '/api/get_social_service',
         }, function(err, _data) {
             var data = _data.body;
-            data.e.forEach(function(_, index) {
-                self.external_api[data.e[index].service].state = true;
-                self.external_api[data.e[index].service].username = data.e[index].username;
+            data.resource.forEach(function(_, index) {
+                self.external_api[data.resource[index].service].state = true;
+                self.external_api[data.resource[index].service].username = data.resource[index].username;
             });
         });
     },
@@ -582,7 +582,7 @@ Gion.settings = {
                     passwordc: self.passwordc
                 }
             }, function(err, p) {
-                alert(p.body.e);
+                alert(p.body.result);
             });
         },
         create_user: function() {
@@ -594,7 +594,7 @@ Gion.settings = {
                     password: self.user_password
                 }
             }, function(err, p) {
-                alert(p.body.e);
+                alert(p.body.result);
             });
         }
     }
@@ -701,7 +701,7 @@ Gion.category_store = {
         selected: 0
     },
     set: function(list, index) {
-        this.state.category = list[index].i;
+        this.state.category = list[index].id;
         this.state.selected = index;
     },
     set_index: function(index) {

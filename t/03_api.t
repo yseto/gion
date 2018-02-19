@@ -100,8 +100,8 @@ subtest 'api - examine_subscription', sub {
     my $res = $ua->request($req);
     my $object = decode_json $res->content;
     
-    like $object->{t}, qr/NHK/;
-    is $object->{u}, 'http://www3.nhk.or.jp/rss/news/cat-live.xml';
+    like $object->{title}, qr/NHK/;
+    is $object->{url}, 'http://www3.nhk.or.jp/rss/news/cat-live.xml';
 };
 
 subtest 'api - register_category', sub {
@@ -112,11 +112,11 @@ subtest 'api - register_category', sub {
     
     my $res1 = $ua->request($req);
     my $object1 = decode_json $res1->content;
-    is $object1->{r}, 'OK';
+    is $object1->{result}, 'OK';
 
     my $res2 = $ua->request($req);
     my $object2 = decode_json $res2->content;
-    is $object2->{r}, 'ERROR_ALREADY_REGISTER';
+    is $object2->{result}, 'ERROR_ALREADY_REGISTER';
 
     my ($name2) = $dbh->selectrow_array(
         "SELECT name FROM category WHERE name = '$name'"
@@ -142,11 +142,11 @@ subtest 'api - register_subscription', sub {
     
     my $res1 = $ua->request($req);
     my $object1 = decode_json $res1->content;
-    is $object1->{r}, 'OK';
+    is $object1->{result}, 'OK';
 
     my $res2 = $ua->request($req);
     my $object2 = decode_json $res2->content;
-    is $object2->{r}, 'ERROR_ALREADY_REGISTER';
+    is $object2->{result}, 'ERROR_ALREADY_REGISTER';
 
     my ($feed_id) = $dbh->selectrow_array(
         "SELECT feed_id FROM subscription WHERE category_id = $id ORDER BY id DESC LIMIT 1"
@@ -293,7 +293,7 @@ subtest 'api - update_password - unmatch now', sub {
     
     my $res = $ua->request($req);
     my $object = decode_json $res->content;
-    is $object->{e}, 'unmatch now password';
+    is $object->{result}, 'unmatch now password';
 };
 
 subtest 'api - update_password - unmatch dup', sub {
@@ -307,7 +307,7 @@ subtest 'api - update_password - unmatch dup', sub {
     
     my $res = $ua->request($req);
     my $object = decode_json $res->content;
-    is $object->{e}, 'error';
+    is $object->{result}, 'error';
 
 };
 
@@ -322,7 +322,7 @@ subtest 'api - update_password - success', sub {
     
     my $res = $ua->request($req);
     my $object = decode_json $res->content;
-    is $object->{e}, 'update password';
+    is $object->{result}, 'update password';
 };
 
 subtest 'api - create_user', sub {
@@ -335,7 +335,7 @@ subtest 'api - create_user', sub {
     
     my $res = $ua->request($req);
     my $object = decode_json $res->content;
-    is $object->{e}, 'User Added: user1';
+    is $object->{result}, 'User Added: user1';
 };
 
 done_testing;
