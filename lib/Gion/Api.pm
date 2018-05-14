@@ -114,7 +114,15 @@ sub examine_subscription {
         ($success, $resource) = Gion::Util::examine_url($r->req->param('url'));
     }
 
-    $r->json($success ? $resource : { title => '', url => '' });
+    if ($success) {
+        my ($parser_type, $result) = Gion::Util::preview_feed($resource->{url});
+        if ($parser_type) {
+            $resource->{parser_type}  = $parser_type;
+            $resource->{preview_feed} = $result;
+        }
+    }
+
+    $r->json($success ? $resource : { title => '', url => '', parser_type => 0, preview_feed => undef });
 }
 
 sub delete_it {

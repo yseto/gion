@@ -28,6 +28,11 @@
       .navbar-nav li {
         cursor: pointer;
       }
+      .preview-feed .list-group-item {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
     </style>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   </head>
@@ -146,45 +151,57 @@
 <div class="container">
   <div class="row">
     <h4>Subscription</h4>
-    <form class="form-horizontal" id="form">
-      <div class="form-group">
-        <label class="col-sm-2 control-label" for="inputURL">URL(Web Page)</label>
-        <div class="col-sm-4">
-          <input type="text" id="inputURL" placeholder="URL" class="form-control" v-model="field.url" v-on:blur="feed_detail">
+    <div class="col-md-8">
+      <form class="form-horizontal" id="form">
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="inputURL">URL(Web Page)</label>
+          <div class="col-sm-6">
+            <input type="text" id="inputURL" placeholder="URL" class="form-control" v-model="field.url" v-on:blur="feed_detail">
+          </div>
+          <div class="col-sm-3">
+            <a class="btn btn-info" v-on:click.prevent="feed_detail">Get Detail</a>
+            <span v-if="search_state" class="glyphicon glyphicon-pencil"></span>
+          </div>
         </div>
-        <div class="col-sm-4">
-          <a class="btn btn-info" v-on:click.prevent="feed_detail">Get Detail</a>
-          <span v-if="search_state" class="glyphicon glyphicon-pencil"></span>
+        <div class="form-group">
+         <label class="col-sm-3 control-label" for="inputTitle">Title</label>
+          <div class="col-sm-6">
+            <input type="text" id="inputTitle" placeholder="Title" class="form-control" v-model="field.title">
+          </div>
         </div>
+        <div class="form-group">
+         <label class="col-sm-3 control-label" for="inputRSS">URL(Subscription)</label>
+          <div class="col-sm-6">
+            <input type="text" id="inputRSS" placeholder="RSS" class="form-control" v-model="field.rss">
+          </div>
+        </div>
+        <div class="form-group">
+         <label class="col-sm-3 control-label" for="selectCat">Categories</label>
+          <div class="col-sm-6">
+            <select class="form-control" id="selectCat" placeholder="Choose Category" v-model="category">
+              <option v-for="item in list" v-bind:value="item.id">{{ item.name }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-6 col-sm-offset-3">
+            <button type="button" v-on:click.prevent="register_feed" class="btn btn-primary">Register</button>
+            <span v-if="success_feed">Thanks! add your request.</span>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="col-md-4">
+      <div class="panel panel-default preview-feed" v-if="field.preview_feed">
+        <div class="panel-heading">Preview</div>
+        <ul class="list-group" v-for="item in field.preview_feed">
+          <li class="list-group-item">{{ item.title }}<br>{{ item.date }}</a>
+        </ul>
       </div>
-      <div class="form-group">
-       <label class="col-sm-2 control-label" for="inputTitle">Title</label>
-        <div class="col-sm-4">
-          <input type="text" id="inputTitle" placeholder="Title" class="form-control" v-model="field.title">
-        </div>
-      </div>
-      <div class="form-group">
-       <label class="col-sm-2 control-label" for="inputRSS">URL(Subscription)</label>
-        <div class="col-sm-4">
-          <input type="text" id="inputRSS" placeholder="RSS" class="form-control" v-model="field.rss">
-        </div>
-      </div>
-      <div class="form-group">
-       <label class="col-sm-2 control-label" for="selectCat">Categories</label>
-        <div class="col-sm-4">
-          <select class="form-control" id="selectCat" placeholder="Choose Category" v-model="category">
-            <option v-for="item in list" v-bind:value="item.id">{{ item.name }}</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="col-sm-10 col-sm-offset-2">
-          <button type="button" v-on:click.prevent="register_feed" class="btn btn-primary">Register</button>
-          <span v-if="success_feed">Thanks! add your request.</span>
-        </div>
-      </div>
-    </form>
-    <hr/>
+    </div>
+  </div>
+    <hr>
+  <div class="row">
     <h4>Categories</h4>
     <form class="form-horizontal" id="form">
       <div class="form-group">

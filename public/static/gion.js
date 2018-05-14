@@ -118,6 +118,7 @@ Gion.add_app = {
                     'url': self.field.url,
                     'rss': self.field.rss,
                     'title': self.field.title,
+                    'parser_type': self.field.parser_type,
                     'category': self.category,
                 },
             }, function(error, j) {
@@ -146,6 +147,7 @@ Gion.add_app = {
 
             self.success_feed = false;
             self.search_state = true;
+            self.preview_feed = null;
 
             Gion.PostAgent({
                 url: '/api/examine_subscription',
@@ -160,6 +162,8 @@ Gion.add_app = {
                 }
                 self.field.rss = j.url;
                 self.field.title = j.title;
+                self.field.preview_feed = j.preview_feed;
+                self.field.parser_type = j.parser_type;
                 setTimeout(function() {
                     self.search_state = false;
                 }, 500);
