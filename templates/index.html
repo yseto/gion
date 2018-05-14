@@ -21,7 +21,7 @@
         padding-left: 8px;
         border-left-width: 8px !important;
       }
-      #cat_list .list-group-item, #pinlist_ul .list-group-item {
+      .categories__list .list-group-item, .pin__list .list-group-item {
         padding: 4px 10px;
         cursor: pointer;
       }
@@ -57,13 +57,13 @@
             <a v-on:click="$root.go('')"><span class="glyphicon glyphicon-home"></span> Home</a>
           </li>
           <li v-bind:class="{ active: $root.currentRoute === '#entry' }">
-            <a v-on:click="$root.go('#entry')"><span class="glyphicon glyphicon-inbox"></span> Read</a>
+            <a v-on:click="$root.go('#entry')"><span class="glyphicon glyphicon-inbox"></span> Read entries</a>
           </li>
           <li v-bind:class="{ active: $root.currentRoute === '#add' }">
-            <a v-on:click="$root.go('#add')"><span class="glyphicon glyphicon-plus-sign"></span> Add a Site</a>
+            <a v-on:click="$root.go('#add')"><span class="glyphicon glyphicon-plus-sign"></span> Add a new subscription</a>
           </li>
           <li v-bind:class="{ active: $root.currentRoute === '#subscription' }">
-            <a v-on:click="$root.go('#subscription')"><span class="glyphicon glyphicon-list"></span> Subscription</a>
+            <a v-on:click="$root.go('#subscription')"><span class="glyphicon glyphicon-list"></span> Manage subscription</a>
           </li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
@@ -95,7 +95,7 @@
   
           <p>URLに巡回したいWebサイトのアドレスを入力して、<a class="btn btn-info">Get Detail</a>をクリックすると、必要な情報を取得します。</p>
           <p>この方法で取得できない場合は、Webページのデータを確認してください。RSSを配信していない可能性があります。</p>
-          <hr/>
+          <hr>
           <p>カテゴリを増やしたい場合は、下の入力欄にカテゴリの名前を入力してください。この時追加したカテゴリはすぐに、サイト登録でお使いになれます。</p>
   
           <hr>
@@ -255,7 +255,7 @@
         <a class="btn btn-small btn-default" v-on:click.prevent="pin_list_clean"><span class="glyphicon glyphicon-remove"></span> Remove All Pin</a>
       </p>
 
-      <div v-if="pin_list_state == true" class="panel panel-default" id="pinlist">
+      <div v-if="pin_list_state == true" class="panel panel-default pin__list">
         <div class="panel-heading">PinList <span class="badge badge-info">{{ pin_list.length }}</span></div>
         <div class="list-group" v-for="item in pin_list">
           <a class="list-group-item" v-bind:href="item.url">{{ item.title }}</a>
@@ -263,7 +263,7 @@
       </div>
 
       <!-- CATEGORIES -->
-      <div class="panel panel-default" id="cat_list">
+      <div class="panel panel-default categories__list">
         <div class="panel-heading"><span class="glyphicon glyphicon-list"></span>Categories</div>
         <div class="list-group">
           <a 
@@ -376,7 +376,7 @@
           </div>
         </div>
       </div>
-      <hr/>
+      <hr>
       <div class="row">
         <div class="form-group">
           <label class="control-label col-sm-2">連携設定</label>
@@ -439,7 +439,7 @@
       </div>
     </form>
   </div><!--/row-->
-  <hr/>
+  <hr>
 
 <template v-if="[% r.is_admin | __boolean %]">
   <h4>ユーザー追加</h4>
@@ -464,7 +464,7 @@
       </div>
     </form>
   </div><!--/row-->
-  <hr/>
+  <hr>
 </template>
 
   <h4>OPML</h4>
@@ -492,7 +492,7 @@
       </div>
     </form>
   </div><!--/row-->
-  <hr/>
+  <hr>
   <p class="clearfix hidden-lg hidden-md"><a class="btn btn-default pull-right" v-on:click="$root.returntop">Back to Top</a></p>
 </div><!--/container-->
 </div>
@@ -544,7 +544,7 @@
       </tbody>
     </table>
   </div><!--/row-->
-  <hr/>
+  <hr>
  
   <div class="modal show" id="categoryModal" tabindex="-1" v-if="categoryModal">
     <div class="modal-dialog">
