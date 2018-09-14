@@ -133,7 +133,7 @@ RESULT:
         my $description = $scrubber->scrub($entry->description);
         my %entry = (
             title       => $entry->title,
-            url         => $entry->url,
+            url         => ($parser_type == 1 && ref($entry->url) eq 'XML::RSS::LibXML::MagicElement') ? $entry->url->toString : $entry->url,
             date        => $entry->pubdate->strftime('%m/%d %H:%M'),
         );
         push @result, \%entry;
