@@ -2,6 +2,9 @@ use strict;
 use warnings;
 use utf8;
 
+use lib "t/";
+use testenv;
+
 use Data::Section::Simple qw(get_data_section);
 use HTTP::Date;
 use JSON::XS;
@@ -10,24 +13,13 @@ use Test::mysqld;
 use Time::Piece;
 use File::Slurp;
 
+use lib "lib/";
 use Gion::Config;
 use Gion;
 use Gion::Crawler::Feed;
 
-$ENV{PLACK_ENV} = 'test';
-
-my $mysqld = Test::mysqld->new;
-my $dsn = $mysqld->dsn;
-
-my $guard = config->local(db => {dsn => $dsn}); 
-
-# load schema.
-my $dbh = DBI->connect($dsn);
-my $source = read_file('config/mysql.sql');
-for my $stmt (split /;/, $source) {
-    next unless $stmt =~ /\S/;
-    $dbh->do($stmt) or die $dbh->errstr;
-}
+my $dbh = dbh();
+my $guard = config->local(test_config());
 
 for my $stmt (split /;/, get_data_section('table')) {
     next unless $stmt =~ /\S/;
