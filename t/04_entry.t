@@ -131,7 +131,7 @@ subtest 'api - get_entry / default_category', sub {
     is_deeply $object, {
         'entry' => [
             {
-                'date' => '07/25 01:01',
+                'date_epoch' => 1500944480,
                 'description' => 'test05',
                 'guid' => 'http://www.example.com/10011072851000.html',
                 'raw_url' => 'http://www.example.com/10011072851000.html',
@@ -141,7 +141,7 @@ subtest 'api - get_entry / default_category', sub {
                 'url' => 'http://www.example.com/10011072851000.html'
             },
             {
-                'date' => '07/25 01:01',
+                'date_epoch' => 1500944475,
                 'description' => 'test04',
                 'guid' => 'http://www.example.com/10011072821000.html',
                 'raw_url' => 'http://www.example.com/10011072821000.html',
@@ -151,7 +151,7 @@ subtest 'api - get_entry / default_category', sub {
                 'url' => 'http://www.example.com/10011072821000.html'
             },
             {
-                'date' => '07/25 01:01',
+                'date_epoch' => 1500944470,
                 'description' => 'test03',
                 'guid' => 'http://www.example.com/10011072771000.html',
                 'raw_url' => 'http://www.example.com/10011072771000.html',
@@ -176,7 +176,7 @@ subtest 'api - get_entry / specify category', sub {
     is_deeply $object, {
         'entry' => [
             {
-                'date' => '07/25 01:01',
+                'date_epoch' => 1500944515,
                 'description' => 'test11',
                 'guid' => 'http://www.example.com/10011072971000.html',
                 'raw_url' => 'http://www.example.com/10011072971000.html',
@@ -186,7 +186,7 @@ subtest 'api - get_entry / specify category', sub {
                 'url' => 'http://www.example.com/10011072971000.html'
             },
             {
-                'date' => '07/25 01:01',
+                'date_epoch' => 1500944505,
                 'description' => 'test10',
                 'guid' => 'http://www.example.com/10011072961000.html',
                 'raw_url' => 'http://www.example.com/10011072961000.html',
@@ -196,7 +196,7 @@ subtest 'api - get_entry / specify category', sub {
                 'url' => 'http://www.example.com/10011072961000.html'
             },
             {
-                'date' => '07/25 01:01',
+                'date_epoch' => 1500944500,
                 'description' => 'test09',
                 'guid' => 'http://www.example.com/10011072911000.html',
                 'raw_url' => 'http://www.example.com/10011072911000.html',
