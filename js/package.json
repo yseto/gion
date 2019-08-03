@@ -1,9 +1,0 @@
-{
-  "name": "gion",
-  "version": "0.0.0",
-  "description": "a rss reader",
-  "devDependencies": {
-    "grunt": "*",
-    "grunt-contrib-jshint": "*"
-  }
-}
