@@ -1,0 +1,19 @@
+version: "3"
+services:
+  app:
+    build:
+      context: ./
+    command: carton exec -- script/process.pl
+    environment:
+      PLACK_ENV: portable
+    ports:
+      - 5000:5000
+  memcached:
+    image: memcached:alpine
+  mysql:
+    image: mysql:5.6
+    volumes:
+      - "./var/mysql:/var/lib/mysql"
+      - "./sql:/docker-entrypoint-initdb.d"
+    environment:
+      - MYSQL_ROOT_PASSWORD=password

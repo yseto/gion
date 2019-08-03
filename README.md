@@ -1,10 +1,10 @@
-Gion
+# Gion
 =================
 
 A RSS Reader for Web Browser ( PC, Tablet, Mobile )
 
-Feature
-----------
+## Feature
+
 - Simple User Interface
 - Categorization
 - Keyboard Shortcut Support
@@ -13,8 +13,11 @@ Feature
 - To post Pocket (formerly Read it later)
 - To post Hatena Bookmark
 
-Requirement
-----------
-- Perl
-- mysql (of course MariaDB ok)
+## Requirement
+
+- docker-compose
+
+## User Management
+
+`docker-compose exec app carton exec -- script/useradd.pl  --user username --password password`
 

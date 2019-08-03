@@ -1,4 +1,7 @@
--- CREATE DATABASE ??? CHARACTER SET utf8mb4;
+CREATE DATABASE `gion` CHARACTER SET utf8mb4;
+GRANT ALL PRIVILEGES ON gion.* TO 'gion'@'%' IDENTIFIED BY 'gion';
+
+use gion;
 
 -- TODO guid column charset is utf8.
 
