@@ -1,11 +1,13 @@
 use strict;
 use warnings;
 
+use lib "t/";
+use testenv;
+
 use HTML::Parser;
 use Plack::Test;
 use Plack::Util;
 use Test::More;
-use Test::mysqld;
 use Test::WWW::Mechanize::PSGI;
 use Time::Piece;
 use File::Slurp;
@@ -14,25 +16,14 @@ use LWP::UserAgent;
 use HTTP::Request::Common;
 use JSON::XS;
 
+use lib "lib/";
 use Gion::Util;
 use Gion::Config;
 
-$ENV{PLACK_ENV} = 'test';
-
-my $mysqld = Test::mysqld->new;
-my $dsn = $mysqld->dsn;
-
-my $guard = config->local(db => {dsn => $dsn}); 
+my $dbh = dbh();
+my $guard = config->local(test_config());
 
 my $app = Plack::Util::load_psgi('app.psgi');
-
-# load schema.
-my $dbh = DBI->connect($dsn);
-my $source = read_file('config/mysql.sql');
-for my $stmt (split /;/, $source) {
-    next unless $stmt =~ /\S/;
-    $dbh->do($stmt) or die $dbh->errstr;
-}
 
 # generate user account.
 my $auth = Gion::Util::auth(
