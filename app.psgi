@@ -4,11 +4,12 @@ use utf8;
 use strict;
 use warnings;
 
+use Cache::Memcached::Fast::Safe;
 use FindBin;
 use Plack::Builder;
 use Plack::Middleware::Session;
 use Plack::Session::State::Cookie;
-use Plack::Session::Store::File;
+use Plack::Session::Store::Cache;
 
 use lib qq($FindBin::Bin/lib/);
 use Gion;
@@ -27,8 +28,11 @@ builder {
             httponly => 1,
             session_key => 'gion',
         ),
-        store => Plack::Session::Store::File->new(
-            dir => "$FindBin::Bin/var/session",
+        store => Plack::Session::Store::Cache->new(
+            cache => Cache::Memcached::Fast::Safe->new(+{
+                servers => ["memcached:11211"],
+                namespace => 'gion',
+            }),
         );
 
     sub {

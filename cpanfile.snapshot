@@ -88,6 +88,23 @@ DISTRIBUTIONS
       strict 0
       version 0.88
       warnings 0
+  Cache-Memcached-Fast-0.25
+    pathname: R/RA/RAZ/Cache-Memcached-Fast-0.25.tar.gz
+    provides:
+      Cache::Memcached::Fast 0.25
+    requirements:
+      ExtUtils::MakeMaker 0
+      Test::More 0
+  Cache-Memcached-Fast-Safe-0.06
+    pathname: K/KA/KAZEBURO/Cache-Memcached-Fast-Safe-0.06.tar.gz
+    provides:
+      Cache::Memcached::Fast::Safe 0.06
+    requirements:
+      Cache::Memcached::Fast 0.23
+      Digest::SHA 0
+      Module::Build::Tiny 0.035
+      POSIX::AtFork 0.02
+      parent 0
   Canary-Stability-2012
     pathname: M/ML/MLEHMANN/Canary-Stability-2012.tar.gz
     provides:
@@ -153,7 +170,7 @@ DISTRIBUTIONS
       Class::Data::Accessor 0.04004
     requirements:
       Carp 0
-      ExtUtils::MakeMaker 6.98
+      ExtUtils::MakeMaker 7.3
   Class-Data-Inheritable-0.08
     pathname: T/TM/TMTM/Class-Data-Inheritable-0.08.tar.gz
     provides:
@@ -1546,9 +1563,7 @@ DISTRIBUTIONS
   HTTP-Server-Simple-0.52
     pathname: B/BP/BPS/HTTP-Server-Simple-0.52.tar.gz
     provides:
-      HTTP::Server::Simple 0.52
-      HTTP::Server::Simple::CGI undef
-      HTTP::Server::Simple::CGI::Environment undef
+      HTTP::Server::Simple undef
     requirements:
       CGI 0
       ExtUtils::MakeMaker 6.36
@@ -2063,6 +2078,18 @@ DISTRIBUTIONS
       Test::More 0
       UNIVERSAL::require 0.11
       URI 1.35
+  POSIX-AtFork-0.02
+    pathname: G/GF/GFUJI/POSIX-AtFork-0.02.tar.gz
+    provides:
+      POSIX::AtFork 0.02
+    requirements:
+      Devel::PPPort 3.19
+      ExtUtils::MakeMaker 6.42
+      ExtUtils::ParseXS 2.21
+      Test::More 0.88
+      Test::SharedFork 0
+      XSLoader 0.1
+      perl 5.008001
   POSIX-strftime-Compiler-0.42
     pathname: K/KA/KAZEBURO/POSIX-strftime-Compiler-0.42.tar.gz
     provides:

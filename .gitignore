@@ -4,4 +4,3 @@ env
 .carton/
 node_modules/
 .tmp/
-var/

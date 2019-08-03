@@ -1,3 +1,4 @@
+requires 'Cache::Memcached::Fast::Safe';
 requires 'Config::ENV';
 requires 'Cookie::Baker::XS';
 requires 'Date::Parse';
