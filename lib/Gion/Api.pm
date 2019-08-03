@@ -358,7 +358,7 @@ sub get_entry {
             $site_title{$_->{subscription_id}} = $rs2 || "";
         }
 
-        my $pubdate = Time::Piece->strptime($_->{pubdate}, '%Y-%m-%d %H:%M:%S')->strftime('%m/%d %H:%M');
+        my $pubdate = Time::Piece->strptime($_->{pubdate}, '%Y-%m-%d %H:%M:%S')->epoch;
         my $description = $scrubber->scrub($_->{description});
         $description = substr($description, 0, $user_config->{numsubstr}) if $user_config->{numsubstr} > 0;
 
@@ -366,7 +366,7 @@ sub get_entry {
             guid        => $_->{guid},
             title       => $_->{title},
             description => $description,
-            date        => $pubdate,
+            date_epoch  => $pubdate,
             site_title  => $site_title{$_->{subscription_id}},
             readflag    => number $_->{readflag},
             url         => $user_config->{noreferrer} ? Gion::Util::redirect_url($_->{url}) : $_->{url},

@@ -233,7 +233,7 @@
       </div>
       <ul class="list-group">
         <li class="list-group-item" v-for="(item, index) in list">
-          <a class="glyphicon glyphicon-check" style="cursor:pointer;" v-bind:data-guid="item.guid" v-bind:data-index="index" v-on:click="apply_read"></a> <span>{{ item.update_at }}</span> <a v-bind:href="item.url" target="blank">{{ item.title }}</a>
+          <a class="glyphicon glyphicon-check" style="cursor:pointer;" v-bind:data-guid="item.guid" v-bind:data-index="index" v-on:click="apply_read"></a> <span>{{ moment.utc(item.update_at, 'YYYY-MM-DD HH:mm:ss').local().format('YYYY-MM-DD HH:mm') }}</span> <a v-bind:href="item.url" target="blank">{{ item.title }}</a>
         </li>
       </ul>
     </div>
@@ -320,7 +320,7 @@
             Pin!
             </button>
           </div>
-          <p>{{ item.date + " - " + item.site_title}}</p>
+          <p>{{ moment.unix(item.date_epoch).format('MM/DD HH:mm') + " - " + item.site_title}}</p>
         </div>
       </div>
     </div>
@@ -572,6 +572,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/superagent/3.5.0/superagent.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.2.1/vue.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 <script src="/static/gion.js"></script>
 </body>
 </html>
