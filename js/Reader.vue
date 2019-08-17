@@ -123,24 +123,30 @@ const categoryStore = {
 };
 const contentStore = {
   state: {
-    guid: null,
+    serial: null,
+    feed_id: null,
     selected: 0
   },
   set: function(list, index) {
-    this.state.guid = list[index].guid;
+    this.state.serial = list[index].serial;
+    this.state.feed_id = list[index].feed_id;
     this.state.url = list[index].raw_url;
     this.state.selected = index;
   },
   clear: function() {
-    this.state.guid = null;
+    this.state.serial = null;
+    this.state.feed_id = null;
     this.state.url = null;
     this.state.selected = 0;
   },
   selected: function() {
     return this.state.selected;
   },
-  guid: function() {
-    return this.state.guid;
+  serial: function() {
+    return {
+      serial: this.state.serial,
+      feed_id: this.state.feed_id,
+    };
   },
   url: function() {
     return this.state.url;
@@ -363,18 +369,18 @@ export default {
       var self = this;
       //console.warn('flagged');
 
-      var param = [], id = this.category.category();
+      var params = [], id = this.category.category();
       self.contentList.forEach(function(item) {
         // 未読ステータスのものだけ送るため、
         // フィードのアイテム既読リストを作成をする
         if (item.readflag === 0) {
-          param.push(item.guid);
+          params.push({ serial: item.serial, feed_id: item.feed_id });
         }
       });
 
-      //console.warn('read_it > param', param);
+      console.warn('read_it > params', params);
       // 未読ステータスのものがなければ抜ける
-      if (param.length === 0) {
+      if (params.length === 0) {
         return false;
       }
 
@@ -389,9 +395,7 @@ export default {
         agent({
           url: '/api/set_asread',
           json_request: true,
-          data: JSON.stringify({
-            guid: param
-          }),
+          data: JSON.stringify(params),
         }, function() {
           //console.log('read_it', 'send.done');
         });
@@ -408,7 +412,8 @@ export default {
         url: '/api/set_pin',
         data: {
           readflag: self.contentList[index].readflag,
-          pinid: self.contentList[index].guid
+          serial: self.contentList[index].serial,
+          feed_id: self.contentList[index].feed_id,
         },
       }, function(err, data) {
         //console.log(data);

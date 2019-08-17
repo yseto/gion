@@ -243,20 +243,27 @@ subtest 'parse_rss 1', sub {
     is $entries[0]->guid, 'http://www.example.com/452275619.html';
     is $entries[0]->pubdate_epoch, 1501381353;
 
+    my $serial = $feed_model->get_next_serial;
+
     $entries[0]->insert_entry(
         subscription_id => 110,
-        user_id => 1,
+        user_id         => 1,
+        feed_id         => $feed_model->id,
+        serial          => $serial,
     );
 
     my $entry = $db->select_row('SELECT * FROM entry');
 
     delete $entry->{update_at};
     is_deeply $entry, {
-      'guid' => 'http://www.example.com/452275619.html',
-      'pubdate' => '2017-07-30 11:22:33',
-      'readflag' => 0,
-      'subscription_id' => 110,
-      'user_id' => 1,
+      guid => 'http://www.example.com/452275619.html',
+      pubdate => '2017-07-30 02:22:33',
+      readflag => 0,
+      subscription_id => 110,
+      serial => 0,
+      user_id => 1,
+      feed_id => $feed_model->id,
+      serial => $serial,
     };
 };
 
@@ -284,6 +291,12 @@ subtest 'parse_atom', sub {
     is $entries[0]->pubdate_epoch, 1501456320;
 };
 
+subtest 'serial_id', sub {
+    my $serial = $feed_model->get_next_serial;
+    my $serial2 = $feed_model->get_next_serial;
+    is $serial, $serial2 - 1;
+};
+
 done_testing;
 
 __DATA__
@@ -301,8 +314,8 @@ UNLOCK TABLES;
 
 LOCK TABLES `feed` WRITE;
 INSERT INTO `feed` VALUES 
-(22,'http://www.example.com/feed.xml','http://www.example.com/','test feed','2017-01-01 12:34:56','200','1','2017-07-30 00:00:00','1','{}'),
-(23,'http://www.example.com/feed2.xml','http://www.example.com/','test feed','2017-01-01 12:34:56','200','1','2017-07-30 00:00:00','1','{}')
+(22,'http://www.example.com/feed.xml','http://www.example.com/','test feed','2017-01-01 12:34:56','200','1','2017-07-30 00:00:00','1','{}', 0),
+(23,'http://www.example.com/feed2.xml','http://www.example.com/','test feed','2017-01-01 12:34:56','200','1','2017-07-30 00:00:00','1','{}', 0)
 ;
 UNLOCK TABLES;
 

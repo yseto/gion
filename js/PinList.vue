@@ -11,7 +11,10 @@
         <ul class="list-group">
           <li class="list-group-item" v-for="(item, index) in list">
             <a class="glyphicon glyphicon-check" style="cursor:pointer;"
-              v-bind:data-guid="item.guid" v-bind:data-index="index" v-on:click="applyRead">
+              v-bind:data-serial="item.serial"
+              v-bind:data-feed_id="item.feed_id"
+              v-bind:data-index="index"
+              v-on:click="applyRead">
             </a>
             <span>{{ item.update_at | localtime }}</span>
             <a v-bind:href="item.url" target="blank">{{ item.title }}</a>
@@ -54,8 +57,9 @@ export default {
       agent({
         url: '/api/set_pin',
         data: {
-          'readflag': 2,
-          'pinid': encodeURI(event.target.getAttribute('data-guid'))
+          readflag: 2,
+          serial: event.target.getAttribute('data-serial'),
+          feed_id: event.target.getAttribute('data-feed_id'),
         },
       }, function() {
         self.list.splice(event.target.getAttribute('data-index'), 1);

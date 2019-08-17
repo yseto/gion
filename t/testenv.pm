@@ -15,7 +15,11 @@ sub import {
     $ENV{PLACK_ENV} = 'test';
 
     # boot mysqld
-    $mysqld = Test::mysqld->new;
+    $mysqld = Test::mysqld->new(
+        my_cnf => {
+            'skip-networking' => '', # no TCP socket
+        },
+    );
     my $dsn = $mysqld->dsn;
 
     # load schema.
