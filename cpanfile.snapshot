@@ -144,7 +144,7 @@ DISTRIBUTIONS
       Class::Data::Accessor 0.04004
     requirements:
       Carp 0
-      ExtUtils::MakeMaker 7.34
+      ExtUtils::MakeMaker 7.1002
   Class-Data-Inheritable-0.08
     pathname: T/TM/TMTM/Class-Data-Inheritable-0.08.tar.gz
     provides:
@@ -225,14 +225,6 @@ DISTRIBUTIONS
       Exporter 0
       ExtUtils::MakeMaker 0
       perl 5.008001
-  Cpanel-JSON-XS-4.12
-    pathname: R/RU/RURBAN/Cpanel-JSON-XS-4.12.tar.gz
-    provides:
-      Cpanel::JSON::XS 4.12
-      Cpanel::JSON::XS::Type undef
-    requirements:
-      ExtUtils::MakeMaker 0
-      Pod::Text 2.08
   Crypt-OpenSSL-Guess-0.11
     pathname: A/AK/AKIYM/Crypt-OpenSSL-Guess-0.11.tar.gz
     provides:
@@ -259,18 +251,19 @@ DISTRIBUTIONS
       Crypt::OpenSSL::Random 0.11
     requirements:
       ExtUtils::MakeMaker 0
-  DBD-mysql-4.043
-    pathname: M/MI/MICHIELB/DBD-mysql-4.043.tar.gz
+  DBD-mysql-4.050
+    pathname: D/DV/DVEEDEN/DBD-mysql-4.050.tar.gz
     provides:
-      Bundle::DBD::mysql 4.043
-      DBD::mysql 4.043
+      Bundle::DBD::mysql 4.050
+      DBD::mysql 4.050
       DBD::mysql::GetInfo undef
-      DBD::mysql::db 4.043
-      DBD::mysql::dr 4.043
-      DBD::mysql::st 4.043
+      DBD::mysql::db 4.050
+      DBD::mysql::dr 4.050
+      DBD::mysql::st 4.050
     requirements:
       DBI 1.609
       Data::Dumper 0
+      Devel::CheckLib 1.09
       ExtUtils::MakeMaker 0
       perl 5.008001
   DBI-1.636
@@ -990,6 +983,16 @@ DISTRIBUTIONS
       Test::More 0.98
       parent 0
       perl 5.008001
+  Devel-CheckLib-1.13
+    pathname: M/MA/MATTN/Devel-CheckLib-1.13.tar.gz
+    provides:
+      Devel::CheckLib 1.13
+    requirements:
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      File::Spec 0
+      File::Temp 0.16
+      perl 5.00405
   Devel-StackTrace-2.02
     pathname: D/DR/DROLSKY/Devel-StackTrace-2.02.tar.gz
     provides:
@@ -1048,7 +1051,6 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Mail::Address 0
-      Net::DNS 0
       Scalar::Util 0
       Test::More 0
       perl 5.006
@@ -1576,7 +1578,6 @@ DISTRIBUTIONS
       JSON::MaybeXS 1.003009
     requirements:
       Carp 0
-      Cpanel::JSON::XS 2.3310
       ExtUtils::CBuilder 0.27
       ExtUtils::MakeMaker 0
       File::Spec 0
@@ -1918,122 +1919,6 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Test 0
-      perl 5.006
-  Net-DNS-1.20
-    pathname: N/NL/NLNETLABS/Net-DNS-1.20.tar.gz
-    provides:
-      Net::DNS 1.20
-      Net::DNS::Domain 1726
-      Net::DNS::DomainName 1605
-      Net::DNS::DomainName1035 1605
-      Net::DNS::DomainName2535 1605
-      Net::DNS::Header 1709
-      Net::DNS::Mailbox 1605
-      Net::DNS::Mailbox1035 1605
-      Net::DNS::Mailbox2535 1605
-      Net::DNS::Nameserver 1692
-      Net::DNS::Packet 1714
-      Net::DNS::Parameters 1729
-      Net::DNS::Question 1726
-      Net::DNS::RR 1726
-      Net::DNS::RR::A 1597
-      Net::DNS::RR::AAAA 1597
-      Net::DNS::RR::AFSDB 1597
-      Net::DNS::RR::APL 1597
-      Net::DNS::RR::APL::Item 1597
-      Net::DNS::RR::CAA 1597
-      Net::DNS::RR::CDNSKEY 1586
-      Net::DNS::RR::CDS 1586
-      Net::DNS::RR::CERT 1729
-      Net::DNS::RR::CNAME 1597
-      Net::DNS::RR::CSYNC 1597
-      Net::DNS::RR::DHCID 1597
-      Net::DNS::RR::DLV 1528
-      Net::DNS::RR::DNAME 1597
-      Net::DNS::RR::DNSKEY 1729
-      Net::DNS::RR::DS 1729
-      Net::DNS::RR::EUI48 1597
-      Net::DNS::RR::EUI64 1597
-      Net::DNS::RR::GPOS 1528
-      Net::DNS::RR::HINFO 1597
-      Net::DNS::RR::HIP 1597
-      Net::DNS::RR::IPSECKEY 1718
-      Net::DNS::RR::ISDN 1597
-      Net::DNS::RR::KEY 1528
-      Net::DNS::RR::KX 1597
-      Net::DNS::RR::L32 1597
-      Net::DNS::RR::L64 1597
-      Net::DNS::RR::LOC 1597
-      Net::DNS::RR::LP 1597
-      Net::DNS::RR::MB 1528
-      Net::DNS::RR::MG 1528
-      Net::DNS::RR::MINFO 1597
-      Net::DNS::RR::MR 1528
-      Net::DNS::RR::MX 1597
-      Net::DNS::RR::NAPTR 1597
-      Net::DNS::RR::NID 1597
-      Net::DNS::RR::NS 1597
-      Net::DNS::RR::NSEC 1696
-      Net::DNS::RR::NSEC3 1726
-      Net::DNS::RR::NSEC3PARAM 1597
-      Net::DNS::RR::NULL 1528
-      Net::DNS::RR::OPENPGPKEY 1597
-      Net::DNS::RR::OPT 1717
-      Net::DNS::RR::OPT::CHAIN 1717
-      Net::DNS::RR::OPT::CLIENT_SUBNET 1717
-      Net::DNS::RR::OPT::COOKIE 1717
-      Net::DNS::RR::OPT::DAU 1717
-      Net::DNS::RR::OPT::DHU 1717
-      Net::DNS::RR::OPT::EXPIRE 1717
-      Net::DNS::RR::OPT::KEY_TAG 1717
-      Net::DNS::RR::OPT::N3U 1717
-      Net::DNS::RR::OPT::PADDING 1717
-      Net::DNS::RR::OPT::TCP_KEEPALIVE 1717
-      Net::DNS::RR::PTR 1597
-      Net::DNS::RR::PX 1597
-      Net::DNS::RR::RP 1597
-      Net::DNS::RR::RRSIG 1729
-      Net::DNS::RR::RT 1597
-      Net::DNS::RR::SIG 1729
-      Net::DNS::RR::SMIMEA 1597
-      Net::DNS::RR::SOA 1597
-      Net::DNS::RR::SPF 1593
-      Net::DNS::RR::SRV 1597
-      Net::DNS::RR::SSHFP 1597
-      Net::DNS::RR::TKEY 1528
-      Net::DNS::RR::TLSA 1597
-      Net::DNS::RR::TSIG 1726
-      Net::DNS::RR::TXT 1597
-      Net::DNS::RR::URI 1597
-      Net::DNS::RR::X25 1597
-      Net::DNS::Resolver 1726
-      Net::DNS::Resolver::Base 1727
-      Net::DNS::Resolver::MSWin32 1568
-      Net::DNS::Resolver::Recurse 1737
-      Net::DNS::Resolver::UNIX 1573
-      Net::DNS::Resolver::android 1568
-      Net::DNS::Resolver::cygwin 1719
-      Net::DNS::Resolver::os2 1568
-      Net::DNS::Resolver::os390 1719
-      Net::DNS::Text 1726
-      Net::DNS::Update 1726
-      Net::DNS::ZoneFile 1709
-      Net::DNS::ZoneFile::Generator 1709
-      Net::DNS::ZoneFile::Text 1709
-    requirements:
-      Digest::HMAC 1.03
-      Digest::MD5 2.13
-      Digest::SHA 5.23
-      ExtUtils::MakeMaker 0
-      File::Spec 0.86
-      IO::File 1.08
-      IO::Select 1.14
-      IO::Socket::IP 0.38
-      MIME::Base64 2.13
-      PerlIO 1.05
-      Scalar::Util 1.25
-      Test::More 0.52
-      Time::Local 1.19
       perl 5.006
   Net-HTTP-6.14
     pathname: O/OA/OALDERS/Net-HTTP-6.14.tar.gz
@@ -2422,6 +2307,17 @@ DISTRIBUTIONS
       Scalar::Util 0
       parent 0
       perl 5.008_001
+  Scalar-List-Utils-1.50
+    pathname: P/PE/PEVANS/Scalar-List-Utils-1.50.tar.gz
+    provides:
+      List::Util 1.50
+      List::Util::XS 1.50
+      Scalar::Util 1.50
+      Sub::Util 1.50
+    requirements:
+      ExtUtils::MakeMaker 0
+      Test::More 0
+      perl 5.006
   Scope-Guard-0.21
     pathname: C/CH/CHOCOLATE/Scope-Guard-0.21.tar.gz
     provides:
