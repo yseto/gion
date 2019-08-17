@@ -1,4 +1,4 @@
-FROM perl:5.30
+FROM perl:5.30-buster
 
 RUN cpanm Carton \
     && mkdir -p /app

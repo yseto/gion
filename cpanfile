@@ -7,7 +7,7 @@ requires 'DateTime';
 requires 'DateTime::Format::ISO8601';
 requires 'DateTime::Format::Mail';
 requires 'DateTime::Format::W3CDTF';
-requires 'DBD::mysql';
+requires 'DBD::mysql', '== 4.050';
 requires 'DBIx::Handler';
 requires 'DBIx::Handler::Sunny';
 requires 'Digest::HMAC_SHA1';
