@@ -17,6 +17,7 @@ use Class::Accessor::Lite (
         pubdate
         term
         cache
+        next_serial
     ) ],
     ro => [ qw(db verbose) ],
 );
@@ -269,6 +270,16 @@ sub parse_atom {
     @data;
 }
 
+sub get_next_serial {
+    my $self = shift;
+
+    my $handler = $self->db;
+    $handler->txn(sub {
+        my $dbh = shift;
+        $dbh->query('UPDATE feed SET next_serial = next_serial + 1 WHERE id = ?', $self->id);
+    });
+    $self->db->select_one('SELECT next_serial FROM feed WHERE id = ?', $self->id);
+}
 
 #
 # util

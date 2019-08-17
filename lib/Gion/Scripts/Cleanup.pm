@@ -22,10 +22,8 @@ my %cmp;
 
 my $db = Gion->cli_dbh;
 
-$count = $db->select_row('SELECT COUNT(guid) AS t FROM entry');
-$cmp{olde} = $count->{t};
-$count = $db->select_row('SELECT COUNT(guid) AS t FROM story');
-$cmp{olds} = $count->{t};
+$cmp{olde} = $db->select_one('SELECT COUNT(guid) FROM entry');
+$cmp{olds} = $db->select_one('SELECT COUNT(guid) FROM story');
 
 my $rs = $db->select_all('SELECT id FROM subscription');
 
@@ -47,40 +45,55 @@ for (@$rs) {
     # print $id . "\n";
 }
 
-my $entry = $db->select_all("SELECT * FROM entry;");
+my $entry = $db->select_all("SELECT subscription_id FROM entry;");
 for (@$entry) {
-    my $subscription = $db->select_row("
-        SELECT COUNT(*) AS t FROM subscription WHERE id = ?
-    ", $_->{subscription_id});
+    my $count = $db->select_one(
+        "SELECT COUNT(*) FROM subscription WHERE id = ?",
+        $_->{subscription_id},
+    );
 
-    unless ($subscription->{t} > 0) {
-        $db->query("
-            DELETE FROM entry WHERE subscription_id = ?
-        ", $_->{subscription_id} );
+    unless ($count > 0) {
+        $db->query(
+            "DELETE FROM entry WHERE subscription_id = ?",
+            $_->{subscription_id},
+        );
     }
 }
 
 my $feed = $db->select_all("SELECT * FROM feed;");
 for (@$feed) {
-    my $subscription = $db->select_row("
-        SELECT COUNT(*) AS t FROM subscription WHERE feed_id = ?
-    ", $_->{id});
-    unless ($subscription->{t} > 0) {
+    my $count = $db->select_one(
+        "SELECT COUNT(*) FROM subscription WHERE feed_id = ?",
+        $_->{id},
+    );
+    unless ($count > 0) {
         printf "remove subscription: %s\n", $_->{siteurl};
-        $db->query("
-            DELETE FROM feed WHERE id = ?
-        ", $_->{id});
+        $db->query(
+            "DELETE FROM feed WHERE id = ?",
+            $_->{id},
+        );
     }
 }
 
-$db->query('OPTIMIZE TABLE entry');
-$db->query('DELETE FROM story WHERE guid NOT IN (SELECT guid FROM entry)');
-$db->query('OPTIMIZE TABLE story');
+my $story = $db->select_all("SELECT feed_id, serial, url FROM story");
+for (@$story) {
+    my $count = $db->select_one(
+        "SELECT COUNT(*) FROM entry WHERE feed_id = ? AND serial = ?",
+        $_->{feed_id},
+        $_->{serial},
+    );
+    unless ($count > 0) {
+        printf "remove story: %s\n", $_->{url};
+        $db->query(
+            "DELETE FROM story WHERE feed_id = ? AND serial = ?",
+            $_->{feed_id},
+            $_->{serial},
+        );
+    }
+}
 
-$count = $db->select_row('SELECT COUNT(guid) AS t FROM entry');
-$cmp{e} = $count->{t};
-$count = $db->select_row('SELECT COUNT(guid) AS t FROM story');
-$cmp{s} = $count->{t};
+$cmp{e} = $db->select_one('SELECT COUNT(guid) FROM entry');
+$cmp{s} = $db->select_one('SELECT COUNT(guid) FROM story');
 
 printf "entry %d -> %d \n", $cmp{olde}, $cmp{e};
 printf "story %d -> %d \n", $cmp{olds}, $cmp{s};

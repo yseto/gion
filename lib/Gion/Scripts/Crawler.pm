@@ -97,7 +97,7 @@ sub crawl_per_feed {
     # 結果が得られない場合、次の対象を処理する
     if ($ua->code eq '404' or $ua->code =~ /5\d\d/) {
         $feed_model->catch_error(response => $ua->response);
-        next;
+        return;
     }
 
     # 301 Moved Permanently の場合
@@ -111,7 +111,7 @@ sub crawl_per_feed {
     # 304 Not Modified の場合更新しない、次の対象を処理する
     if ($ua->code eq '304') {
         $feed_model->catch_notmodified(response => $ua->response);
-        next;
+        return;
     }
 
     my $onerror = 0;
@@ -166,7 +166,7 @@ PARSE_SUCCESS:
             response => $ua->response,
             code => $ua->code
         );
-        next;
+        return;
     }
 
     # クロール対象のフィードのDBに保存してある最新の情報の
@@ -206,6 +206,9 @@ PARSE_SUCCESS:
         my $subscriptions = $db->select_all('SELECT * FROM subscription WHERE feed_id = ?',
             $feed_model->id);
 
+        my $serial = $feed_model->get_next_serial;
+        $feed_model->logger('GENERATE serial:%d guid: %s', $serial, $entry->guid);
+
         for my $subscription (@$subscriptions) {
             # モデルに読み込み
             $subscription_model->load(%$subscription);
@@ -221,17 +224,22 @@ PARSE_SUCCESS:
                 # 購読リストに基づいて、更新情報をユーザーごとへ挿入
                 $entry->insert_entry(
                     subscription_id => $subscription_model->id,
-                    user_id   => $subscription_model->user_id,
+                    user_id         => $subscription_model->user_id,
+                    feed_id         => $subscription_model->feed_id,
+                    serial          => $serial,
                 );
 
-                $feed_model->logger('INSERT user_id:%4d guid: %s',
+                $feed_model->logger('INSERT user_id:%4d feed_id:%d serial:%d guid:%s',
                     $subscription_model->user_id,
-                    $entry->guid);
+                    $subscription_model->feed_id,
+                    $serial,
+                    $entry->guid,
+                );
             }
         }
 
         # エントリに対するストーリーを挿入
-        $entry->insert_story;
+        $entry->insert_story(serial => $serial, feed_id => $feed_model->id);
     }
 
     # 取得したものがあれば、次回もクロールする対象とするため、term => 1

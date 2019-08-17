@@ -35,13 +35,15 @@ sub insert_entry {
 
     $self->db->query('
         INSERT IGNORE INTO entry 
-        (guid, pubdate, readflag, subscription_id, update_at, user_id)
-        VALUES (?,?,0,?,CURRENT_TIMESTAMP,?)
+        (guid, pubdate, readflag, subscription_id, update_at, user_id, feed_id, serial)
+        VALUES (?,?,0,?,CURRENT_TIMESTAMP,?,?,?)
     ',
     $self->guid,
     to_mysql_datetime($self->pubdate),
     $attr{subscription_id},
     $attr{user_id},
+    $attr{feed_id},
+    $attr{serial},
     );
 
 }
@@ -50,11 +52,13 @@ sub insert_story {
     my ($self, %attr) = @_;
 
     $self->db->query('INSERT IGNORE INTO story
-        (guid, title, description, url) VALUES (?,?,?,?)',
+        (guid, title, description, url, serial, feed_id) VALUES (?,?,?,?,?,?)',
         $self->guid,
         ($self->title       ? $self->title       : ''),
         ($self->description ? $self->description : ''),
         $self->url,
+        $attr{serial},
+        $attr{feed_id},
     );
 }
 
