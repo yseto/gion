@@ -243,7 +243,7 @@ sub parse_atom {
     my @entry = $atom->entries;
 
     foreach (@entry) {
-        my $dt  = from_feed_datetime($_->updated);
+        my $dt  = from_feed_datetime($_->updated ? $_->updated : $_->published);
         my $url = $_->link->href;
 
         #相対パスだと修正する
