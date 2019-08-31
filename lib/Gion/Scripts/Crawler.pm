@@ -207,7 +207,7 @@ PARSE_SUCCESS:
             $feed_model->id);
 
         my $serial = $feed_model->get_next_serial;
-        $feed_model->logger('GENERATE serial:%d guid: %s', $serial, $entry->guid);
+        $feed_model->logger('GENERATE serial:%d', $serial);
 
         for my $subscription (@$subscriptions) {
             # モデルに読み込み
@@ -229,11 +229,10 @@ PARSE_SUCCESS:
                     serial          => $serial,
                 );
 
-                $feed_model->logger('INSERT user_id:%4d feed_id:%d serial:%d guid:%s',
+                $feed_model->logger('INSERT user_id:%4d feed_id:%d serial:%d',
                     $subscription_model->user_id,
                     $subscription_model->feed_id,
                     $serial,
-                    $entry->guid,
                 );
             }
         }

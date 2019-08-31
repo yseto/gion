@@ -22,8 +22,8 @@ my %cmp;
 
 my $db = Gion->cli_dbh;
 
-$cmp{olde} = $db->select_one('SELECT COUNT(guid) FROM entry');
-$cmp{olds} = $db->select_one('SELECT COUNT(guid) FROM story');
+$cmp{olde} = $db->select_one('SELECT COUNT(*) FROM entry');
+$cmp{olds} = $db->select_one('SELECT COUNT(*) FROM story');
 
 my $rs = $db->select_all('SELECT id FROM subscription');
 
@@ -92,8 +92,8 @@ for (@$story) {
     }
 }
 
-$cmp{e} = $db->select_one('SELECT COUNT(guid) FROM entry');
-$cmp{s} = $db->select_one('SELECT COUNT(guid) FROM story');
+$cmp{e} = $db->select_one('SELECT COUNT(*) FROM entry');
+$cmp{s} = $db->select_one('SELECT COUNT(*) FROM story');
 
 printf "entry %d -> %d \n", $cmp{olde}, $cmp{e};
 printf "story %d -> %d \n", $cmp{olds}, $cmp{s};

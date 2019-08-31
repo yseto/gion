@@ -240,7 +240,6 @@ subtest 'parse_rss 1', sub {
     is $entries[0]->title, 'あいうえお';
     is $entries[0]->url, 'http://www.example.com/452275619.html';
     is $entries[0]->description, 'blah...';
-    is $entries[0]->guid, 'http://www.example.com/452275619.html';
     is $entries[0]->pubdate_epoch, 1501381353;
 
     my $serial = $feed_model->get_next_serial;
@@ -256,7 +255,6 @@ subtest 'parse_rss 1', sub {
 
     delete $entry->{update_at};
     is_deeply $entry, {
-      guid => 'http://www.example.com/452275619.html',
       pubdate => '2017-07-30 02:22:33',
       readflag => 0,
       subscription_id => 110,
@@ -275,7 +273,6 @@ subtest 'parse_rss 2', sub {
     is $entries[0]->title, 'あいうえおあいうえお';
     is $entries[0]->url, 'http://www.example.com/452275619.html';
     is $entries[0]->description, 'blah...';
-    is $entries[0]->guid, 'blog:example/452275619';
     is $entries[0]->pubdate_epoch, 1501381353;
 };
 
@@ -287,7 +284,6 @@ subtest 'parse_atom', sub {
     is $entries[0]->title, 'たいとる';
     is $entries[0]->url, 'http://example.com/1.html';
     is $entries[0]->description, 'blah.....';
-    is $entries[0]->guid, 'http://example.com/1.html';
     is $entries[0]->pubdate_epoch, 1501456320;
 };
 
