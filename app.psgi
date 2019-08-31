@@ -37,6 +37,8 @@ builder {
             }),
         );
 
+    enable '+Gion::Middleware::GitHeadRefs';
+
     sub {
         Gion->new(shift)->run->res->finalize;
     }

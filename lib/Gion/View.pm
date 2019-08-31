@@ -18,7 +18,18 @@ my $XSLATE = Text::Xslate->new(
     syntax => 'TTerse',
     path => [ File::Spec->catdir(config->root,'templates') ],
     function => {
-        __boolean => sub { (shift) ? 'true' : 'false'; } # XXX
+        __boolean => sub { (shift) ? 'true' : 'false'; }, # XXX
+
+        # Gion::Middleware::GitHeadRefs
+        __version => sub {
+            my $current = Text::Xslate->current_vars;
+            my $r = $current->{r};
+            my $version = 0;
+            if ($r && $r->req && $r->req->env->{GIT_COMMIT_HASH}) {
+                $version = $r->req->env->{GIT_COMMIT_HASH};
+            }
+            return "?v=$version";
+        },
     },
 );
 
