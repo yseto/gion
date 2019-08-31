@@ -199,16 +199,13 @@ sub parse_rss {
             $dt = localtime;
         }
 
-        my $guid = $_->{guid};
         my $url  = $_->{link};
-        if      (!$guid or $guid eq '') {
-            $guid = $url;    #guidがない場合は、URLを代用
-        } elsif (!$url or $url eq '') {
-            $url = $guid;    #URLがない場合は、GUIDを代用
+        if (!$url or $url eq '') {
+            $url = $_->{guid};    # URLがない場合は、GUIDを代用
         }
 
-        if ($url eq '' or $guid eq '') {
-            next;   # 両方空の場合は登録できない
+        if ($url eq '') {
+            next;   # 空の場合は登録できない
         }
 
         #相対パスだと修正する
@@ -217,7 +214,6 @@ sub parse_rss {
         }
 
         my $entry_model = Gion::Crawler::Entry->new(
-            guid        => $guid,
             title       => $_->{title},
             description => $_->{description},
             pubdate     => $dt,
@@ -252,7 +248,6 @@ sub parse_atom {
         }
 
         my $entry_model = Gion::Crawler::Entry->new(
-            guid        => $url,
             title       => decode_utf8($_->title),
             description => decode_utf8($_->summary),
             pubdate     => $dt,
