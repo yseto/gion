@@ -4,37 +4,21 @@ use strict;
 use warnings;
 use utf8;
 
-use Proclet;
-my $proclet = Proclet->new(color => 1);
+use Proclet::Declare;
+color;
 
-$proclet->service(
-    code => 'plackup -E deployment --access-log /dev/stderr -s Starlet --max-workers 5 app.psgi',
-    tag => 'web',
-);
+use lib "lib/";
+use Gion::Scripts::Cleanup;
+use Gion::Scripts::Crawler;
 
-my @terms = (
-    '15,45 * * * *',
-    '55 * * * *',
-    '20 5,17 * * *',
-    '30 19 */2 * *',
-    '30 20 * * 1'
-);
+service('web', 'plackup -s Starlet --max-workers 5 app.psgi');
 
-for (my $i = 0; $i < @terms; $i++) {
-    my $term = $i + 1;
-    $proclet->service(
-        every => $terms[$i],
-        tag => "crawler.$i",
-        code => "script/crawler.pl --term $term",
-    );
-}
+scheduled('cleanup',   '8 16 * * *',    sub { Gion::Scripts::Cleanup->main_proclet; });
 
-$proclet->service(
-    every => '35 4 * * *',
-    tag => 'cleanup',
-    code => 'script/cleanup.pl',
-);
+scheduled('crawler.1', '15,45 * * * *', sub { Gion::Scripts::Crawler->main_proclet(1)->crawl });
+scheduled('crawler.2', '55 * * * *',    sub { Gion::Scripts::Crawler->main_proclet(2)->crawl });
+scheduled('crawler.3', '20 5,17 * * *', sub { Gion::Scripts::Crawler->main_proclet(3)->crawl });
+scheduled('crawler.4', '30 19 */2 * *', sub { Gion::Scripts::Crawler->main_proclet(4)->crawl });
+scheduled('crawler.5', '30 20 * * 1',   sub { Gion::Scripts::Crawler->main_proclet(5)->crawl });
 
-$proclet->run;
-__END__
-
+run;
