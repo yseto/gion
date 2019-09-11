@@ -2,12 +2,16 @@ use strict;
 use warnings;
 use utf8;
 
+use lib "t/";
+use testenv (); # no mysql, no memd
+
 use Test::More;
 use Test::TCP;
 use Plack::Builder;
 use Plack::Loader;
 use Plack::Middleware::ConditionalGET;
 
+use lib "lib/";
 use Gion::Crawler::UserAgent;
 
 my $ua = Gion::Crawler::UserAgent->new;
@@ -16,7 +20,7 @@ subtest 'get 200', sub {
     $ua->get('http://httpstat.us/200');
 
     is $ua->code, 200;
-    is $ua->content, '200 OK';
+    is $ua->content, '';
     is $ua->location, undef;
     is_deeply $ua->response, {};
 };

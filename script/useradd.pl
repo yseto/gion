@@ -40,6 +40,13 @@ my $mode = defined $data{force} ? 'force' : 'normal';
 my $db = Gion->cli_dbh;
 $db->query($sql{$mode}, $auth, $data{user} );
 
+my $user_id = $db->last_insert_id;
+
+$db->query("INSERT INTO category (id,user_id,name) VALUES (null,?,?)",
+    $user_id,
+    'default',
+);
+
 say "Apply: " . $data{user};
 
 =encoding utf8

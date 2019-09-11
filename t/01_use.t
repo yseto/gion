@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Test::More;
 
+use lib "lib/";
 use_ok('Gion::Exception');
 use_ok('Gion::Opml');
 use_ok('Gion::Api');

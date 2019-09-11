@@ -26,12 +26,25 @@ common +{
 
     redirector => 'https://www.google.com/url?sa=D&q=',
 
-    load('gion.conf'),
+#   service => {
+#       pocket => '',
+#       hatena => {
+#           consumer_key => '',
+#           consumer_secret => '',
+#       },
+#   },
 };
 
 config test => +{
 };
 
+config portable => +{
+    db => {
+        dsn => "dbi:mysql:database=gion:host=mysql",
+        username => 'gion',
+        password => 'gion',
+    },
+    memd => ["memcached:11211"],
+};
 
 1;
-

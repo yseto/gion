@@ -325,7 +325,8 @@ sub get_entry {
 
     my $rs = $db->select_all("
         SELECT
-            entry.guid,
+            entry.serial,
+            entry.feed_id,
             story.title,
             description,
             pubdate,
@@ -334,7 +335,7 @@ sub get_entry {
             subscription_id
         FROM entry
         INNER JOIN subscription ON subscription_id = subscription.id
-        INNER JOIN story ON story.guid = entry.guid
+        INNER JOIN story ON story.serial = entry.serial AND story.feed_id = entry.feed_id
         WHERE subscription.category_id = ?
             AND readflag <> 1
             AND entry.user_id = ?
@@ -358,15 +359,16 @@ sub get_entry {
             $site_title{$_->{subscription_id}} = $rs2 || "";
         }
 
-        my $pubdate = Time::Piece->strptime($_->{pubdate}, '%Y-%m-%d %H:%M:%S')->strftime('%m/%d %H:%M');
+        my $pubdate = Time::Piece->strptime($_->{pubdate}, '%Y-%m-%d %H:%M:%S')->epoch;
         my $description = $scrubber->scrub($_->{description});
         $description = substr($description, 0, $user_config->{numsubstr}) if $user_config->{numsubstr} > 0;
 
         my %row = (
-            guid        => $_->{guid},
+            serial      => number $_->{serial},
+            feed_id     => number $_->{feed_id},
             title       => $_->{title},
             description => $description,
-            date        => $pubdate,
+            date_epoch  => $pubdate,
             site_title  => $site_title{$_->{subscription_id}},
             readflag    => number $_->{readflag},
             url         => $user_config->{noreferrer} ? Gion::Util::redirect_url($_->{url}) : $_->{url},
@@ -394,8 +396,12 @@ sub set_asread {
     my $db = $r->dbh;
 
     my $payload = JSON->new->decode($r->req->content);
-    for (@{$payload->{guid}}) {
-        warn sprintf "ASREAD %s\t%s", $r->session->get('username'), $_ ;
+    for (@$payload) {
+        warn sprintf "ASREAD U:%s\t feed_id:%s\t serial:%s\n",
+             $r->session->get('username'),
+             $_->{feed_id},
+             $_->{serial};
+
         # XXX デバッグ時は以下SQLを抑止
         $db->query("
             UPDATE entry
@@ -404,8 +410,12 @@ sub set_asread {
                 update_at = CURRENT_TIMESTAMP
             WHERE readflag = 0
                 AND user_id = ?
-                AND guid = ?
-        ", $r->session->get('username'), decode_utf8($_)
+                AND feed_id = ?
+                AND serial = ?
+        ",
+        $r->session->get('username'),
+        $_->{feed_id},
+        $_->{serial}
         );
     }
     $r->text("OK");
@@ -479,13 +489,13 @@ sub get_pinlist {
         SELECT
             story.title,
             story.url,
-            entry.guid,
+            entry.serial,
+            entry.feed_id,
             entry.update_at
         FROM entry
-        INNER JOIN subscription ON entry.subscription_id = subscription.id
-        INNER JOIN story ON story.guid = entry.guid
+        INNER JOIN story ON story.serial = entry.serial AND story.feed_id = entry.feed_id
         WHERE entry.readflag = 2
-            AND subscription.user_id = ?
+            AND entry.user_id = ?
         ORDER BY pubdate DESC
     ", $r->session->get('username'));
 
@@ -510,15 +520,19 @@ sub set_pin {
     my $validator = FormValidator::Lite->new($r->req);
     my $res = $validator->check(
         readflag => [ 'NOT_NULL', 'UINT' ],
-        pinid => ['NOT_NULL'],
+        serial => ['NOT_NULL'],
+        feed_id => ['NOT_NULL'],
     );
     return $r->json([]) if $validator->has_error;
 
     my $readflag = $r->req->param('readflag') == 2 ? 1 : 2;
 
-    warn sprintf "PIN %s\t%s", $r->session->get('username'), $r->req->param('pinid');
+    warn sprintf "PIN U:%s\tfeed_id:%s\tserial:%s\n",
+        $r->session->get('username'),
+        $r->req->param('feed_id'),
+        $r->req->param('serial');
 
-    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/pinid/;
+    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/feed_id serial/;
 
     my $db = $r->dbh;
     $db->query("
@@ -527,11 +541,13 @@ sub set_pin {
             readflag = ?,
             update_at = CURRENT_TIMESTAMP
         WHERE user_id = ?
-            AND guid = ?
+            AND serial = ?
+            AND feed_id = ?
     ",
         $readflag,
         $r->session->get('username'),
-        $values{pinid},
+        $values{serial},
+        $values{feed_id},
     );
     $r->json({
         readflag => number $readflag,
@@ -585,7 +601,7 @@ sub update_password {
         password => encode_utf8($r->req->param('password')),
     );
 
-    warn "Update Passwd: " . $renew . "," . $r->session->get('username');
+    warn sprintf "Update Passwd: %s, %s\n", $renew, $r->session->get('username');
 
     $db->query("
         UPDATE user

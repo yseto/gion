@@ -1,0 +1,25 @@
+{
+    "name": "gion",
+    "version": "0.0.1",
+    "description": "gion",
+    "scripts": {
+        "watch": "webpack --watch --mode development",
+        "build": "webpack --mode production"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.4.5",
+        "babel-loader": "^8.0.6",
+        "css-loader": "^2.1.1",
+        "eslint": "^5.16.0",
+        "eslint-loader": "^2.1.2",
+        "vue-loader": "^15.7.0",
+        "vue-template-compiler": "^2.6.10",
+        "webpack": "^4.32.2",
+        "webpack-cli": "^3.3.2"
+    },
+    "dependencies": {
+        "moment": "^2.24.0",
+        "superagent": "^5.0.5",
+        "vue": "^2.6.10"
+    }
+}

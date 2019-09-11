@@ -62,32 +62,23 @@ DISTRIBUTIONS
       strict 0
       utf8 0
       warnings 0
-  CPAN-Meta-2.150010
-    pathname: D/DA/DAGOLDEN/CPAN-Meta-2.150010.tar.gz
+  Cache-Memcached-Fast-0.25
+    pathname: R/RA/RAZ/Cache-Memcached-Fast-0.25.tar.gz
     provides:
-      CPAN::Meta 2.150010
-      CPAN::Meta::Converter 2.150010
-      CPAN::Meta::Feature 2.150010
-      CPAN::Meta::History 2.150010
-      CPAN::Meta::Merge 2.150010
-      CPAN::Meta::Prereqs 2.150010
-      CPAN::Meta::Spec 2.150010
-      CPAN::Meta::Validator 2.150010
-      Parse::CPAN::Meta 2.150010
+      Cache::Memcached::Fast 0.25
     requirements:
-      CPAN::Meta::Requirements 2.121
-      CPAN::Meta::YAML 0.011
-      Carp 0
-      Encode 0
-      Exporter 0
-      ExtUtils::MakeMaker 6.17
-      File::Spec 0.80
-      JSON::PP 2.27300
-      Scalar::Util 0
-      perl 5.008001
-      strict 0
-      version 0.88
-      warnings 0
+      ExtUtils::MakeMaker 0
+      Test::More 0
+  Cache-Memcached-Fast-Safe-0.06
+    pathname: K/KA/KAZEBURO/Cache-Memcached-Fast-Safe-0.06.tar.gz
+    provides:
+      Cache::Memcached::Fast::Safe 0.06
+    requirements:
+      Cache::Memcached::Fast 0.23
+      Digest::SHA 0
+      Module::Build::Tiny 0.035
+      POSIX::AtFork 0.02
+      parent 0
   Canary-Stability-2012
     pathname: M/ML/MLEHMANN/Canary-Stability-2012.tar.gz
     provides:
@@ -153,7 +144,7 @@ DISTRIBUTIONS
       Class::Data::Accessor 0.04004
     requirements:
       Carp 0
-      ExtUtils::MakeMaker 6.98
+      ExtUtils::MakeMaker 7.1002
   Class-Data-Inheritable-0.08
     pathname: T/TM/TMTM/Class-Data-Inheritable-0.08.tar.gz
     provides:
@@ -206,10 +197,10 @@ DISTRIBUTIONS
       Class::Singleton 1.5
     requirements:
       ExtUtils::MakeMaker 0
-  Config-ENV-0.15
-    pathname: S/SA/SATOH/Config-ENV-0.15.tar.gz
+  Config-ENV-0.17
+    pathname: S/SA/SATOH/Config-ENV-0.17.tar.gz
     provides:
-      Config::ENV 0.15
+      Config::ENV 0.17
     requirements:
       Exporter::Lite 0
       ExtUtils::MakeMaker 6.36
@@ -234,39 +225,45 @@ DISTRIBUTIONS
       Exporter 0
       ExtUtils::MakeMaker 0
       perl 5.008001
-  Cpanel-JSON-XS-3.0233
-    pathname: R/RU/RURBAN/Cpanel-JSON-XS-3.0233.tar.gz
+  Crypt-OpenSSL-Guess-0.11
+    pathname: A/AK/AKIYM/Crypt-OpenSSL-Guess-0.11.tar.gz
     provides:
-      Cpanel::JSON::XS 3.0233
+      Crypt::OpenSSL::Guess 0.11
     requirements:
-      ExtUtils::MakeMaker 0
-      Pod::Text 2.08
-  Crypt-OpenSSL-RSA-0.28
-    pathname: P/PE/PERLER/Crypt-OpenSSL-RSA-0.28.tar.gz
+      Config 0
+      Exporter 5.57
+      ExtUtils::MakeMaker 6.64
+      File::Spec 0
+      Symbol 0
+      perl 5.008001
+  Crypt-OpenSSL-RSA-0.31
+    pathname: T/TO/TODDR/Crypt-OpenSSL-RSA-0.31.tar.gz
     provides:
-      Crypt::OpenSSL::RSA 0.28
+      Crypt::OpenSSL::RSA 0.31
     requirements:
       Crypt::OpenSSL::Random 0
       ExtUtils::MakeMaker 0
-      Test 0
+      Test::More 0
+      perl 5.006
   Crypt-OpenSSL-Random-0.11
     pathname: R/RU/RURBAN/Crypt-OpenSSL-Random-0.11.tar.gz
     provides:
       Crypt::OpenSSL::Random 0.11
     requirements:
       ExtUtils::MakeMaker 0
-  DBD-mysql-4.043
-    pathname: M/MI/MICHIELB/DBD-mysql-4.043.tar.gz
+  DBD-mysql-4.050
+    pathname: D/DV/DVEEDEN/DBD-mysql-4.050.tar.gz
     provides:
-      Bundle::DBD::mysql 4.043
-      DBD::mysql 4.043
+      Bundle::DBD::mysql 4.050
+      DBD::mysql 4.050
       DBD::mysql::GetInfo undef
-      DBD::mysql::db 4.043
-      DBD::mysql::dr 4.043
-      DBD::mysql::st 4.043
+      DBD::mysql::db 4.050
+      DBD::mysql::dr 4.050
+      DBD::mysql::st 4.050
     requirements:
       DBI 1.609
       Data::Dumper 0
+      Devel::CheckLib 1.09
       ExtUtils::MakeMaker 0
       perl 5.008001
   DBI-1.636
@@ -986,12 +983,16 @@ DISTRIBUTIONS
       Test::More 0.98
       parent 0
       perl 5.008001
-  Devel-PPPort-3.35
-    pathname: W/WO/WOLFSAGE/Devel-PPPort-3.35.tar.gz
+  Devel-CheckLib-1.13
+    pathname: M/MA/MATTN/Devel-CheckLib-1.13.tar.gz
     provides:
-      Devel::PPPort 3.35
+      Devel::CheckLib 1.13
     requirements:
+      Exporter 0
       ExtUtils::MakeMaker 0
+      File::Spec 0
+      File::Temp 0.16
+      perl 5.00405
   Devel-StackTrace-2.02
     pathname: D/DR/DROLSKY/Devel-StackTrace-2.02.tar.gz
     provides:
@@ -1050,7 +1051,6 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Mail::Address 0
-      Net::DNS 0
       Scalar::Util 0
       Test::More 0
       perl 5.006
@@ -1156,51 +1156,6 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  ExtUtils-MakeMaker-7.30
-    pathname: B/BI/BINGOS/ExtUtils-MakeMaker-7.30.tar.gz
-    provides:
-      ExtUtils::Command 7.30
-      ExtUtils::Command::MM 7.30
-      ExtUtils::Liblist 7.30
-      ExtUtils::Liblist::Kid 7.30
-      ExtUtils::MM 7.30
-      ExtUtils::MM_AIX 7.30
-      ExtUtils::MM_Any 7.30
-      ExtUtils::MM_BeOS 7.30
-      ExtUtils::MM_Cygwin 7.30
-      ExtUtils::MM_DOS 7.30
-      ExtUtils::MM_Darwin 7.30
-      ExtUtils::MM_MacOS 7.30
-      ExtUtils::MM_NW5 7.30
-      ExtUtils::MM_OS2 7.30
-      ExtUtils::MM_QNX 7.30
-      ExtUtils::MM_UWIN 7.30
-      ExtUtils::MM_Unix 7.30
-      ExtUtils::MM_VMS 7.30
-      ExtUtils::MM_VOS 7.30
-      ExtUtils::MM_Win32 7.30
-      ExtUtils::MM_Win95 7.30
-      ExtUtils::MY 7.30
-      ExtUtils::MakeMaker 7.30
-      ExtUtils::MakeMaker::Config 7.30
-      ExtUtils::MakeMaker::Locale 7.30
-      ExtUtils::MakeMaker::_version 7.30
-      ExtUtils::MakeMaker::charstar 7.30
-      ExtUtils::MakeMaker::version 7.30
-      ExtUtils::MakeMaker::version::regex 7.30
-      ExtUtils::MakeMaker::version::vpp 7.30
-      ExtUtils::Mkbootstrap 7.30
-      ExtUtils::Mksymlists 7.30
-      ExtUtils::testlib 7.30
-      MM 7.30
-      MY 7.30
-    requirements:
-      Data::Dumper 0
-      Encode 0
-      File::Basename 0
-      File::Spec 0.8
-      Pod::Man 0
-      perl 5.006
   File-Copy-Recursive-0.38
     pathname: D/DM/DMUEY/File-Copy-Recursive-0.38.tar.gz
     provides:
@@ -1222,6 +1177,22 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       HTTP::Date 6
       perl 5.006002
+  File-Remove-1.58
+    pathname: S/SH/SHLOMIF/File-Remove-1.58.tar.gz
+    provides:
+      File::Remove 1.58
+    requirements:
+      Cwd 3.29
+      ExtUtils::MakeMaker 0
+      File::Glob 0
+      File::Path 0
+      File::Spec 3.29
+      Module::Build 0.28
+      constant 0
+      perl 5.006
+      strict 0
+      vars 0
+      warnings 0
   File-ShareDir-1.102
     pathname: R/RE/REHSACK/File-ShareDir-1.102.tar.gz
     provides:
@@ -1607,7 +1578,6 @@ DISTRIBUTIONS
       JSON::MaybeXS 1.003009
     requirements:
       Carp 0
-      Cpanel::JSON::XS 2.3310
       ExtUtils::CBuilder 0.27
       ExtUtils::MakeMaker 0
       File::Spec 0
@@ -1615,15 +1585,6 @@ DISTRIBUTIONS
       JSON::PP 2.27300
       Scalar::Util 0
       perl 5.006
-  JSON-PP-2.27400
-    pathname: M/MA/MAKAMAKA/JSON-PP-2.27400.tar.gz
-    provides:
-      JSON::PP 2.27400
-      JSON::PP::Boolean 2.27400
-      JSON::PP::IncrParser 2.27400
-    requirements:
-      ExtUtils::MakeMaker 0
-      Test::More 0
   JSON-Types-0.05
     pathname: T/TY/TYPESTER/JSON-Types-0.05.tar.gz
     provides:
@@ -1833,6 +1794,62 @@ DISTRIBUTIONS
       Try::Tiny 0
       strict 0
       warnings 0
+  Module-Install-1.19
+    pathname: E/ET/ETHER/Module-Install-1.19.tar.gz
+    provides:
+      Module::AutoInstall 1.19
+      Module::Install 1.19
+      Module::Install::Admin 1.19
+      Module::Install::Admin::Bundle 1.19
+      Module::Install::Admin::Compiler 1.19
+      Module::Install::Admin::Find 1.19
+      Module::Install::Admin::Include 1.19
+      Module::Install::Admin::Makefile 1.19
+      Module::Install::Admin::Manifest 1.19
+      Module::Install::Admin::Metadata 1.19
+      Module::Install::Admin::ScanDeps 1.19
+      Module::Install::Admin::WriteAll 1.19
+      Module::Install::AutoInstall 1.19
+      Module::Install::Base 1.19
+      Module::Install::Base::FakeAdmin 1.19
+      Module::Install::Bundle 1.19
+      Module::Install::Can 1.19
+      Module::Install::Compiler 1.19
+      Module::Install::DSL 1.19
+      Module::Install::Deprecated 1.19
+      Module::Install::External 1.19
+      Module::Install::Fetch 1.19
+      Module::Install::Include 1.19
+      Module::Install::Inline 1.19
+      Module::Install::MakeMaker 1.19
+      Module::Install::Makefile 1.19
+      Module::Install::Metadata 1.19
+      Module::Install::PAR 1.19
+      Module::Install::Run 1.19
+      Module::Install::Scripts 1.19
+      Module::Install::Share 1.19
+      Module::Install::Win32 1.19
+      Module::Install::With 1.19
+      Module::Install::WriteAll 1.19
+      inc::Module::Install 1.19
+      inc::Module::Install::DSL 1.19
+    requirements:
+      Devel::PPPort 3.16
+      ExtUtils::Install 1.52
+      ExtUtils::MakeMaker 6.59
+      ExtUtils::ParseXS 2.19
+      File::Path 0
+      File::Remove 1.42
+      File::Spec 3.28
+      Module::Build 0.29
+      Module::CoreList 2.17
+      Module::ScanDeps 1.09
+      Parse::CPAN::Meta 1.4413
+      Test::Harness 3.13
+      Test::More 0.86
+      YAML::Tiny 1.38
+      autodie 0
+      perl 5.006
   Module-Runtime-0.014
     pathname: Z/ZE/ZEFRAM/Module-Runtime-0.014.tar.gz
     provides:
@@ -1843,10 +1860,23 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
+  Module-ScanDeps-1.27
+    pathname: R/RS/RSCHUPP/Module-ScanDeps-1.27.tar.gz
+    provides:
+      Module::ScanDeps 1.27
+    requirements:
+      ExtUtils::MakeMaker 0
+      File::Spec 0
+      File::Temp 0
+      Getopt::Long 0
+      Module::Metadata 0
+      Text::ParseWords 0
+      perl 5.008001
+      version 0
   Mouse-v2.4.9
     pathname: S/SY/SYOHEX/Mouse-v2.4.9.tar.gz
     provides:
-      Mouse 2.004009
+      Mouse v2.4.9
       Mouse::Exporter undef
       Mouse::Meta::Attribute undef
       Mouse::Meta::Class undef
@@ -1864,10 +1894,11 @@ DISTRIBUTIONS
       Mouse::Meta::TypeConstraint undef
       Mouse::Object undef
       Mouse::PurePerl undef
-      Mouse::Role 2.004009
-      Mouse::Spec 2.004009
+      Mouse::Role v2.4.9
+      Mouse::Spec v2.4.9
+      Mouse::Tiny v2.4.8
       Mouse::TypeRegistry undef
-      Mouse::Util undef
+      Mouse::Util v2.4.9
       Mouse::Util::MetaRole undef
       Mouse::Util::TypeConstraints undef
       Squirrel undef
@@ -1888,118 +1919,6 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Test 0
-      perl 5.006
-  Net-DNS-1.10
-    pathname: N/NL/NLNETLABS/Net-DNS-1.10.tar.gz
-    provides:
-      Net::DNS 1.10
-      Net::DNS::Domain 1561
-      Net::DNS::DomainName 1558
-      Net::DNS::DomainName1035 1558
-      Net::DNS::DomainName2535 1558
-      Net::DNS::Header 1527
-      Net::DNS::Mailbox 1527
-      Net::DNS::Mailbox1035 1527
-      Net::DNS::Mailbox2535 1527
-      Net::DNS::Nameserver 1558
-      Net::DNS::Packet 1546
-      Net::DNS::Parameters 1561
-      Net::DNS::Question 1530
-      Net::DNS::RR 1552
-      Net::DNS::RR::A 1528
-      Net::DNS::RR::AAAA 1528
-      Net::DNS::RR::AFSDB 1528
-      Net::DNS::RR::APL 1548
-      Net::DNS::RR::APL::Item 1548
-      Net::DNS::RR::CAA 1561
-      Net::DNS::RR::CDNSKEY 1552
-      Net::DNS::RR::CDS 1552
-      Net::DNS::RR::CERT 1561
-      Net::DNS::RR::CNAME 1528
-      Net::DNS::RR::CSYNC 1561
-      Net::DNS::RR::DHCID 1528
-      Net::DNS::RR::DLV 1528
-      Net::DNS::RR::DNAME 1528
-      Net::DNS::RR::DNSKEY 1561
-      Net::DNS::RR::DS 1561
-      Net::DNS::RR::EUI48 1528
-      Net::DNS::RR::EUI64 1528
-      Net::DNS::RR::GPOS 1528
-      Net::DNS::RR::HINFO 1528
-      Net::DNS::RR::HIP 1528
-      Net::DNS::RR::IPSECKEY 1552
-      Net::DNS::RR::ISDN 1528
-      Net::DNS::RR::KEY 1528
-      Net::DNS::RR::KX 1528
-      Net::DNS::RR::L32 1528
-      Net::DNS::RR::L64 1528
-      Net::DNS::RR::LOC 1528
-      Net::DNS::RR::LP 1528
-      Net::DNS::RR::MB 1528
-      Net::DNS::RR::MG 1528
-      Net::DNS::RR::MINFO 1528
-      Net::DNS::RR::MR 1528
-      Net::DNS::RR::MX 1528
-      Net::DNS::RR::NAPTR 1528
-      Net::DNS::RR::NID 1528
-      Net::DNS::RR::NS 1528
-      Net::DNS::RR::NSEC 1528
-      Net::DNS::RR::NSEC3 1561
-      Net::DNS::RR::NSEC3PARAM 1528
-      Net::DNS::RR::NULL 1528
-      Net::DNS::RR::OPENPGPKEY 1528
-      Net::DNS::RR::OPT 1561
-      Net::DNS::RR::OPT::CHAIN 1561
-      Net::DNS::RR::OPT::CLIENT_SUBNET 1561
-      Net::DNS::RR::OPT::COOKIE 1561
-      Net::DNS::RR::OPT::DAU 1561
-      Net::DNS::RR::OPT::DHU 1561
-      Net::DNS::RR::OPT::EXPIRE 1561
-      Net::DNS::RR::OPT::KEY_TAG 1561
-      Net::DNS::RR::OPT::N3U 1561
-      Net::DNS::RR::OPT::PADDING 1561
-      Net::DNS::RR::OPT::TCP_KEEPALIVE 1561
-      Net::DNS::RR::PTR 1528
-      Net::DNS::RR::PX 1528
-      Net::DNS::RR::RP 1528
-      Net::DNS::RR::RRSIG 1561
-      Net::DNS::RR::RT 1528
-      Net::DNS::RR::SIG 1561
-      Net::DNS::RR::SMIMEA 1528
-      Net::DNS::RR::SOA 1546
-      Net::DNS::RR::SPF 1528
-      Net::DNS::RR::SRV 1528
-      Net::DNS::RR::SSHFP 1528
-      Net::DNS::RR::TKEY 1528
-      Net::DNS::RR::TLSA 1528
-      Net::DNS::RR::TSIG 1561
-      Net::DNS::RR::TXT 1528
-      Net::DNS::RR::URI 1528
-      Net::DNS::RR::X25 1528
-      Net::DNS::Resolver 1564
-      Net::DNS::Resolver::Base 1564
-      Net::DNS::Resolver::MSWin32 1558
-      Net::DNS::Resolver::Recurse 1555
-      Net::DNS::Resolver::UNIX 1527
-      Net::DNS::Resolver::android 1527
-      Net::DNS::Resolver::cygwin 1558
-      Net::DNS::Resolver::os2 1527
-      Net::DNS::Resolver::os390 1565
-      Net::DNS::Text 1561
-      Net::DNS::Update 1527
-      Net::DNS::ZoneFile 1526
-      Net::DNS::ZoneFile::Generator 1526
-      Net::DNS::ZoneFile::Text 1526
-    requirements:
-      Digest::HMAC 1.03
-      Digest::MD5 2.13
-      Digest::SHA 5.23
-      ExtUtils::MakeMaker 0
-      File::Spec 0.86
-      IO::Socket 1.16
-      MIME::Base64 2.11
-      Test::More 0.52
-      Time::Local 1.19
       perl 5.006
   Net-HTTP-6.14
     pathname: O/OA/OALDERS/Net-HTTP-6.14.tar.gz
@@ -2063,6 +1982,18 @@ DISTRIBUTIONS
       Test::More 0
       UNIVERSAL::require 0.11
       URI 1.35
+  POSIX-AtFork-0.02
+    pathname: G/GF/GFUJI/POSIX-AtFork-0.02.tar.gz
+    provides:
+      POSIX::AtFork 0.02
+    requirements:
+      Devel::PPPort 3.19
+      ExtUtils::MakeMaker 6.42
+      ExtUtils::ParseXS 2.21
+      Test::More 0.88
+      Test::SharedFork 0
+      XSLoader 0.1
+      perl 5.008001
   POSIX-strftime-Compiler-0.42
     pathname: K/KA/KAZEBURO/POSIX-strftime-Compiler-0.42.tar.gz
     provides:
@@ -2376,13 +2307,13 @@ DISTRIBUTIONS
       Scalar::Util 0
       parent 0
       perl 5.008_001
-  Scalar-List-Utils-1.47
-    pathname: P/PE/PEVANS/Scalar-List-Utils-1.47.tar.gz
+  Scalar-List-Utils-1.50
+    pathname: P/PE/PEVANS/Scalar-List-Utils-1.50.tar.gz
     provides:
-      List::Util 1.47
-      List::Util::XS 1.47
-      Scalar::Util 1.47
-      Sub::Util 1.47
+      List::Util 1.50
+      List::Util::XS 1.50
+      Scalar::Util 1.50
+      Sub::Util 1.50
     requirements:
       ExtUtils::MakeMaker 0
       Test::More 0
@@ -2395,10 +2326,10 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Test::More 0
       perl 5.006001
-  Server-Starter-0.33
-    pathname: K/KA/KAZUHO/Server-Starter-0.33.tar.gz
+  Server-Starter-0.34
+    pathname: K/KA/KAZUHO/Server-Starter-0.34.tar.gz
     provides:
-      Server::Starter 0.33
+      Server::Starter 0.34
       Server::Starter::Guard undef
     requirements:
       ExtUtils::CBuilder 0
@@ -2766,19 +2697,18 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  Test-mysqld-0.21
-    pathname: S/SO/SONGMU/Test-mysqld-0.21.tar.gz
+  Test-mysqld-1.0012
+    pathname: S/SO/SONGMU/Test-mysqld-1.0012.tar.gz
     provides:
-      Test::mysqld 0.21
+      Test::mysqld 1.0012
     requirements:
       Class::Accessor::Lite 0
       DBD::mysql 0
       DBI 0
-      ExtUtils::MakeMaker 6.59
       File::Copy::Recursive 0
+      File::Temp 0
       Module::Build::Tiny 0.035
-      Test::SharedFork 0.06
-      perl 5.008
+      perl 5.008001
   Text-Aligner-0.13
     pathname: S/SH/SHLOMIF/Text-Aligner-0.13.tar.gz
     provides:
@@ -3268,16 +3198,10 @@ DISTRIBUTIONS
       XML::XPath::Node::Attribute 1.40
       XML::XPath::Node::AttributeImpl 1.40
       XML::XPath::Node::Comment 1.40
-      XML::XPath::Node::CommentImpl 1.40
       XML::XPath::Node::Element 1.40
-      XML::XPath::Node::ElementImpl 1.40
       XML::XPath::Node::Namespace 1.40
-      XML::XPath::Node::NamespaceImpl 1.40
       XML::XPath::Node::PI 1.40
-      XML::XPath::Node::PIImpl 1.40
       XML::XPath::Node::Text 1.40
-      XML::XPath::Node::TextImpl 1.40
-      XML::XPath::NodeImpl 1.40
       XML::XPath::NodeSet 1.40
       XML::XPath::Number 1.40
       XML::XPath::Parser 1.40
@@ -3302,6 +3226,20 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.008001
+  YAML-Tiny-1.73
+    pathname: E/ET/ETHER/YAML-Tiny-1.73.tar.gz
+    provides:
+      YAML::Tiny 1.73
+    requirements:
+      B 0
+      Carp 0
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      Fcntl 0
+      Scalar::Util 0
+      perl 5.008001
+      strict 0
+      warnings 0
   common-sense-3.74
     pathname: M/ML/MLEHMANN/common-sense-3.74.tar.gz
     provides:

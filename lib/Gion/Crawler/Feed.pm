@@ -17,6 +17,7 @@ use Class::Accessor::Lite (
         pubdate
         term
         cache
+        next_serial
     ) ],
     ro => [ qw(db verbose) ],
 );
@@ -198,16 +199,13 @@ sub parse_rss {
             $dt = localtime;
         }
 
-        my $guid = $_->{guid};
         my $url  = $_->{link};
-        if      (!$guid or $guid eq '') {
-            $guid = $url;    #guidがない場合は、URLを代用
-        } elsif (!$url or $url eq '') {
-            $url = $guid;    #URLがない場合は、GUIDを代用
+        if (!$url or $url eq '') {
+            $url = $_->{guid};    # URLがない場合は、GUIDを代用
         }
 
-        if ($url eq '' or $guid eq '') {
-            next;   # 両方空の場合は登録できない
+        if ($url eq '') {
+            next;   # 空の場合は登録できない
         }
 
         #相対パスだと修正する
@@ -216,7 +214,6 @@ sub parse_rss {
         }
 
         my $entry_model = Gion::Crawler::Entry->new(
-            guid        => $guid,
             title       => $_->{title},
             description => $_->{description},
             pubdate     => $dt,
@@ -242,7 +239,7 @@ sub parse_atom {
     my @entry = $atom->entries;
 
     foreach (@entry) {
-        my $dt  = from_feed_datetime($_->updated);
+        my $dt  = from_feed_datetime($_->updated ? $_->updated : $_->published);
         my $url = $_->link->href;
 
         #相対パスだと修正する
@@ -251,7 +248,6 @@ sub parse_atom {
         }
 
         my $entry_model = Gion::Crawler::Entry->new(
-            guid        => $url,
             title       => decode_utf8($_->title),
             description => decode_utf8($_->summary),
             pubdate     => $dt,
@@ -269,6 +265,16 @@ sub parse_atom {
     @data;
 }
 
+sub get_next_serial {
+    my $self = shift;
+
+    my $handler = $self->db;
+    $handler->txn(sub {
+        my $dbh = shift;
+        $dbh->query('UPDATE feed SET next_serial = next_serial + 1 WHERE id = ?', $self->id);
+    });
+    $self->db->select_one('SELECT next_serial FROM feed WHERE id = ?', $self->id);
+}
 
 #
 # util
