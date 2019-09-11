@@ -11,7 +11,7 @@ use lib "lib/";
 use Gion::Scripts::Cleanup;
 use Gion::Scripts::Crawler;
 
-service('web', 'plackup --access-log /dev/stderr -s Starlet --max-workers 5 app.psgi');
+service('web', 'plackup -s Starlet --max-workers 5 app.psgi');
 
 scheduled('cleanup',   '8 16 * * *',    sub { Gion::Scripts::Cleanup->main_proclet; });
 
