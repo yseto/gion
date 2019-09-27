@@ -48,6 +48,7 @@ sub main_script {
         list => $list,
         silent => $silent,
         db => $db,
+        tolerance_time => (time + 86400*7),
     }, $class;
 }
 
@@ -63,6 +64,7 @@ sub main_proclet {
         list => $list,
         silent => 0,
         db => $db,
+        tolerance_time => (time + 86400*7),
     }, $class;
 }
 
@@ -191,6 +193,8 @@ PARSE_SUCCESS:
 
         # 新しいもののみを取り込む XXX デバッグ時は以下を抑止
         next if $entry->pubdate_epoch <= $latest->epoch;
+        # 遠い未来のエントリは取り込まない
+        next if $self->{tolerance_time} <= $entry->pubdate_epoch;
 
         # フィードのデータから最終更新時間を更新する
         if ($entry->pubdate_epoch > $last_modified) {
