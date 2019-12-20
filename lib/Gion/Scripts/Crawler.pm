@@ -13,6 +13,7 @@ use Gion::Crawler::Time;
 use Gion::Crawler::UserAgent;
 
 use Getopt::Long qw(GetOptionsFromArray);
+use HTTP::Status qw(:constants :is);
 use HTTP::Date qw(str2time);
 use Try::Tiny;
 
@@ -97,7 +98,7 @@ sub crawl_per_feed {
     $ua->get($feed_model->url, %$cache);
 
     # 結果が得られない場合、次の対象を処理する
-    if ($ua->code eq '404' or $ua->code =~ /5\d\d/) {
+    if (is_error($ua->code)) {
         $feed_model->catch_error(response => $ua->response);
         return;
     }
