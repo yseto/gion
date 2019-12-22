@@ -1,96 +1,157 @@
 /* vim:set ts=2 sts=2 sw=2:*/
 <template>
-<div>
-  <GionHeader></GionHeader>
-  <div class="container">
-    <div class="row">
-      <div class="col-sm-3">
-        <!-- PINLIST -->
-        <p>
-          <a class="btn btn-small btn-info" v-on:click.prevent="pinListSwitch"><span class="glyphicon glyphicon-pushpin"></span> Pin List</a>
-          <a class="btn btn-small btn-default" v-on:click.prevent="pinListClean"><span class="glyphicon glyphicon-remove"></span> Remove All Pin</a>
-        </p>
+  <div>
+    <GionHeader />
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-3">
+          <!-- PINLIST -->
+          <p>
+            <a
+              class="btn btn-small btn-info"
+              @click.prevent="pinListSwitch"
+            ><span class="glyphicon glyphicon-pushpin" /> Pin List</a>
+            <a
+              class="btn btn-small btn-default"
+              @click.prevent="pinListClean"
+            ><span class="glyphicon glyphicon-remove" /> Remove All Pin</a>
+          </p>
   
-        <div v-if="pinListState == true" class="panel panel-default pin__list">
-          <div class="panel-heading">Pin List <span class="badge badge-info">{{ pinList.length }}</span></div>
-          <div class="list-group" v-for="item in pinList">
-            <a class="list-group-item" v-bind:href="item.url">{{ item.title }}</a>
+          <div
+            v-if="pinListState == true"
+            class="panel panel-default pin__list"
+          >
+            <div class="panel-heading">
+              Pin List <span class="badge badge-info">{{ pinList.length }}</span>
+            </div>
+            <div
+              v-for="item in pinList"
+              :key="item.url"
+              class="list-group"
+            >
+              <a
+                class="list-group-item"
+                :href="item.url"
+              >{{ item.title }}</a>
+            </div>
+          </div>
+  
+          <!-- CATEGORIES -->
+          <div class="panel panel-default categories__list">
+            <div class="panel-heading">
+              <span class="glyphicon glyphicon-list" />Categories
+            </div>
+            <div class="list-group">
+              <a 
+                v-for="(item, index) in categoryList"
+                :key="item.name"
+                class="list-group-item"
+                :class="{ active: index == category.selected() }"
+                @click.prevent="category.set(categoryList, index);contentUpdate();"
+              >{{ item.name }} <span class="badge hidden-sm">{{ item.count }}</span></a>
+            </div>
           </div>
         </div>
-  
-        <!-- CATEGORIES -->
-        <div class="panel panel-default categories__list">
-          <div class="panel-heading"><span class="glyphicon glyphicon-list"></span>Categories</div>
-          <div class="list-group">
-            <a 
-               class="list-group-item"
-               v-for="(item, index) in categoryList"
-               v-bind:class="{ active: index == category.selected() }"
-               v-on:click.prevent="category.set(categoryList, index);contentUpdate();"
-               >{{ item.name }} <span class="badge hidden-sm">{{ item.count }}</span></a>
-          </div>
-        </div>
-      </div>
     
   
-      <!-- CONTENT -->
-      <div class="col-sm-9" id="contents_list">
-        <div class="tw panel panel-default well" v-if="contentList.length === 0">
-          <p class="text-center">No unreading entries.</p>
-        </div>
-        <div v-for="(item, index) in contentList">
-          <div class="tw panel panel-default" v-bind:class="{ 'tw--active panel-info': index == content.selected() }">
-            <h4 class="viewpage" v-bind:class="{ 'bg-info' : item.readflag == 2 }">
-              <a v-bind:href="item.url" target="blank" rel="noreferrer" style="color: #333;">
-              <span v-if="item.title.length > 0">{{ item.title }}</span>
-              <span v-else>[nothing title...]</span>
-              </a>
-            </h4>
-            <p>{{ item.description }}</p>
-  
-            <br class="hidden-md hidden-lg">
-            <div class="text-right">
-              <span style="margin-left:1em;" v-for="(undef, button) in externalApi">
-                <button
-                  class="btn btn-success btn-sm"
-                  v-bind:data-service="button"
-                  v-bind:data-url="item.raw_url"
-                  v-on:click.prevent="add_bookmark"
-                >{{ button }}</button>
-              </span>
-            </div>
-            <div>
-              <p
-                v-if="item.readflag == 2"
-                class="pull-right visible-md visible-lg"
-                >
-                <span class="glyphicon glyphicon-ok"></span> 
-                Pin!
-              </p>
-              <!-- //スマホ用ピン立て -->
-              <br class="hidden-md hidden-lg">
-              <button
-                class="hidden-md hidden-lg btn btn-info btn-sm btn-block"
-                v-on:click="togglePin(index)"
+        <!-- CONTENT -->
+        <div
+          id="contents_list"
+          class="col-sm-9"
+        >
+          <div
+            v-if="contentList.length === 0"
+            class="tw panel panel-default well"
+          >
+            <p class="text-center">
+              No unreading entries.
+            </p>
+          </div>
+          <div
+            v-for="(item, index) in contentList" 
+            :key="item.url"
+          >
+            <div
+              class="tw panel panel-default"
+              :class="{ 'tw--active panel-info': index == content.selected() }"
+            >
+              <h4
+                class="viewpage"
+                :class="{ 'bg-info' : item.readflag == 2 }"
               >
-              Pin!
-              </button>
+                <a
+                  :href="item.url"
+                  target="blank"
+                  rel="noreferrer"
+                  style="color: #333;"
+                >
+                  <span v-if="item.title.length > 0">{{ item.title }}</span>
+                  <span v-else>[nothing title...]</span>
+                </a>
+              </h4>
+              <p>{{ item.description }}</p>
+  
+              <br class="hidden-md hidden-lg">
+              <div class="text-right">
+                <span
+                  v-for="(undef, button) in externalApi"
+                  :key="button"
+                  style="margin-left:1em;"
+                >
+                  <button
+                    class="btn btn-success btn-sm"
+                    :data-service="button"
+                    :data-url="item.raw_url"
+                    @click.prevent="add_bookmark"
+                  >{{ button }}</button>
+                </span>
+              </div>
+              <div>
+                <p
+                  v-if="item.readflag == 2"
+                  class="pull-right visible-md visible-lg"
+                >
+                  <span class="glyphicon glyphicon-ok" /> 
+                  Pin!
+                </p>
+                <!-- //スマホ用ピン立て -->
+                <br class="hidden-md hidden-lg">
+                <button
+                  class="hidden-md hidden-lg btn btn-info btn-sm btn-block"
+                  @click="togglePin(index)"
+                >
+                  Pin!
+                </button>
+              </div>
+              <p>{{ item.date_epoch | epochToDateTime }} - {{ item.site_title }}</p>
             </div>
-            <p>{{ item.date_epoch | epochToDateTime }} - {{ item.site_title}}</p>
           </div>
         </div>
-      </div>
+      </div><!--/row-->
   
-    </div><!--/row-->
+      <ul class="pager hidden-lg hidden-md">
+        <li class="previous">
+          <a
+            class="btn btn-default"
+            @click.prevent="categoryPrevious"
+          >&lt;&lt; Category Back</a>
+        </li>
+        <li class="next">
+          <a
+            class="btn btn-default"
+            @click.prevent="categoryNext"
+          >Category Next &gt;&gt;</a>
+        </li>
+      </ul>
   
-    <ul class="pager hidden-lg hidden-md">
-      <li class="previous"><a v-on:click.prevent="categoryPrevious" class="btn btn-default">&lt;&lt; Category Back</a></li>
-      <li class="next"><a v-on:click.prevent="categoryNext" class="btn btn-default">Category Next &gt;&gt;</a></li>
-    </ul>
-  
-    <p class="clearfix hidden-lg hidden-md"><a class="btn btn-default pull-right" v-on:click="$root.returntop">Back to Top</a></p>
-  </div><!--/.container-->
-</div>
+      <p class="clearfix hidden-lg hidden-md">
+        <a
+          class="btn btn-default pull-right"
+          @click="$root.returntop"
+        >Back to Top</a>
+      </p>
+    </div><!--/.container-->
+  </div>
 </template>
 
 <script>
@@ -174,27 +235,25 @@ export default {
     var self = this;
     agent({
       url: '/api/get_social_service',
-    }, function(err, _data) {
-      var data = _data.body;
-      data.resource.forEach(function(_, index) {
-        self.externalApi[data.resource[index].service] = true;
-      });
+    }, function(data) {
+        data.resource.forEach(function(_, index) {
+          self.externalApi[data.resource[index].service] = true;
+        });
     });
 
     // CATEGORY
     agent({
       url: '/api/get_category',
-    }, function(err, _data) {
-      var data = _data.body;
-      self.categoryList = data;
-      if (data.length === 0) {
-        self.category.clear();
-        return false;
-      }
-      self.category.set(self.categoryList, 0);
-      //console.log(self.categoryList);
-      //console.log(self.category.category());
-      self.contentUpdate();
+    }, function(data) {
+        self.categoryList = data;
+        if (data.length === 0) {
+          self.category.clear();
+          return false;
+        }
+        self.category.set(self.categoryList, 0);
+        //console.log(self.categoryList);
+        //console.log(self.category.category());
+        self.contentUpdate();
     });
   },
   destroyed: function() {
@@ -296,28 +355,27 @@ export default {
 
       agent({
         url: '/api/get_category',
-      }, function(err, _data) {
-        var data = _data.body;
-        var updated = false;
-        self.categoryList = data;
+      }, function(data) {
+          var updated = false;
+          self.categoryList = data;
 
-        // Vue の dataを更新する
-        data.forEach(function(_, index) {
-          // category_id が一致するものがある
-          // 画面描画を更新する必要がある
-          if (self.category.category() === data[index].id) {
-            self.category.set_index(index); // 更新
-            updated = true; // 更新したフラグ
-            return false;
+          // Vue の dataを更新する
+          data.forEach(function(_, index) {
+            // category_id が一致するものがある
+            // 画面描画を更新する必要がある
+            if (self.category.category() === data[index].id) {
+              self.category.set_index(index); // 更新
+              updated = true; // 更新したフラグ
+              return false;
+            }
+          });
+          // 更新していない場合は、カテゴリ一覧を一番上に設定する
+          // ただし、選択可能なカテゴリがない場合は実行しない
+          if (data.length > 0 && !updated) {
+            self.category.set(self.categoryList, 0);
+            self.contentUpdate();
           }
-        });
-        // 更新していない場合は、カテゴリ一覧を一番上に設定する
-        // ただし、選択可能なカテゴリがない場合は実行しない
-        if (data.length > 0 && !updated) {
-          self.category.set(self.categoryList, 0);
-          self.contentUpdate();
-        }
-        //console.log('done');
+          //console.log('done');
       });
     },
     // ::: CONTENT :::
@@ -349,14 +407,13 @@ export default {
         data: {
           category: id
         },
-      }, function(err, _data) {
-        var data = _data.body;
-        self.contentList = (typeof data.entry !== 'undefined') ? data.entry : [];
-        if (self.contentList.length > 0) {
-          self.read_it();
-          self.content.set(self.contentList, 0);
-        }
-        self.categoryUpdate();
+      }, function(data) {
+          self.contentList = (typeof data.entry !== 'undefined') ? data.entry : [];
+          if (self.contentList.length > 0) {
+            self.read_it();
+            self.content.set(self.contentList, 0);
+          }
+          self.categoryUpdate();
       });
     },
     // アイテムを閲覧する
@@ -378,7 +435,7 @@ export default {
         }
       });
 
-      console.warn('read_it > params', params);
+      // console.warn('read_it > params', params);
       // 未読ステータスのものがなければ抜ける
       if (params.length === 0) {
         return false;
@@ -394,8 +451,8 @@ export default {
         //console.warn('read_it', 'send');
         agent({
           url: '/api/set_asread',
-          json_request: true,
-          data: JSON.stringify(params),
+          jsonRequest: true,
+          data: params,
         }, function() {
           //console.log('read_it', 'send.done');
         });
@@ -415,10 +472,10 @@ export default {
           serial: self.contentList[index].serial,
           feed_id: self.contentList[index].feed_id,
         },
-      }, function(err, data) {
-        //console.log(data);
-        self.contentList[index].readflag = data.body.readflag;
-        self.moveFlag = false;
+      }, function(data) {
+          //console.log(data);
+          self.contentList[index].readflag = data.readflag;
+          self.moveFlag = false;
       });
     },
     // ピンリストに追加されているエントリの一覧を表示する
@@ -426,8 +483,8 @@ export default {
       var self = this;
       agent({
         url: '/api/get_pinlist',
-      }, function(err, data) {
-        self.pinList = data.body;
+      }, function(data) {
+          self.pinList = data;
       });
     },
     pinListSwitch: function() {

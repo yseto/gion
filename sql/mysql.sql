@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS `story` (
   `serial` int(11) NOT NULL,
   `title` varchar(80) NOT NULL,
   `description` tinytext NOT NULL,
-  `url` tinytext NOT NULL,
+  `url` varchar(2400) NOT NULL,
   PRIMARY KEY (`feed_id`, `serial`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

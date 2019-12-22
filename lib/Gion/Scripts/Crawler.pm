@@ -13,6 +13,7 @@ use Gion::Crawler::Time;
 use Gion::Crawler::UserAgent;
 
 use Getopt::Long qw(GetOptionsFromArray);
+use HTTP::Status qw(:constants :is);
 use HTTP::Date qw(str2time);
 use Try::Tiny;
 
@@ -48,6 +49,7 @@ sub main_script {
         list => $list,
         silent => $silent,
         db => $db,
+        tolerance_time => (time + 86400*7),
     }, $class;
 }
 
@@ -63,6 +65,7 @@ sub main_proclet {
         list => $list,
         silent => 0,
         db => $db,
+        tolerance_time => (time + 86400*7),
     }, $class;
 }
 
@@ -95,7 +98,7 @@ sub crawl_per_feed {
     $ua->get($feed_model->url, %$cache);
 
     # 結果が得られない場合、次の対象を処理する
-    if ($ua->code eq '404' or $ua->code =~ /5\d\d/) {
+    if (is_error($ua->code)) {
         $feed_model->catch_error(response => $ua->response);
         return;
     }
@@ -191,6 +194,8 @@ PARSE_SUCCESS:
 
         # 新しいもののみを取り込む XXX デバッグ時は以下を抑止
         next if $entry->pubdate_epoch <= $latest->epoch;
+        # 遠い未来のエントリは取り込まない
+        next if $self->{tolerance_time} <= $entry->pubdate_epoch;
 
         # フィードのデータから最終更新時間を更新する
         if ($entry->pubdate_epoch > $last_modified) {

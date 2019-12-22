@@ -7,7 +7,7 @@ use utf8;
 use Class::Accessor::Lite;
 Class::Accessor::Lite->mk_accessors(qw{
     code location response content
-    ua
+    ua redirect_counter
 });
 
 use Furl;
@@ -32,7 +32,16 @@ sub new {
 
 sub clear {
     my $self = shift;
-    $self->$_(undef) for qw/content location response code/;
+    $self->$_(undef) for qw/content location response code redirect_counter/;
+}
+
+sub add_redirect_counter {
+    my $self = shift;
+    if ($self->redirect_counter) {
+        $self->redirect_counter($self->redirect_counter + 1);
+    } else {
+        $self->redirect_counter(1);
+    }
 }
 
 sub get {
@@ -80,6 +89,16 @@ sub _get {
         # 301 は URL更新が必要
         if ($res->code eq '301') {
             $self->location($location);
+        }
+
+        # リダイレクトループを検出する
+        # ドメイン パーキング などの厳しい世界でループが多発する
+        if ($location eq $url) {
+            $self->add_redirect_counter;
+            if ($self->redirect_counter > 5) {
+                $self->code(400);
+                return;
+            }
         }
         return $self->_get($location, %opt);
     }
