@@ -418,7 +418,7 @@ sub set_asread {
         $_->{serial}
         );
     }
-    $r->text("OK");
+    $r->json({ result => JSON::true() });
 }
 
 sub get_subscription {
@@ -569,7 +569,7 @@ sub remove_all_pin {
             AND user_id = ?
     ", $r->session->get('username'));
 
-    $r->text('OK');
+    $r->json({ result => JSON::true() });
 }
 
 sub update_password {
