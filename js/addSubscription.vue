@@ -103,10 +103,9 @@ export default {
       var self = this;
       agent({
         url: '/api/get_subscription',
-      }, function(err, _data) {
-        var data = _data.body;
-        self.list = data.category;
-        self.category = data.category[0].id;
+      }, function(data) {
+          self.list = data.category;
+          self.category = data.category[0].id;
       });
     },
     // カテゴリの登録
@@ -121,13 +120,13 @@ export default {
         data: {
           name: self.inputCategoryName
         },
-      }, function(err, j) {
-        if (j.body.result === "ERROR_ALREADY_REGISTER") {
-          alert("すでに登録されています。");
-        } else {
-          self.fetchList();
-          alert("登録しました。");
-        }
+      }, function(data) {
+          if (data.result === "ERROR_ALREADY_REGISTER") {
+            alert("すでに登録されています。");
+          } else {
+            self.fetchList();
+            alert("登録しました。");
+          }
       });
     },
     registerFeed: function() {
@@ -141,17 +140,17 @@ export default {
           'parser_type': self.field.parser_type,
           'category': self.category,
         },
-      }, function(error, j) {
-        if (j.body === null) {
-          alert('Failure: Get information.\n please check url... :(');
-          return false;
-        }
-        if (j.body.result === "ERROR_ALREADY_REGISTER") {
-          alert("すでに登録されています。");
-          return false;
-        }
-        self.successFeed = true;
-        self.field = {};
+      }, function(data) {
+          if (data === null) {
+            alert('Failure: Get information.\n please check url... :(');
+            return false;
+          }
+          if (data.result === "ERROR_ALREADY_REGISTER") {
+            alert("すでに登録されています。");
+            return false;
+          }
+          self.successFeed = true;
+          self.field = {};
       });
     },
     // ページの詳細を取得する
@@ -173,19 +172,18 @@ export default {
         data: {
           url: self.field.url
         },
-      }, function(err, _j) {
-        var j = _j.body;
-        if (j === null) {
-          alert('Failure: Get information.\n please check url... :(');
-          return false;
-        }
-        self.field.rss = j.url;
-        self.field.title = j.title;
-        self.field.preview_feed = j.preview_feed;
-        self.field.parser_type = j.parser_type;
-        setTimeout(function() {
-          self.searchState = false;
-        }, 500);
+      }, function(data) {
+          if (data === null) {
+            alert('Failure: Get information.\n please check url... :(');
+            return false;
+          }
+          self.field.rss = data.url;
+          self.field.title = data.title;
+          self.field.preview_feed = data.preview_feed;
+          self.field.parser_type = data.parser_type;
+          setTimeout(function() {
+            self.searchState = false;
+          }, 500);
       });
     }
   }

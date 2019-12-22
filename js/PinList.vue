@@ -46,8 +46,8 @@ export default {
     var self = this;
     agent({
       url: '/api/get_pinlist'
-    }, function(error, res) {
-      self.list = res.body;
+    }, function(data) {
+      self.list = data;
     });
   },
   methods: {

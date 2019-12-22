@@ -203,25 +203,23 @@ export default {
     var self = this;
     agent({
       url: '/api/get_numentry',
-    }, function(err, _a) {
-      var a = _a.body;
-      if (a.noreferrer) {
-        self.checked.push('noreferrer');
-      }
-      if (a.nopinlist) {
-        self.checked.push('nopinlist');
-      }
-      self.numsubstr = a.numsubstr;
-      self.numentry = a.numentry;
+    }, function(data) {
+        if (data.noreferrer) {
+          self.checked.push('noreferrer');
+        }
+        if (data.nopinlist) {
+          self.checked.push('nopinlist');
+        }
+        self.numsubstr = data.numsubstr;
+        self.numentry = data.numentry;
     });
     agent({
       url: '/api/get_social_service',
-    }, function(err, _data) {
-      var data = _data.body;
-      data.resource.forEach(function(_, index) {
-        self.external_api[data.resource[index].service].state = true;
-        self.external_api[data.resource[index].service].username = data.resource[index].username;
-      });
+    }, function(data) {
+        data.resource.forEach(function(_, index) {
+          self.external_api[data.resource[index].service].state = true;
+          self.external_api[data.resource[index].service].username = data.resource[index].username;
+        });
     });
   },
   methods: {
@@ -251,8 +249,8 @@ export default {
           password: self.password,
           passwordc: self.passwordc
         }
-      }, function(err, p) {
-        alert(p.body.result);
+      }, function(data) {
+          alert(data.result);
       });
     },
     createUser: function() {
@@ -263,8 +261,8 @@ export default {
           username: self.username,
           password: self.user_password
         }
-      }, function(err, p) {
-        alert(p.body.result);
+      }, function(data) {
+          alert(data.result);
       });
     }
   }

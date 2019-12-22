@@ -119,36 +119,35 @@ export default {
 
       agent({
         url: '/api/get_subscription'
-      }, function(err, _a) {
-        var a = _a.body;
-        self.category = a.category;
-        self.subscription = a.subscription;
+      }, function(data) {
+          self.category = data.category;
+          self.subscription = data.subscription;
 
-        self.category.forEach(function(_, i) {
-          list[self.category[i].id] = {
-            id: self.category[i].id,
-            list: [],
-            name: self.category[i].name
-          };
-        });
-        self.subscription.forEach(function(_, i) {
-          list[self.subscription[i].category_id].list.push(self.subscription[i]);
-        });
+          self.category.forEach(function(_, i) {
+            list[self.category[i].id] = {
+              id: self.category[i].id,
+              list: [],
+              name: self.category[i].name
+            };
+          });
+          self.subscription.forEach(function(_, i) {
+            list[self.subscription[i].category_id].list.push(self.subscription[i]);
+          });
 
-        // combined
-        Object.keys(list).forEach(function(i) {
-          tmp.push({
-            id: list[i].id,
-            name: list[i].name,
-            type: 'title',
-          });
-          list[i].list.forEach(function(_, j) {
-            var value = list[i].list[j];
-            value.type = 'item';
-            tmp.push(value);
-          });
-        }, list);
-        self.lists = tmp;
+          // combined
+          Object.keys(list).forEach(function(i) {
+            tmp.push({
+              id: list[i].id,
+              name: list[i].name,
+              type: 'title',
+            });
+            list[i].list.forEach(function(_, j) {
+              var value = list[i].list[j];
+              value.type = 'item';
+              tmp.push(value);
+            });
+          }, list);
+          self.lists = tmp;
       });
     }
   }

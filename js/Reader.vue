@@ -174,27 +174,25 @@ export default {
     var self = this;
     agent({
       url: '/api/get_social_service',
-    }, function(err, _data) {
-      var data = _data.body;
-      data.resource.forEach(function(_, index) {
-        self.externalApi[data.resource[index].service] = true;
-      });
+    }, function(data) {
+        data.resource.forEach(function(_, index) {
+          self.externalApi[data.resource[index].service] = true;
+        });
     });
 
     // CATEGORY
     agent({
       url: '/api/get_category',
-    }, function(err, _data) {
-      var data = _data.body;
-      self.categoryList = data;
-      if (data.length === 0) {
-        self.category.clear();
-        return false;
-      }
-      self.category.set(self.categoryList, 0);
-      //console.log(self.categoryList);
-      //console.log(self.category.category());
-      self.contentUpdate();
+    }, function(data) {
+        self.categoryList = data;
+        if (data.length === 0) {
+          self.category.clear();
+          return false;
+        }
+        self.category.set(self.categoryList, 0);
+        //console.log(self.categoryList);
+        //console.log(self.category.category());
+        self.contentUpdate();
     });
   },
   destroyed: function() {
@@ -296,28 +294,27 @@ export default {
 
       agent({
         url: '/api/get_category',
-      }, function(err, _data) {
-        var data = _data.body;
-        var updated = false;
-        self.categoryList = data;
+      }, function(data) {
+          var updated = false;
+          self.categoryList = data;
 
-        // Vue の dataを更新する
-        data.forEach(function(_, index) {
-          // category_id が一致するものがある
-          // 画面描画を更新する必要がある
-          if (self.category.category() === data[index].id) {
-            self.category.set_index(index); // 更新
-            updated = true; // 更新したフラグ
-            return false;
+          // Vue の dataを更新する
+          data.forEach(function(_, index) {
+            // category_id が一致するものがある
+            // 画面描画を更新する必要がある
+            if (self.category.category() === data[index].id) {
+              self.category.set_index(index); // 更新
+              updated = true; // 更新したフラグ
+              return false;
+            }
+          });
+          // 更新していない場合は、カテゴリ一覧を一番上に設定する
+          // ただし、選択可能なカテゴリがない場合は実行しない
+          if (data.length > 0 && !updated) {
+            self.category.set(self.categoryList, 0);
+            self.contentUpdate();
           }
-        });
-        // 更新していない場合は、カテゴリ一覧を一番上に設定する
-        // ただし、選択可能なカテゴリがない場合は実行しない
-        if (data.length > 0 && !updated) {
-          self.category.set(self.categoryList, 0);
-          self.contentUpdate();
-        }
-        //console.log('done');
+          //console.log('done');
       });
     },
     // ::: CONTENT :::
@@ -349,14 +346,13 @@ export default {
         data: {
           category: id
         },
-      }, function(err, _data) {
-        var data = _data.body;
-        self.contentList = (typeof data.entry !== 'undefined') ? data.entry : [];
-        if (self.contentList.length > 0) {
-          self.read_it();
-          self.content.set(self.contentList, 0);
-        }
-        self.categoryUpdate();
+      }, function(data) {
+          self.contentList = (typeof data.entry !== 'undefined') ? data.entry : [];
+          if (self.contentList.length > 0) {
+            self.read_it();
+            self.content.set(self.contentList, 0);
+          }
+          self.categoryUpdate();
       });
     },
     // アイテムを閲覧する
@@ -394,8 +390,8 @@ export default {
         //console.warn('read_it', 'send');
         agent({
           url: '/api/set_asread',
-          json_request: true,
-          data: JSON.stringify(params),
+          jsonRequest: true,
+          data: params,
         }, function() {
           //console.log('read_it', 'send.done');
         });
@@ -415,10 +411,10 @@ export default {
           serial: self.contentList[index].serial,
           feed_id: self.contentList[index].feed_id,
         },
-      }, function(err, data) {
-        //console.log(data);
-        self.contentList[index].readflag = data.body.readflag;
-        self.moveFlag = false;
+      }, function(data) {
+          //console.log(data);
+          self.contentList[index].readflag = data.readflag;
+          self.moveFlag = false;
       });
     },
     // ピンリストに追加されているエントリの一覧を表示する
@@ -426,8 +422,8 @@ export default {
       var self = this;
       agent({
         url: '/api/get_pinlist',
-      }, function(err, data) {
-        self.pinList = data.body;
+      }, function(data) {
+          self.pinList = data;
       });
     },
     pinListSwitch: function() {

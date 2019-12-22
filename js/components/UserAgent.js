@@ -1,17 +1,23 @@
 /* vim:set ts=2 sts=2 sw=2:*/
-export default function(args, then, error) {
-  const superagent = require('superagent');
-  var agent = superagent.post(args.url);
-  agent = args.jsonRequest ? agent : agent.type('form');
-
-  if (error === undefined) { error = function() {} }
-
-  agent.set({
-    'X-Requested-With': 'XMLHttpRequest',
-    'X-CSRF-Token': document.getElementsByName('csrf-token')[0].content,
-    'Cache-Control': 'no-cache'
+export default function(args, then) {
+  const contentType = args.jsonRequest ? "application/json; charset=utf-8" : "application/x-www-form-urlencoded";
+  let body;
+  if (args.data) {
+    body = (args.jsonRequest) ? JSON.stringify(args.data) : new URLSearchParams(args.data);
+  }
+  return fetch(args.url, {
+      method: "POST",
+      cache: "no-cache",
+      credentials: "same-origin", 
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-Token': document.getElementsByName('csrf-token')[0].content,
+        'Cache-Control': 'no-cache',
+        "Content-Type": contentType,
+      },
+      body: body,
   })
-  .send(args.data)
-  .on('error', error)
-  .end(then);
+  .then(res => res.json())
+  .then(then)
 }
+// TODO JSONを解いた後の then は外で定義するとエラー処理などすっきりする
