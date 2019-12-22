@@ -1,59 +1,118 @@
 /* vim:set ts=2 sts=2 sw=2:*/
 <template>
-<div>
-  <GionHeader></GionHeader>
-  <div class="container">
-    <div class="row">
-      <table class="table table-condensed" style="table-layout: fixed;">
-        <tbody>
-          <tr v-for="(item, index) in lists">
-            <th v-if="item.type == 'title'">
-              {{ item.name }}
-              <span class="pull-right">
-                <button class="btn btn-danger btn-xs" v-on:click="removeIt(item.id, 'category', item.name)">削除</button>
-              </span>
-            </th>
-            <td v-else style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-              <a class="pull-left btn btn-link btn-xs" v-bind:href="item.siteurl" v-bind:title="item.title" target="blank">
-                <span class="visible-xs">{{ item.title }}</span><!-- cutting need -->
-                <span class="visible-sm visible-md visible-lg">{{ item.title }}</span>
-                <span v-if="item.http_status < -5 || item.http_status == '404'" class="badge">取得に失敗しました</span>
-              </a> 
-              <span class="pull-right">
-                <button class="btn btn-info btn-xs" v-on:click="changeCategory(item.id, item.category_id)">移動</button>
+  <div>
+    <GionHeader />
+    <div class="container">
+      <div class="row">
+        <table
+          class="table table-condensed"
+          style="table-layout: fixed;"
+        >
+          <tbody>
+            <tr
+              v-for="item in lists"
+              :key="item.id"
+            >
+              <th v-if="item.type == 'title'">
+                {{ item.name }}
+                <span class="pull-right">
+                  <button
+                    class="btn btn-danger btn-xs"
+                    @click="removeIt(item.id, 'category', item.name)"
+                  >削除</button>
+                </span>
+              </th>
+              <td
+                v-else
+                style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+              >
+                <a
+                  class="pull-left btn btn-link btn-xs"
+                  :href="item.siteurl"
+                  :title="item.title"
+                  target="blank"
+                >
+                  <span class="visible-xs">{{ item.title }}</span><!-- cutting need -->
+                  <span class="visible-sm visible-md visible-lg">{{ item.title }}</span>
+                  <span
+                    v-if="item.http_status < -5 || item.http_status == '404'"
+                    class="badge"
+                  >取得に失敗しました</span>
+                </a> 
+                <span class="pull-right">
+                  <button
+                    class="btn btn-info btn-xs"
+                    @click="changeCategory(item.id, item.category_id)"
+                  >移動</button>
                 &nbsp;
-                <button class="btn btn-danger btn-xs" v-on:click="removeIt(item.id, 'entry', item.title)">削除</button>
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div><!--/row-->
+                  <button
+                    class="btn btn-danger btn-xs"
+                    @click="removeIt(item.id, 'entry', item.title)"
+                  >削除</button>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div><!--/row-->
 
-    <hr>
+      <hr>
    
-    <div class="modal show" id="categoryModal" tabindex="-1" v-if="categoryModal">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4 class="modal-title">Change: Categories</h4>
-          </div>
-          <div class="modal-body">
-            <label class="control-label" for="selectCat">Categories</label>
-            <select v-model="field_category" class="form-control" placeholder="Choose Category">
-              <option v-for="item in category" v-bind:value="item.id">{{ item.name }}</option>
-            </select>
-          </div>
-          <div class="modal-footer">
-            <a class="btn btn-success" v-on:click="submit">OK</a>
-            <button class="btn btn-default" v-on:click="categoryModal=false">Cancel</button>
+      <div
+        v-if="categoryModal"
+        id="categoryModal"
+        class="modal show"
+        tabindex="-1"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">
+                Change: Categories
+              </h4>
+            </div>
+            <div class="modal-body">
+              <label
+                class="control-label"
+                for="selectCat"
+              >Categories</label>
+              <select
+                v-model="field_category"
+                class="form-control"
+                placeholder="Choose Category"
+              >
+                <option
+                  v-for="item in category"
+                  :key="item.id"
+                  :value="item.id"
+                >
+                  {{ item.name }}
+                </option>
+              </select>
+            </div>
+            <div class="modal-footer">
+              <a
+                class="btn btn-success"
+                @click="submit"
+              >OK</a>
+              <button
+                class="btn btn-default"
+                @click="categoryModal=false"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <p class="clearfix hidden-lg hidden-md"><a class="btn btn-default pull-right" v-on:click="$root.returntop">Back to Top</a></p>
-  </div><!--/.container-->
-</div>
+      <p class="clearfix hidden-lg hidden-md">
+        <a
+          class="btn btn-default pull-right"
+          @click="$root.returntop"
+        >Back to Top</a>
+      </p>
+    </div><!--/.container-->
+  </div>
 </template>
 
 <script>

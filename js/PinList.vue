@@ -1,32 +1,44 @@
 /* vim:set ts=2 sts=2 sw=2:*/
 <template>
-<div>
-  <GionHeader></GionHeader>
-  <div class="container">
-    <div class="row">
-      <div class="panel panel-info">
-        <div class="panel-heading">
-          Pin List <span class="badge">{{ list.length }}</span>
+  <div>
+    <GionHeader />
+    <div class="container">
+      <div class="row">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            Pin List <span class="badge">{{ list.length }}</span>
+          </div>
+          <ul class="list-group">
+            <li
+              v-for="(item, index) in list"
+              :key="item.url"
+              class="list-group-item"
+            >
+              <a
+                class="glyphicon glyphicon-check"
+                style="cursor:pointer;"
+                :data-serial="item.serial"
+                :data-feed_id="item.feed_id"
+                :data-index="index"
+                @click="applyRead"
+              />
+              <span>{{ item.update_at | localtime }}</span>
+              <a
+                :href="item.url"
+                target="blank"
+              >{{ item.title }}</a>
+            </li>
+          </ul>
         </div>
-        <ul class="list-group">
-          <li class="list-group-item" v-for="(item, index) in list">
-            <a class="glyphicon glyphicon-check" style="cursor:pointer;"
-              v-bind:data-serial="item.serial"
-              v-bind:data-feed_id="item.feed_id"
-              v-bind:data-index="index"
-              v-on:click="applyRead">
-            </a>
-            <span>{{ item.update_at | localtime }}</span>
-            <a v-bind:href="item.url" target="blank">{{ item.title }}</a>
-          </li>
-        </ul>
+        <p class="clearfix hidden-lg hidden-md">
+          <a
+            class="btn btn-default pull-right"
+            @click="$root.returntop"
+          >Back to Top</a>
+        </p>
       </div>
-      <p class="clearfix hidden-lg hidden-md">
-        <a class="btn btn-default pull-right" v-on:click="$root.returntop">Back to Top</a>
-      </p>
     </div>
   </div>
-</div>
 </template>
 
 <script>

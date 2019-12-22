@@ -1,96 +1,157 @@
 /* vim:set ts=2 sts=2 sw=2:*/
 <template>
-<div>
-  <GionHeader></GionHeader>
-  <div class="container">
-    <div class="row">
-      <div class="col-sm-3">
-        <!-- PINLIST -->
-        <p>
-          <a class="btn btn-small btn-info" v-on:click.prevent="pinListSwitch"><span class="glyphicon glyphicon-pushpin"></span> Pin List</a>
-          <a class="btn btn-small btn-default" v-on:click.prevent="pinListClean"><span class="glyphicon glyphicon-remove"></span> Remove All Pin</a>
-        </p>
+  <div>
+    <GionHeader />
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-3">
+          <!-- PINLIST -->
+          <p>
+            <a
+              class="btn btn-small btn-info"
+              @click.prevent="pinListSwitch"
+            ><span class="glyphicon glyphicon-pushpin" /> Pin List</a>
+            <a
+              class="btn btn-small btn-default"
+              @click.prevent="pinListClean"
+            ><span class="glyphicon glyphicon-remove" /> Remove All Pin</a>
+          </p>
   
-        <div v-if="pinListState == true" class="panel panel-default pin__list">
-          <div class="panel-heading">Pin List <span class="badge badge-info">{{ pinList.length }}</span></div>
-          <div class="list-group" v-for="item in pinList">
-            <a class="list-group-item" v-bind:href="item.url">{{ item.title }}</a>
+          <div
+            v-if="pinListState == true"
+            class="panel panel-default pin__list"
+          >
+            <div class="panel-heading">
+              Pin List <span class="badge badge-info">{{ pinList.length }}</span>
+            </div>
+            <div
+              v-for="item in pinList"
+              :key="item.url"
+              class="list-group"
+            >
+              <a
+                class="list-group-item"
+                :href="item.url"
+              >{{ item.title }}</a>
+            </div>
+          </div>
+  
+          <!-- CATEGORIES -->
+          <div class="panel panel-default categories__list">
+            <div class="panel-heading">
+              <span class="glyphicon glyphicon-list" />Categories
+            </div>
+            <div class="list-group">
+              <a 
+                v-for="(item, index) in categoryList"
+                :key="item.name"
+                class="list-group-item"
+                :class="{ active: index == category.selected() }"
+                @click.prevent="category.set(categoryList, index);contentUpdate();"
+              >{{ item.name }} <span class="badge hidden-sm">{{ item.count }}</span></a>
+            </div>
           </div>
         </div>
-  
-        <!-- CATEGORIES -->
-        <div class="panel panel-default categories__list">
-          <div class="panel-heading"><span class="glyphicon glyphicon-list"></span>Categories</div>
-          <div class="list-group">
-            <a 
-               class="list-group-item"
-               v-for="(item, index) in categoryList"
-               v-bind:class="{ active: index == category.selected() }"
-               v-on:click.prevent="category.set(categoryList, index);contentUpdate();"
-               >{{ item.name }} <span class="badge hidden-sm">{{ item.count }}</span></a>
-          </div>
-        </div>
-      </div>
     
   
-      <!-- CONTENT -->
-      <div class="col-sm-9" id="contents_list">
-        <div class="tw panel panel-default well" v-if="contentList.length === 0">
-          <p class="text-center">No unreading entries.</p>
-        </div>
-        <div v-for="(item, index) in contentList">
-          <div class="tw panel panel-default" v-bind:class="{ 'tw--active panel-info': index == content.selected() }">
-            <h4 class="viewpage" v-bind:class="{ 'bg-info' : item.readflag == 2 }">
-              <a v-bind:href="item.url" target="blank" rel="noreferrer" style="color: #333;">
-              <span v-if="item.title.length > 0">{{ item.title }}</span>
-              <span v-else>[nothing title...]</span>
-              </a>
-            </h4>
-            <p>{{ item.description }}</p>
-  
-            <br class="hidden-md hidden-lg">
-            <div class="text-right">
-              <span style="margin-left:1em;" v-for="(undef, button) in externalApi">
-                <button
-                  class="btn btn-success btn-sm"
-                  v-bind:data-service="button"
-                  v-bind:data-url="item.raw_url"
-                  v-on:click.prevent="add_bookmark"
-                >{{ button }}</button>
-              </span>
-            </div>
-            <div>
-              <p
-                v-if="item.readflag == 2"
-                class="pull-right visible-md visible-lg"
-                >
-                <span class="glyphicon glyphicon-ok"></span> 
-                Pin!
-              </p>
-              <!-- //スマホ用ピン立て -->
-              <br class="hidden-md hidden-lg">
-              <button
-                class="hidden-md hidden-lg btn btn-info btn-sm btn-block"
-                v-on:click="togglePin(index)"
+        <!-- CONTENT -->
+        <div
+          id="contents_list"
+          class="col-sm-9"
+        >
+          <div
+            v-if="contentList.length === 0"
+            class="tw panel panel-default well"
+          >
+            <p class="text-center">
+              No unreading entries.
+            </p>
+          </div>
+          <div
+            v-for="(item, index) in contentList" 
+            :key="item.url"
+          >
+            <div
+              class="tw panel panel-default"
+              :class="{ 'tw--active panel-info': index == content.selected() }"
+            >
+              <h4
+                class="viewpage"
+                :class="{ 'bg-info' : item.readflag == 2 }"
               >
-              Pin!
-              </button>
+                <a
+                  :href="item.url"
+                  target="blank"
+                  rel="noreferrer"
+                  style="color: #333;"
+                >
+                  <span v-if="item.title.length > 0">{{ item.title }}</span>
+                  <span v-else>[nothing title...]</span>
+                </a>
+              </h4>
+              <p>{{ item.description }}</p>
+  
+              <br class="hidden-md hidden-lg">
+              <div class="text-right">
+                <span
+                  v-for="(undef, button) in externalApi"
+                  :key="button"
+                  style="margin-left:1em;"
+                >
+                  <button
+                    class="btn btn-success btn-sm"
+                    :data-service="button"
+                    :data-url="item.raw_url"
+                    @click.prevent="add_bookmark"
+                  >{{ button }}</button>
+                </span>
+              </div>
+              <div>
+                <p
+                  v-if="item.readflag == 2"
+                  class="pull-right visible-md visible-lg"
+                >
+                  <span class="glyphicon glyphicon-ok" /> 
+                  Pin!
+                </p>
+                <!-- //スマホ用ピン立て -->
+                <br class="hidden-md hidden-lg">
+                <button
+                  class="hidden-md hidden-lg btn btn-info btn-sm btn-block"
+                  @click="togglePin(index)"
+                >
+                  Pin!
+                </button>
+              </div>
+              <p>{{ item.date_epoch | epochToDateTime }} - {{ item.site_title }}</p>
             </div>
-            <p>{{ item.date_epoch | epochToDateTime }} - {{ item.site_title}}</p>
           </div>
         </div>
-      </div>
+      </div><!--/row-->
   
-    </div><!--/row-->
+      <ul class="pager hidden-lg hidden-md">
+        <li class="previous">
+          <a
+            class="btn btn-default"
+            @click.prevent="categoryPrevious"
+          >&lt;&lt; Category Back</a>
+        </li>
+        <li class="next">
+          <a
+            class="btn btn-default"
+            @click.prevent="categoryNext"
+          >Category Next &gt;&gt;</a>
+        </li>
+      </ul>
   
-    <ul class="pager hidden-lg hidden-md">
-      <li class="previous"><a v-on:click.prevent="categoryPrevious" class="btn btn-default">&lt;&lt; Category Back</a></li>
-      <li class="next"><a v-on:click.prevent="categoryNext" class="btn btn-default">Category Next &gt;&gt;</a></li>
-    </ul>
-  
-    <p class="clearfix hidden-lg hidden-md"><a class="btn btn-default pull-right" v-on:click="$root.returntop">Back to Top</a></p>
-  </div><!--/.container-->
-</div>
+      <p class="clearfix hidden-lg hidden-md">
+        <a
+          class="btn btn-default pull-right"
+          @click="$root.returntop"
+        >Back to Top</a>
+      </p>
+    </div><!--/.container-->
+  </div>
 </template>
 
 <script>
@@ -374,7 +435,7 @@ export default {
         }
       });
 
-      console.warn('read_it > params', params);
+      // console.warn('read_it > params', params);
       // 未読ステータスのものがなければ抜ける
       if (params.length === 0) {
         return false;
