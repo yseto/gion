@@ -25,6 +25,7 @@ common +{
     },
 
     redirector => 'https://www.google.com/url?sa=D&q=',
+    batch_token => 'batch_token-batch_token-batch_token',
 
 #   service => {
 #       pocket => '',

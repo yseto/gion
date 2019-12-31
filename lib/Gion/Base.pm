@@ -16,6 +16,7 @@ use DBIx::Handler::Sunny;
 use Digest::HMAC_SHA1 qw(hmac_sha1_hex);
 use Module::Load;
 use Router::Simple;
+use Text::Xslate;
 use Try::Tiny;
 
 use Gion::Config;
@@ -169,6 +170,14 @@ sub require_admin {
     $r->is_admin ?
         undef :
         throw code => 401, body => 'need privilege.';
+}
+
+sub require_batch {
+    my ($r) = @_;
+    my $batch_token = config->param('batch_token');
+    return 1
+        if ($r->req->header('Authorization') || '') eq "Bearer $batch_token";
+    throw code => 401, body => 'token_required or invalid_token';
 }
 
 1;
