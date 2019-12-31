@@ -10,6 +10,7 @@ use Gion::Base;
 use parent qw(Gion::Base);
 
 use Gion::Api;
+use Gion::BatchApi;
 use Gion::ExternalAPI::Hatena;
 use Gion::ExternalAPI::Pocket;
 use Gion::Opml;
@@ -24,6 +25,7 @@ route '/api/:action', { controller => 'Gion::Api' };
 route '/opml/:action', { controller => 'Gion::Opml' };
 route '/external_api/hatena/:action', { controller => 'Gion::ExternalAPI::Hatena' };
 route '/external_api/pocket/:action', { controller => 'Gion::ExternalAPI::Pocket' };
+route '/batch_api/:action', { controller => 'Gion::BatchApi' };
 
 sub index {
     my ($class, $r) = @_;

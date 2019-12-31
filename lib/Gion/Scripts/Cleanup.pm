@@ -13,14 +13,24 @@ use utf8;
 use Gion;
 use Gion::Config;
 
-*main_proclet = \&main_script;
+*main_proclet = \&main_and_db;
+*main_script = \&main_and_db;
 
-sub main_script {
+sub main_api {
+    my ($class, $db) = @_;
+    main($db);
+}
+
+sub main_and_db {
+    my $db = Gion->cli_dbh;
+    main($db);
+}
+
+sub main {
+my $db = shift;
 
 my $count;
 my %cmp;
-
-my $db = Gion->cli_dbh;
 
 $cmp{olde} = $db->select_one('SELECT COUNT(*) FROM entry');
 $cmp{olds} = $db->select_one('SELECT COUNT(*) FROM story');

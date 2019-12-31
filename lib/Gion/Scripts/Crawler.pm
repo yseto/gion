@@ -69,6 +69,21 @@ sub main_proclet {
     }, $class;
 }
 
+sub main_api {
+    my ($class, $db, %args) = @_;
+
+    my $sql = ($args{term}) ? "term = ?" : "id = ?";
+    my $val = ($args{term}) ? $args{term} : $args{id};
+    my $list = $db->select_all("SELECT * FROM feed WHERE $sql", $val);
+
+    bless {
+        list => $list,
+        silent => 0,
+        db => $db,
+        tolerance_time => (time + 86400*7),
+    }, $class;
+}
+
 sub crawl {
     my $self = shift;
 

@@ -3,6 +3,8 @@ services:
   app:
     build:
       context: ./
+#   volumes:
+#     - "./:/app"
     command: carton exec -- script/process.pl
     environment:
       PLACK_ENV: portable
@@ -14,6 +16,7 @@ services:
     image: mysql:5.6
     volumes:
       - "./var/mysql:/var/lib/mysql"
+#     - "./var/mysql.conf.d:/etc/mysql/conf.d"
       - "./sql:/docker-entrypoint-initdb.d"
     environment:
       - MYSQL_ROOT_PASSWORD=password
