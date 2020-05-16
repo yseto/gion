@@ -9,19 +9,29 @@
         "lint-fix": "eslint js/ --ext .js --ext .vue --fix"
     },
     "devDependencies": {
-        "@babel/core": "^7.4.5",
-        "babel-loader": "^8.0.6",
+        "@babel/core": "^7.9.6",
+        "@babel/preset-env": "^7.9.6",
+        "babel-loader": "^8.1.0",
         "css-loader": "^2.1.1",
-        "eslint": "^5.16.0",
-        "eslint-loader": "^2.1.2",
-        "eslint-plugin-vue": "^6.0.1",
-        "vue-loader": "^15.7.0",
-        "vue-template-compiler": "^2.6.10",
-        "webpack": "^4.32.2",
-        "webpack-cli": "^3.3.2"
+        "eslint": "^6.8.0",
+        "eslint-loader": "^2.2.1",
+        "eslint-plugin-vue": "^6.2.2",
+        "vue-loader": "^15.9.2",
+        "vue-template-compiler": "^2.6.11",
+        "webpack": "^4.43.0",
+        "webpack-cli": "^3.3.11"
     },
     "dependencies": {
-        "moment": "^2.24.0",
-        "vue": "^2.6.10"
-    }
+        "date-fns": "^2.13.0",
+        "js-file-download": "^0.4.12",
+        "vue": "^2.6.11",
+        "vue-router": "^3.1.6",
+        "vuex": "^3.4.0",
+        "vuex-persistedstate": "^2.7.1"
+    },
+    "browserslist": [
+        "last 2 versions",
+        "not dead"
+    ],
+    "private": true
 }

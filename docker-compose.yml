@@ -5,13 +5,12 @@ services:
       context: ./
 #   volumes:
 #     - "./:/app"
+#   command: carton exec -- plackup -r app.psgi
     command: carton exec -- script/process.pl
     environment:
       PLACK_ENV: portable
     ports:
       - 5000:5000
-  memcached:
-    image: memcached:alpine
   mysql:
     image: mysql:5.6
     volumes:

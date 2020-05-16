@@ -9,6 +9,7 @@ use Encode;
 use Encode::Guess qw/sjis euc-jp 7bit-jis/;
 use Furl;
 use HTML::Scrubber;
+use Net::DNS::Paranoid;
 use Try::Tiny;
 use URI;
 use XML::LibXML;
@@ -39,7 +40,17 @@ sub auth {
 sub examine_url {
     my $page_url = shift;
 
-    my $res = Furl->new->get($page_url);
+    my $resolver = Net::DNS::Paranoid->new;
+
+    my $ua = Furl->new(
+        inet_aton => sub {
+            my ($host, $errmsg) = $resolver->resolve($_[0], time(), $_[1]);
+            die $errmsg unless $host;
+            Socket::inet_aton($host->[0]);
+        },
+    );
+
+    my $res = $ua->get($page_url);
 
     return 0 unless defined $res;
 

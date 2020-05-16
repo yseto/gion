@@ -11,28 +11,33 @@ Class::Accessor::Lite->mk_accessors(qw{
 });
 
 use Furl;
+use Net::DNS::Paranoid;
 use URI;
 
 sub new {
     my ($class, %attr) = @_;
+
+    my $resolver = Net::DNS::Paranoid->new;
 
     my $ua = Furl->new(
         headers => [
             'Accept-Encoding' => 'gzip',
             Connection => 'close'
         ],
+        inet_aton => sub {
+            my ($host, $errmsg) = $resolver->resolve($_[0], time(), $_[1]);
+            die $errmsg unless $host;
+            Socket::inet_aton($host->[0]);
+        },
         max_redirects => 0,
         %attr,
     );
 
-    bless {
+    my $self = bless {
         ua => $ua,
     }, $class;
-}
-
-sub clear {
-    my $self = shift;
     $self->$_(undef) for qw/content location response code redirect_counter/;
+    $self;
 }
 
 sub add_redirect_counter {
@@ -45,12 +50,6 @@ sub add_redirect_counter {
 }
 
 sub get {
-    my ($self) = shift;
-    $self->clear;
-    $self->_get(@_);
-}
-
-sub _get {
     my ($self, $url, %opt) = @_;
 
     my $res = $self->ua->get($url, [%opt]);
@@ -100,7 +99,7 @@ sub _get {
                 return;
             }
         }
-        return $self->_get($location, %opt);
+        return $self->get($location, %opt);
     }
 }
 

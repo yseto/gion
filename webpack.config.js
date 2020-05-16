@@ -3,7 +3,7 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin')
 module.exports = {
   entry: './js/main.js',
   output: {
-    path: `${__dirname}/public/static/`,
+    path: `${__dirname}/public/`,
     filename: 'gion.js'
   },
   module: {
@@ -20,19 +20,23 @@ module.exports = {
       },
       {
         test: /\.js$/,
-        loader: 'babel-loader'
+        loader: 'babel-loader',
+        exclude: /node_modules/,
+        options: {
+          presets: [
+            "@babel/preset-env"
+          ],
+        },
       },
-      {
-        test: /\.css$/,
-        use: [
-          'vue-style-loader',
-          'css-loader'
-        ]
-      }
     ]
   },
   plugins: [
     new VueLoaderPlugin()
-  ]
+  ],
+  resolve: {
+    alias: {
+      'vue$': 'vue/dist/vue.esm.js',
+    }
+  }
 }
 

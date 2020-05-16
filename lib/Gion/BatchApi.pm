@@ -3,62 +3,64 @@ package Gion::BatchApi;
 use strict;
 use warnings;
 use utf8;
+use parent qw/Gion::Base/;
 
 use Encode;
 use FormValidator::Lite;
+
+use Gion::Authorizer::Batch;
 use Gion::Scripts::Crawler;
 use Gion::Scripts::Cleanup;
 
-sub feed_terms {
-    my ($class, $r) = @_;
-    $r->require_batch;
+sub create_authorizer { Gion::Authorizer::Batch->new(shift) }
 
-    my $validator = FormValidator::Lite->new($r->req);
+sub dispatch_feed_terms {
+    my $self = shift;
+
+    my $validator = FormValidator::Lite->new($self->req);
     my $res = $validator->check( term => ['NOT_NULL', 'UINT'], );
-    return $r->json([]) if $validator->has_error;
+    return $self->bad_request if $validator->has_error;
 
-    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/term/;
+    my %values = map { $_ => decode_utf8(scalar($self->req->param($_))) } qw/term/;
 
-    my $db = $r->dbh;
+    my $db = $self->dbh;
     my $handler = Gion::Scripts::Crawler->main_api($db, term => $values{term});
 
-    $r->json({ feed_id => [map { $_->{id} } @{$handler->{list}}] });
+    $self->json({ feed_id => [map { $_->{id} } @{$handler->{list}}] });
 }
 
-sub retrieve_feed {
-    my ($class, $r) = @_;
-    $r->require_batch;
+sub dispatch_retrieve_feed {
+    my $self = shift;
 
-    if (lc($r->req->method) ne 'put') {
-	$r->res->code(405);
-	return;
+    if (lc($self->req->method) ne 'put') {
+        $self->res->code(405);
+        return;
     }
 
-    my $validator = FormValidator::Lite->new($r->req);
+    my $validator = FormValidator::Lite->new($self->req);
     my $res = $validator->check( id => ['NOT_NULL', 'UINT'], );
-    return $r->json([]) if $validator->has_error;
+    return $self->bad_request if $validator->has_error;
 
-    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/id/;
+    my %values = map { $_ => decode_utf8(scalar($self->req->param($_))) } qw/id/;
 
-    my $db = $r->dbh;
+    my $db = $self->dbh;
     my $handler = Gion::Scripts::Crawler->main_api($db, id => $values{id})->crawl;
 
-    $r->res->code(202);
+    $self->res->code(202);
 }
 
-sub cleanup {
-    my ($class, $r) = @_;
-    $r->require_batch;
+sub dispatch_cleanup {
+    my $self = shift;
 
-    if (lc($r->req->method) ne 'delete') {
-	$r->res->code(405);
-	return;
+    if (lc($self->req->method) ne 'delete') {
+        $self->res->code(405);
+        return;
     }
 
-    my $db = $r->dbh;
+    my $db = $self->dbh;
     my $handler = Gion::Scripts::Cleanup->main_api($db);
 
-    $r->res->code(202);
+    $self->res->code(202);
 }
 
 1;

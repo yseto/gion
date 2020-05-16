@@ -31,9 +31,6 @@ sub import {
         $dbh->do($stmt) or die $dbh->errstr;
     }
 
-    # memd
-    my $memd = Test::TCP->new(code => sub { exec "memcached -p " . shift; });
-
     no strict 'refs';
     *{ $pkg . "::dbh" } = sub { $dbh };
     *{ $pkg . "::test_config" } = sub {
@@ -41,7 +38,6 @@ sub import {
             db      => {
                 dsn => $dsn
             },
-            memd    => ["localhost:" . $memd->port],
         );
     };
 }

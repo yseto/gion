@@ -14,10 +14,10 @@ use Plack::Middleware::ConditionalGET;
 use lib "lib/";
 use Gion::Crawler::UserAgent;
 
-my $ua = Gion::Crawler::UserAgent->new;
 
 subtest 'get 200', sub {
-    $ua->get('http://httpstat.us/200');
+    my $ua = Gion::Crawler::UserAgent->new;
+    $ua->get('https://httpstat.us/200');
 
     is $ua->code, 200;
     is $ua->content, '';
@@ -26,7 +26,8 @@ subtest 'get 200', sub {
 };
 
 subtest 'get 301', sub {
-    $ua->get('http://httpstat.us/301');
+    my $ua = Gion::Crawler::UserAgent->new;
+    $ua->get('https://httpstat.us/301');
 
     is $ua->code, 200;
     is $ua->location, 'https://httpstat.us';
@@ -34,7 +35,8 @@ subtest 'get 301', sub {
 };
 
 subtest 'get 302', sub {
-    $ua->get('http://httpstat.us/302');
+    my $ua = Gion::Crawler::UserAgent->new;
+    $ua->get('https://httpstat.us/302');
 
     is $ua->code, 200;
     is $ua->location, undef;
@@ -42,7 +44,8 @@ subtest 'get 302', sub {
 };
 
 subtest 'get 304', sub {
-    $ua->get('http://httpstat.us/304');
+    my $ua = Gion::Crawler::UserAgent->new;
+    $ua->get('https://httpstat.us/304');
 
     is $ua->code, 304;
     is $ua->location, undef;
@@ -50,7 +53,8 @@ subtest 'get 304', sub {
 };
 
 subtest 'get 404', sub {
-    $ua->get('http://httpstat.us/404');
+    my $ua = Gion::Crawler::UserAgent->new;
+    $ua->get('https://httpstat.us/404');
 
     is $ua->code, 404;
     is $ua->location, undef;
@@ -58,7 +62,8 @@ subtest 'get 404', sub {
 };
 
 subtest 'get 503', sub {
-    $ua->get('http://httpstat.us/503');
+    my $ua = Gion::Crawler::UserAgent->new;
+    $ua->get('https://httpstat.us/503');
 
     is $ua->code, 503;
     is $ua->location, undef;
@@ -92,6 +97,7 @@ my $port = $server->port;
 my $base = "http://127.0.0.1:$port";
 
 subtest 'get 304/200', sub {
+    my $ua = Gion::Crawler::UserAgent->new;
     $ua->get($base);
     is $ua->content, 'something';
     is $ua->code, 200;
@@ -102,6 +108,7 @@ subtest 'get 304/200', sub {
 };
 
 subtest 'get 304/200 not full match', sub {
+    my $ua = Gion::Crawler::UserAgent->new;
     $ua->get($base,
         'If-Modified-Since' => 'Wed, 02 Aug 2017 00:00:00 GMT',
     );
@@ -114,6 +121,7 @@ subtest 'get 304/200 not full match', sub {
 };
 
 subtest 'get 304/full match', sub {
+    my $ua = Gion::Crawler::UserAgent->new;
     $ua->get($base,
         'If-Modified-Since' => 'Wed, 02 Aug 2017 00:00:00 GMT',
         'If-None-Match' => '686897696a7c876b7e',

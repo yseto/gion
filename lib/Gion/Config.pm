@@ -6,6 +6,7 @@ use utf8;
 
 use Config::ENV 'PLACK_ENV', export => 'config';
 use File::Spec::Functions ':ALL';
+use File::Slurp qw(slurp);
 
 use constant root => rel2abs(".");
 
@@ -16,9 +17,6 @@ common +{
     salt => "Gion::Util::Auth",
     strech => 500,
 
-    # csrf-token
-    token => "csrf-token",
-
     crawler => {
         agent => "Gion Crawler/0.1 (https://github.com/yseto/gion)",
         timeout => 10,
@@ -27,13 +25,13 @@ common +{
     redirector => 'https://www.google.com/url?sa=D&q=',
     batch_token => 'batch_token-batch_token-batch_token',
 
-#   service => {
-#       pocket => '',
-#       hatena => {
-#           consumer_key => '',
-#           consumer_secret => '',
-#       },
-#   },
+    jwt => +{
+        cookie_name => "_jwt",
+        alg => 'RSA1_5',
+        enc => 'A256CBC-HS512',
+        private_key => "". slurp(catfile(root, 'var','keys','private.pem')),
+        public_key  => "". slurp(catfile(root, 'var','keys','public.pem')),
+    },
 };
 
 config test => +{
@@ -45,7 +43,6 @@ config portable => +{
         username => 'gion',
         password => 'gion',
     },
-    memd => ["memcached:11211"],
 };
 
 1;

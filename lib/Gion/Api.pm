@@ -4,60 +4,68 @@ use strict;
 use warnings;
 use utf8;
 
+use parent qw/Gion::Base/;
+
 use Encode;
 use FormValidator::Lite;
 use FormValidator::Lite::Constraint::URL;
 use HTML::Scrubber;
+use JSON;
 use JSON::Types;
+use JSON::XS;
+use Text::Xslate;
 use Time::Piece;
+use XML::LibXML;
 
+use Gion::Authorizer::Api;
+use Gion::Config;
 use Gion::Util;
 
-sub register_category {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
+sub create_authorizer { Gion::Authorizer::Api->new(shift) }
 
-    my $db = $r->dbh;
+sub user_id { shift->pad->param('user_id') }
 
-    my $validator = FormValidator::Lite->new($r->req);
+sub dispatch_register_category {
+    my $self = shift;
+
+    my $db = $self->dbh;
+
+    my $validator = FormValidator::Lite->new($self->req);
     my $res = $validator->check( name => ['NOT_NULL'], );
-    return $r->json([]) if $validator->has_error;
+    return $self->bad_request if $validator->has_error;
 
-    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/name/;
+    my %values = map { $_ => decode_utf8(scalar($self->req->param($_))) } qw/name/;
 
     my $rs = $db->select_one("SELECT COUNT(*) FROM category WHERE user_id = ? AND name = ?",
-        $r->session->get('username'),
+        $self->user_id,
         $values{name},
     );
 
-    return $r->json({ result => "ERROR_ALREADY_REGISTER" }) if $rs > 0;
+    return $self->json({ result => "ERROR_ALREADY_REGISTER" }) if $rs > 0;
 
     $db->query("INSERT INTO category (id,user_id,name) VALUES (null,?,?)",
-        $r->session->get('username'),
+        $self->user_id,
         $values{name},
     );
 
-    $r->json({ result => "OK" });
+    $self->json({ result => "OK" });
 }
 
-sub register_subscription {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
+sub dispatch_register_subscription {
+    my $self = shift;
 
-    my $db = $r->dbh;
+    my $db = $self->dbh;
 
-    my $validator = FormValidator::Lite->new($r->req);
+    my $validator = FormValidator::Lite->new($self->req);
     my $res = $validator->check(
         rss => [ 'HTTP_URL', 'NOT_NULL' ],
         url => [ 'HTTP_URL', 'NOT_NULL' ],
         title => ['NOT_NULL'],
         category => [ 'UINT', 'NOT_NULL' ],
     );
-    return $r->json([]) if $validator->has_error;
+    return $self->bad_request if $validator->has_error;
 
-    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/rss url title category/;
+    my %values = map { $_ => decode_utf8(scalar($self->req->param($_))) } qw/rss url title category/;
 
     my $feed = $db->select_one("SELECT id FROM feed WHERE url = ? AND siteurl = ? ",
         $values{rss},
@@ -77,14 +85,14 @@ sub register_subscription {
     }
 
     my $rs = $db->select_one("SELECT COUNT(*) FROM subscription WHERE user_id = ? AND feed_id = ?",
-        $r->session->get('username'),
+        $self->user_id,
         $feed
     );
 
-    return $r->json({ result => "ERROR_ALREADY_REGISTER" }) if $rs > 0;
+    return $self->json({ result => "ERROR_ALREADY_REGISTER" }) if $rs > 0;
 
     $rs = $db->select_one("SELECT COUNT(*) FROM category WHERE user_id = ? AND id = ?",
-        $r->session->get('username'),
+        $self->user_id,
         $values{category},
     );
 
@@ -93,25 +101,23 @@ sub register_subscription {
     $db->query("INSERT INTO subscription (category_id,feed_id,user_id) VALUES (?,?,?);",
         $values{category},
         $feed,
-        $r->session->get('username')
+        $self->user_id
     );
 
-    $r->json({ result => "OK" });
+    $self->json({ result => "OK" });
 }
 
-sub examine_subscription {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
+sub dispatch_examine_subscription {
+    my $self = shift;
 
-    my $validator = FormValidator::Lite->new($r->req);
+    my $validator = FormValidator::Lite->new($self->req);
     $validator->check(
         url => [ 'HTTP_URL', 'NOT_NULL' ],
     );
 
     my ($success, $resource);
     if ($validator->is_valid) {
-        ($success, $resource) = Gion::Util::examine_url($r->req->param('url'));
+        ($success, $resource) = Gion::Util::examine_url($self->req->param('url'));
     }
 
     if ($success) {
@@ -122,68 +128,62 @@ sub examine_subscription {
         }
     }
 
-    $r->json($success ? $resource : { title => '', url => '', parser_type => 0, preview_feed => undef });
+    $self->json($success ? $resource : { title => '', url => '', parser_type => 0, preview_feed => undef });
 }
 
-sub delete_it {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
+sub dispatch_delete_it {
+    my $self = shift;
 
-    my $validator = FormValidator::Lite->new($r->req);
+    my $validator = FormValidator::Lite->new($self->req);
     my $res = $validator->check(
         subscription => [ 'NOT_NULL', [ CHOICE => qw/category entry/ ] ],
         id => [ 'UINT', 'NOT_NULL' ],
     );
-    return $r->json([]) if $validator->has_error;
+    return $self->bad_request if $validator->has_error;
 
     my %sql = (
         category => "DELETE FROM category WHERE id = ? AND user_id = ?",
         entry => "DELETE FROM subscription WHERE feed_id = ? AND user_id = ?"
     );
 
-    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/id subscription/;
+    my %values = map { $_ => decode_utf8(scalar($self->req->param($_))) } qw/id subscription/;
 
-    my $db = $r->dbh;
-    $db->query($sql{$values{subscription}}, $values{id}, $r->session->get('username'));
-    $r->json({ r => "OK" });
+    my $db = $self->dbh;
+    $db->query($sql{$values{subscription}}, $values{id}, $self->user_id);
+    $self->json({ r => "OK" });
 }
 
-sub change_it {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
+sub dispatch_change_it {
+    my $self = shift;
 
-    my $validator = FormValidator::Lite->new($r->req);
+    my $validator = FormValidator::Lite->new($self->req);
     my $res = $validator->check(
         category => [ 'UINT', 'NOT_NULL' ],
         id => [ 'UINT', 'NOT_NULL' ],
     );
-    return $r->json([]) if $validator->has_error;
+    return $self->bad_request if $validator->has_error;
 
-    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/id category/;
+    my %values = map { $_ => decode_utf8(scalar($self->req->param($_))) } qw/id category/;
 
-    my $db = $r->dbh;
+    my $db = $self->dbh;
     $db->query("UPDATE subscription SET category_id = ? WHERE feed_id = ? AND user_id = ?",
         $values{category},
         $values{id},
-        $r->session->get('username')
+        $self->user_id
     );
 
-    $r->json({ r => "OK" });
+    $self->json({ r => "OK" });
 }
 
-sub get_numentry {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
+sub dispatch_get_numentry {
+    my $self = shift;
 
-    my $db = $r->dbh;
+    my $db = $self->dbh;
     my $rs = $db->select_row("SELECT numentry, noreferrer, nopinlist, numsubstr FROM user WHERE id = ?",
-        $r->session->get('username')
+        $self->user_id
     );
 
-    $r->json({
+    $self->json({
         numentry => number $rs->{numentry},
         noreferrer => bool $rs->{noreferrer},
         nopinlist => bool $rs->{nopinlist},
@@ -191,75 +191,37 @@ sub get_numentry {
     });
 }
 
-sub set_numentry {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
+sub dispatch_set_numentry {
+    my $self = shift;
 
-    my $validator = FormValidator::Lite->new($r->req);
+    my $validator = FormValidator::Lite->new($self->req);
     my $res = $validator->check(
         numentry => [ 'UINT', 'NOT_NULL' ],
         noreferrer => [ 'UINT', 'NOT_NULL' ],
         nopinlist => [ 'UINT', 'NOT_NULL' ],
         numsubstr => [ 'UINT', 'NOT_NULL' ],
     );
-    return $r->json([]) if $validator->has_error;
+    return $self->bad_request if $validator->has_error;
 
-    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) }
+    my %values = map { $_ => decode_utf8(scalar($self->req->param($_))) }
         qw/numentry noreferrer nopinlist numsubstr/;
 
-    my $db = $r->dbh;
+    my $db = $self->dbh;
     $db->query("UPDATE user SET numentry = ?, noreferrer = ?, nopinlist = ?, numsubstr = ? WHERE id = ?",
         $values{numentry},
         $values{noreferrer},
         $values{nopinlist},
         $values{numsubstr},
-        $r->session->get('username')
+        $self->user_id
     );
 
-    $r->json({ r => "OK" });
+    $self->json({ r => "OK" });
 }
 
-sub get_social_service {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
+sub dispatch_get_category {
+    my $self = shift;
 
-    my $db = $r->dbh;
-    my $rs = $db->select_all("SELECT username , service FROM social_service WHERE user_id = ?",
-        $r->session->get('username')
-    );
-
-    $r->json({ resource => $rs });
-}
-
-sub delete_social_service {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
-
-    my $validator = FormValidator::Lite->new($r->req);
-    my $res = $validator->check(
-        service => [ 'NOT_NULL' ],
-    );
-    return $r->json([]) if $validator->has_error;
-
-    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/service/;
-    my $db = $r->dbh;
-    $db->query("DELETE FROM social_service WHERE user_id = ? AND service = ?",
-        $r->session->get('username'),
-        $values{service},
-    );
-
-    $r->json({ r => "ok" });
-}
-
-sub get_category {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
-
-    my $db = $r->dbh;
+    my $db = $self->dbh;
 
     my $rs = $db->select_all("
         SELECT
@@ -273,7 +235,7 @@ sub get_category {
             AND category.user_id = ?
         GROUP BY category.id
         ORDER BY category.name ASC
-        ", $r->session->get('username'));
+        ", $self->user_id);
 
     my @response;
     foreach (@$rs) {
@@ -283,41 +245,20 @@ sub get_category {
             name    => string $_->{name},
         };
     }
-    $r->json(\@response);
+    $self->json(\@response);
 }
 
-sub get_entry {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
+sub dispatch_get_entry {
+    my $self = shift;
 
-    my $validator = FormValidator::Lite->new( $r->req );
+    my $validator = FormValidator::Lite->new( $self->req );
     my $res = $validator->check(
         category => [ 'NOT_NULL', 'UINT' ],
     );
-    return $r->json([]) if $validator->has_error;
+    return $self->bad_request if $validator->has_error;
 
-    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/category/;
-    my $id = $values{category};
-    my $db = $r->dbh;
-
-    if ( $id == 0 ) {
-        my $rs = $db->select_one("
-            SELECT
-                category.id
-            FROM entry
-            INNER JOIN subscription ON subscription_id = subscription.id
-            INNER JOIN category ON category.id = subscription.category_id
-            WHERE readflag <> 1
-                AND category.user_id = ?
-            GROUP BY category.id
-            ORDER BY category.name ASC
-            LIMIT 1
-        ", $r->session->get('username'));
-
-        return $r->json([]) unless defined $rs;
-        $id = $rs;
-    }
+    my %values = map { $_ => decode_utf8(scalar($self->req->param($_))) } qw/category/;
+    my $db = $self->dbh;
 
     my $scrubber = HTML::Scrubber->new;
     my @info;
@@ -341,11 +282,11 @@ sub get_entry {
             AND entry.user_id = ?
         ORDER BY pubdate DESC
     ",
-        $id,
-        $r->session->get('username')
+        $values{category},
+        $self->user_id
     );
 
-    my $user_config = $db->select_row("SELECT * FROM user WHERE id = ?", $r->session->get('username'));
+    my $user_config = $db->select_row("SELECT * FROM user WHERE id = ?", $self->user_id);
 
     my %site_title;
     for (@$rs) {
@@ -361,6 +302,7 @@ sub get_entry {
 
         my $pubdate = Time::Piece->strptime($_->{pubdate}, '%Y-%m-%d %H:%M:%S')->epoch;
         my $description = $scrubber->scrub($_->{description});
+        $description =~ s/\s+/ /mg;
         $description = substr($description, 0, $user_config->{numsubstr}) if $user_config->{numsubstr} > 0;
 
         my %row = (
@@ -382,23 +324,18 @@ sub get_entry {
         }
     }
 
-    $r->json({
-        entry => \@info,
-        id => number $id,
-    });
+    $self->json(\@info);
 }
 
-sub set_asread {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
+sub dispatch_set_asread {
+    my $self = shift;
 
-    my $db = $r->dbh;
+    my $db = $self->dbh;
 
-    my $payload = JSON->new->decode($r->req->content);
+    my $payload = JSON->new->decode($self->req->content);
     for (@$payload) {
         warn sprintf "ASREAD U:%s\t feed_id:%s\t serial:%s\n",
-             $r->session->get('username'),
+             $self->user_id,
              $_->{feed_id},
              $_->{serial};
 
@@ -413,29 +350,27 @@ sub set_asread {
                 AND feed_id = ?
                 AND serial = ?
         ",
-        $r->session->get('username'),
+        $self->user_id,
         $_->{feed_id},
         $_->{serial}
         );
     }
-    $r->json({ result => JSON::true() });
+    $self->json({ result => JSON::true() });
 }
 
-sub get_subscription {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
+sub dispatch_get_subscription {
+    my $self = shift;
 
-    my $db = $r->dbh;
+    my $db = $self->dbh;
 
-    my $user_config = $db->select_row("SELECT * FROM user WHERE id = ?", $r->session->get('username'));
+    my $user_config = $db->select_row("SELECT * FROM user WHERE id = ?", $self->user_id);
 
     my $category = $db->select_all("
         SELECT id, name
         FROM category
         WHERE user_id = ?
         ORDER BY name ASC
-    ", $r->session->get('username')
+    ", $self->user_id
     );
 
     my @category;
@@ -457,7 +392,7 @@ sub get_subscription {
         INNER JOIN feed ON feed_id = feed.id
         WHERE subscription.user_id = ?
         ORDER BY title ASC
-    ", $r->session->get('username')
+    ", $self->user_id
     );
 
     my @subscription;
@@ -472,18 +407,16 @@ sub get_subscription {
             http_status => number $row->{http_status},
         };
     }
-    $r->json({
+    $self->json({
         category => \@category,
         subscription => \@subscription
     });
 }
 
-sub get_pinlist {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
+sub dispatch_get_pinlist {
+    my $self = shift;
 
-    my $db = $r->dbh;
+    my $db = $self->dbh;
 
     my $list = $db->select_all("
         SELECT
@@ -497,11 +430,11 @@ sub get_pinlist {
         WHERE entry.readflag = 2
             AND entry.user_id = ?
         ORDER BY pubdate DESC
-    ", $r->session->get('username'));
+    ", $self->user_id);
 
-    my $user_config = $db->select_row("SELECT * FROM user WHERE id = ?", $r->session->get('username'));
+    my $user_config = $db->select_row("SELECT * FROM user WHERE id = ?", $self->user_id);
 
-    return $r->json($list)
+    return $self->json($list)
         if $user_config->{noreferrer} == 0;
 
     my @list_r;
@@ -509,32 +442,30 @@ sub get_pinlist {
         $row->{url} = Gion::Util::redirect_url($row->{url});
         push @list_r, $row;
     }
-    $r->json(\@list_r);
+    $self->json(\@list_r);
 }
 
-sub set_pin {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
+sub dispatch_set_pin {
+    my $self = shift;
 
-    my $validator = FormValidator::Lite->new($r->req);
+    my $validator = FormValidator::Lite->new($self->req);
     my $res = $validator->check(
         readflag => [ 'NOT_NULL', 'UINT' ],
         serial => ['NOT_NULL'],
         feed_id => ['NOT_NULL'],
     );
-    return $r->json([]) if $validator->has_error;
+    return $self->bad_request if $validator->has_error;
 
-    my $readflag = $r->req->param('readflag') == 2 ? 1 : 2;
+    my $readflag = $self->req->param('readflag') == 2 ? 1 : 2;
 
     warn sprintf "PIN U:%s\tfeed_id:%s\tserial:%s\n",
-        $r->session->get('username'),
-        $r->req->param('feed_id'),
-        $r->req->param('serial');
+        $self->user_id,
+        $self->req->param('feed_id'),
+        $self->req->param('serial');
 
-    my %values = map { $_ => decode_utf8(scalar($r->req->param($_))) } qw/feed_id serial/;
+    my %values = map { $_ => decode_utf8(scalar($self->req->param($_))) } qw/feed_id serial/;
 
-    my $db = $r->dbh;
+    my $db = $self->dbh;
     $db->query("
         UPDATE entry
         SET
@@ -545,21 +476,19 @@ sub set_pin {
             AND feed_id = ?
     ",
         $readflag,
-        $r->session->get('username'),
+        $self->user_id,
         $values{serial},
         $values{feed_id},
     );
-    $r->json({
+    $self->json({
         readflag => number $readflag,
     });
 }
 
-sub remove_all_pin {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
+sub dispatch_remove_all_pin {
+    my $self = shift;
 
-    my $db = $r->dbh;
+    my $db = $self->dbh;
     $db->query("
         UPDATE entry
         SET
@@ -567,82 +496,192 @@ sub remove_all_pin {
             update_at = CURRENT_TIMESTAMP
         WHERE readflag = 2
             AND user_id = ?
-    ", $r->session->get('username'));
+    ", $self->user_id);
 
-    $r->json({ result => JSON::true() });
+    $self->json({ result => JSON::true() });
 }
 
-sub update_password {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_xhr;
+sub dispatch_update_password {
+    my $self = shift;
 
-    my $validator = FormValidator::Lite->new( $r->req );
+    my $validator = FormValidator::Lite->new( $self->req );
     my $res = $validator->check(
         password_old => [ 'NOT_NULL', [qw/LENGTH 8 255/] ],
         { password => [qw/password passwordc/] } => ['DUPLICATION'],
         password => [ 'NOT_NULL', [qw/LENGTH 8 255/] ],
     );
-    return $r->json({ result => 'error' }) if $validator->has_error;
+    return $self->json({ result => 'error' }) if $validator->has_error;
 
-    my $db = $r->dbh;
-    my $user_config = $db->select_row("SELECT * FROM user WHERE id = ?", $r->session->get('username'));
+    my $db = $self->dbh;
+    my $user_config = $db->select_row("SELECT * FROM user WHERE id = ?", $self->user_id);
 
     my $current = Gion::Util::auth(
         id => $user_config->{name},
-        password => encode_utf8($r->req->param('password_old')),
+        password => encode_utf8($self->req->param('password_old')),
     );
 
-    return $r->json({ result => 'unmatch now password' })
+    return $self->json({ result => 'unmatch now password' })
       if $user_config->{password} ne $current;
 
     my $renew = Gion::Util::auth(
         id => $user_config->{name},
-        password => encode_utf8($r->req->param('password')),
+        password => encode_utf8($self->req->param('password')),
     );
 
-    warn sprintf "Update Passwd: %s, %s\n", $renew, $r->session->get('username');
+    warn sprintf "Update Passwd: %s, %s\n", $renew, $self->user_id;
 
     $db->query("
         UPDATE user
         SET password = ?
         WHERE id = ?
-    ", $renew, $r->session->get('username'));
+    ", $renew, $self->user_id);
 
-    $r->json({ result => 'update password' });
+    $self->json({ result => 'update password' });
 }
 
-sub create_user {
-    my ($class, $r) = @_;
-    $r->require_login;
-    $r->require_admin;
-    $r->require_xhr;
+# opml
 
-    unless ($r->is_admin) {
-        return $r->json({ result => 'you are not superuser.' });
+sub dispatch_opml_export {
+    my $self = shift;
+
+    my $db = $self->dbh;
+    my $category = $db->select_all("
+        SELECT
+            id,
+            name
+        FROM category
+        WHERE user_id = ?
+        ORDER BY name ASC
+    ", $self->user_id);
+
+    my @records;
+    for (@$category) {
+        my $rs = $db->select_all("
+            SELECT feed_id
+            FROM subscription
+            WHERE category_id = ?
+        ", $_->{id});
+        my @items;
+        for (@$rs) {
+            my $row = $db->select_row("SELECT title, siteurl, url FROM feed WHERE id = ?", $_->{feed_id});
+            push @items, $row;
+        }
+        push @records, {
+            name => $_->{name},
+            items => \@items,
+        };
     }
 
-    my $validator = FormValidator::Lite->new( $r->req );
-    my $res = $validator->check(
-        username => ['NOT_NULL'],
-        password => [ 'NOT_NULL', [qw/LENGTH 8 255/] ],
-    );
-    return $r->json({ result => 'error' }) if $validator->has_error;
-
-    my $username = encode_utf8($r->req->param('username'));
-    my $auth = Gion::Util::auth(
-        id => $username,
-        password => encode_utf8($r->req->param('password')),
+    my $xslate = Text::Xslate->new(
+        syntax => 'TTerse',
+        path => [ File::Spec->catdir(config->root,'templates') ],
     );
 
-    my $db = $r->dbh;
-    $db->query('
-        INSERT INTO user (id,password,name) VALUES (null,?,?)
-    ',
-        $auth,
-        $username,
-    );
-    $r->json({ result => "User Added: " . $username });
+    my $xml = $xslate->render("opml.xml", { records => \@records });
+    $self->json({ xml => $xml });
+}
+
+sub dispatch_opml_import {
+    my $self = shift;
+
+    my %values = map { $_ => decode_utf8(scalar($self->req->param($_))) } qw/xml/;
+
+    my $db = $self->dbh;
+    my $xml = XML::LibXML->new;
+    my $dom = $xml->load_xml(string => $values{xml});
+
+    my $category = "Default Category";
+    for my $e ( $dom->findnodes('//outline') ) {
+        if ( ($e->getAttribute('type') or '') ne 'rss' ) {
+            $category = $e->getAttribute('text') ?
+                $e->getAttribute('text') :
+                "Default Category";
+            next;
+        }
+
+        unless  (defined $e->getAttribute('htmlUrl')
+            and defined $e->getAttribute('xmlUrl')
+            and defined $e->getAttribute('title') )
+        {
+            warn "required parameter missing";
+            next;
+        }
+
+        my $xmlUrl = $e->getAttribute('xmlUrl');
+        my $htmlUrl = $e->getAttribute('htmlUrl');
+
+        # guess category id
+        my $crs = $db->select_row("
+            SELECT *
+            FROM category
+            WHERE user_id = ?
+                AND name = ?
+        ", $self->user_id, $category);
+
+        my $cid;
+        unless (defined $crs->{id}) {
+            $db->query("INSERT INTO category (id,user_id,name) VALUES (null,?,?)",
+                $self->user_id,
+                $category
+            );
+            $crs = $db->select_row("
+                SELECT *
+                FROM category
+                WHERE user_id = ?
+                    AND name = ?
+            ", $self->user_id, $category);
+            $cid = $crs->{id};
+        }
+        $cid = $crs->{id};
+
+        # guess feed id
+        my $feedrs = $db->select_row("
+            SELECT id
+            FROM feed
+            WHERE url = ?
+                AND siteurl = ?
+        ", $xmlUrl, $htmlUrl);
+
+        unless (defined $feedrs->{id}) {
+            my $dt = Time::Piece->new;
+            $db->query("INSERT INTO feed (url,siteurl,title,http_status,pubdate) VALUES (?,?,?,0,?);",
+                $xmlUrl,
+                $htmlUrl,
+                $e->getAttribute('title'),
+                $dt->epoch
+            );
+            $feedrs = $db->select_row("
+                SELECT id
+                FROM feed
+                WHERE url = ?
+                    AND siteurl = ?
+            ", $xmlUrl, $htmlUrl);
+        }
+        my $feedid = $feedrs->{id};
+
+        # already register ?
+        my $rs = $db->select_row("
+            SELECT
+                COUNT(*) AS t
+            FROM subscription
+            WHERE user_id = ?
+                AND feed_id = ?
+        ", $self->user_id, $feedid);
+
+        # skip already registered.
+        if ( $rs->{t} ) {
+            warn encode_utf8(sprintf("already registered : %s", $e->getAttribute('title')));
+            next;
+        }
+
+        # register.
+        $db->query("INSERT INTO subscription (category_id,feed_id,user_id) VALUES (?,?,?);",
+            $cid,
+            $feedid,
+            $self->user_id,
+        );
+    }
+    $self->json({ done => JSON::true });
 }
 
 1;

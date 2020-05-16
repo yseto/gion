@@ -13,7 +13,9 @@ use Time::Piece;
 use File::Slurp;
 use LWP::Protocol::PSGI;
 use LWP::UserAgent;
+use HTTP::CookieJar::LWP;
 use HTTP::Request::Common;
+use JSON;
 use JSON::XS;
 
 use lib "lib/";
@@ -43,50 +45,27 @@ for my $stmt (split /;/, join('', <DATA>)) {
 
 LWP::Protocol::PSGI->register($app, host => 'localhost');
 
-my $page;
-my $cookie;
-
-subtest 'login', sub {
-    my $mech = Test::WWW::Mechanize::PSGI->new(app => $app);
-    
-    $mech->get_ok('/');
-    $mech->content_contains('Please sign in');
-    $mech->submit_form_ok({
-        form_number => 1,
-        fields => {
-            id => 'admin',
-            password => 'password123456',
-        }
-    }, 'login form');
-    
-    $mech->content_contains('/static/gion.js', 'check javascript');
-    $cookie = $mech->cookie_jar;
-    $page = $mech->content;
-    isnt($page, ''); # XXX
-};
-
-my $csrf_token;
-
-subtest 'get csrf_token', sub {
-    HTML::Parser->new(start_h => [
-        sub {
-            my($self, $tag, $attr) = @_;
-            if ($tag eq 'meta' and defined $attr->{name} and $attr->{name} eq 'csrf-token') {
-                $csrf_token = $attr->{content};
-            }
-        },
-        'self,tagname,attr'
-    ])->parse($page);
-    isnt($csrf_token, ''); # XXX
-};
-
-my $ua = LWP::UserAgent->new;
-$ua->cookie_jar($cookie);
+my $jar = HTTP::CookieJar::LWP->new;
+my $ua = LWP::UserAgent->new(
+    cookie_jar => $jar,
+);
 
 my %headers = (
+    Origin             => 'http://localhost',
     'X-Requested-With' => 'XMLHttpRequest',
-    'X-CSRF-Token' => $csrf_token,
 );
+
+subtest 'login', sub {
+    my $req = POST 'http://localhost/api/login',
+        Content => [
+            id => 'admin',
+            password => 'password123456',
+        ],
+        %headers;
+    
+    my $res = $ua->request($req);
+    is($res->code, 200);
+};
 
 subtest 'api - get/set numentry', sub {
     my $req1 = POST 'http://localhost/api/get_numentry',
@@ -120,54 +99,6 @@ subtest 'api - get_category', sub {
     is @$object[0]->{id}, 1;
 };
 
-subtest 'api - get_entry / default_category', sub {
-    my $req = POST 'http://localhost/api/get_entry',
-        Content => [ category => 0 ],
-        %headers;
-    
-    my $res = $ua->request($req);
-    my $object = decode_json $res->content;
-
-    is_deeply $object, {
-        'entry' => [
-            {
-                'date_epoch' => 1500944480,
-                'description' => 'test05',
-                'raw_url' => 'http://www.example.com/10011072851000.html',
-                'readflag' => 0,
-                'site_title' => 'test feed',
-                'title' => 'title - test05',
-                'url' => 'http://www.example.com/10011072851000.html',
-                'feed_id' => 22,
-                'serial' => 5,
-            },
-            {
-                'date_epoch' => 1500944475,
-                'description' => 'test04',
-                'raw_url' => 'http://www.example.com/10011072821000.html',
-                'readflag' => 0,
-                'site_title' => 'test feed',
-                'title' => 'title - test04',
-                'url' => 'http://www.example.com/10011072821000.html',
-                'feed_id' => 22,
-                'serial' => 4,
-            },
-            {
-                'date_epoch' => 1500944470,
-                'description' => 'test03',
-                'raw_url' => 'http://www.example.com/10011072771000.html',
-                'readflag' => 0,
-                'site_title' => 'test feed',
-                'title' => 'title - test03',
-                'url' => 'http://www.example.com/10011072771000.html',
-                'feed_id' => 22,
-                'serial' => 3,
-            }
-        ],
-        'id' => 1
-    };
-};
-
 subtest 'api - get_entry / specify category', sub {
     my $req = POST 'http://localhost/api/get_entry',
         Content => [ category => 2 ],
@@ -176,44 +107,42 @@ subtest 'api - get_entry / specify category', sub {
     my $res = $ua->request($req);
     my $object = decode_json $res->content;
 
-    is_deeply $object, {
-        'entry' => [
-            {
-                'date_epoch' => 1500944515,
-                'description' => 'test11',
-                'raw_url' => 'http://www.example.com/10011072971000.html',
-                'readflag' => 0,
-                'site_title' => 'test feed',
-                'title' => 'title - test11',
-                'url' => 'http://www.example.com/10011072971000.html',
-                'feed_id' => 23,
-                'serial' => 11,
-            },
-            {
-                'date_epoch' => 1500944505,
-                'description' => 'test10',
-                'raw_url' => 'http://www.example.com/10011072961000.html',
-                'readflag' => 0,
-                'site_title' => 'test feed',
-                'title' => 'title - test10',
-                'url' => 'http://www.example.com/10011072961000.html',
-                'feed_id' => 23,
-                'serial' => 10,
-            },
-            {
-                'date_epoch' => 1500944500,
-                'description' => 'test09',
-                'raw_url' => 'http://www.example.com/10011072911000.html',
-                'readflag' => 0,
-                'site_title' => 'test feed',
-                'title' => 'title - test09',
-                'url' => 'http://www.example.com/10011072911000.html',
-                'feed_id' => 23,
-                'serial' => 9,
-            }
-        ],
-        'id' => '2',
-    };
+    my $expect = [
+        {
+            'date_epoch' => 1500944515,
+            'description' => 'test11',
+            'raw_url' => 'http://www.example.com/10011072971000.html',
+            'readflag' => 0,
+            'site_title' => 'test feed',
+            'title' => 'title - test11',
+            'url' => 'http://www.example.com/10011072971000.html',
+            'feed_id' => 23,
+            'serial' => 11,
+        },
+        {
+            'date_epoch' => 1500944505,
+            'description' => 'test10',
+            'raw_url' => 'http://www.example.com/10011072961000.html',
+            'readflag' => 0,
+            'site_title' => 'test feed',
+            'title' => 'title - test10',
+            'url' => 'http://www.example.com/10011072961000.html',
+            'feed_id' => 23,
+            'serial' => 10,
+        },
+        {
+            'date_epoch' => 1500944500,
+            'description' => 'test09',
+            'raw_url' => 'http://www.example.com/10011072911000.html',
+            'readflag' => 0,
+            'site_title' => 'test feed',
+            'title' => 'title - test09',
+            'url' => 'http://www.example.com/10011072911000.html',
+            'feed_id' => 23,
+            'serial' => 9,
+        }
+    ];
+    is_deeply $object, $expect;
 };
 
 subtest 'api - get_entry / set_asread', sub {
@@ -237,7 +166,8 @@ subtest 'api - get_entry / set_asread', sub {
         %headers;
     
     my $res = $ua->request($req);
-    is $res->content, 'OK';
+    my $object = decode_json $res->content;
+    is $object->{result}, JSON::true;
 };
 
 subtest 'api - get_entry / specify category after set_asread', sub {
@@ -248,13 +178,13 @@ subtest 'api - get_entry / specify category after set_asread', sub {
     my $res = $ua->request($req);
     my $object = decode_json $res->content;
 
-    is scalar(@{$object->{entry}}), 2;
+    is scalar(@$object), 2;
     my @result = sort map {
         {
             subscription_id => $_->{subscription_id},
             serial => $_->{serial},
         }
-    } @{$object->{entry}};
+    } @$object;
 
     my @payload = (
         {
@@ -275,7 +205,8 @@ subtest 'api - get_entry / specify category after set_asread', sub {
         %headers;
     
     my $res_read = $ua->request($req_read);
-    is $res_read->content, 'OK';
+    my $object = decode_json $res_read->content;
+    is $object->{result}, JSON::true;
 };
 
 subtest 'api - get_entry / specify category nothing entries', sub {
@@ -286,7 +217,7 @@ subtest 'api - get_entry / specify category nothing entries', sub {
     my $res = $ua->request($req);
     my $object = decode_json $res->content;
 
-    is scalar(@{$object->{entry}}), 0;
+    is scalar(@$object), 0;
 };
 
 subtest 'api - set_pin', sub {
@@ -326,7 +257,8 @@ subtest 'api - remove_all_pin', sub {
         %headers;
     
     my $res = $ua->request($req);
-    is $res->content, 'OK';
+    my $object = decode_json $res->content;
+    is $object->{result}, JSON::true;
 };
 
 subtest 'api - get_subscription', sub {

@@ -6,16 +6,16 @@ use lib "t/";
 use testenv;
 
 use Data::Section::Simple qw(get_data_section);
+use File::Slurp;
 use HTTP::Date;
 use JSON::XS;
 use Test::More;
 use Test::mysqld;
 use Time::Piece;
-use File::Slurp;
 
 use lib "lib/";
+use Gion::Base;
 use Gion::Config;
-use Gion;
 use Gion::Crawler::Feed;
 
 my $dbh = dbh();
@@ -26,7 +26,7 @@ for my $stmt (split /;/, get_data_section('table')) {
     $dbh->do($stmt) or die $dbh->errstr;
 }
 
-my $db = Gion->cli_dbh;
+my $db = Gion::Base->new({})->dbh;
 
 my $feed_model = Gion::Crawler::Feed->new(
     db => $db,

@@ -87,16 +87,16 @@ sub main_api {
 sub crawl {
     my $self = shift;
 
-    my $ua_config = config->param('crawler');
-    my $ua = Gion::Crawler::UserAgent->new(%$ua_config);
-
     for my $feed (@{$self->{list}}) {
-        $self->crawl_per_feed($ua, $feed);
+        $self->crawl_per_feed($feed);
     }
 }
 
 sub crawl_per_feed {
-    my ($self, $ua, $feed) = @_;
+    my ($self, $feed) = @_;
+
+    my $ua_config = config->param('crawler');
+    my $ua = Gion::Crawler::UserAgent->new(%$ua_config);
 
     my $db = $self->{db};
 

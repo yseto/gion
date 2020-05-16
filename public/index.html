@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Gion</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimal-ui, user-scalable=no">
+    <meta name="author" content="Gion">
+    <meta name="referrer" content="no-referrer">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+        overflow-y: scroll;
+      }
+      .tw {
+        margin: 0 0 5px !important;
+        padding: 0 15px;
+        box-sizing: border-box;
+      }
+      .tw--active {
+        padding-left: 8px;
+        border-left-width: 8px !important;
+      }
+      .categories__list .list-group-item, .pin__list .list-group-item {
+        padding: 4px 10px;
+        cursor: pointer;
+      }
+      .previewFeed .list-group-item {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+      .navbar-nav li {
+        cursor: pointer;
+      }
+      .viewpage, .categories__list .list-group, .pin__list .list-group, .pin__list__page .list-group {
+        overflow-wrap: break-word;
+      }
+    </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  </head>
+  <body>
+    <div id="app">
+      <gion-header></gion-header>
+      <router-view></router-view>
+    </div>
+    <script src="/gion.js"></script>
+  </body>
+</html>

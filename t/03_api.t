@@ -8,11 +8,11 @@ use HTML::Parser;
 use Plack::Test;
 use Plack::Util;
 use Test::More;
-use Test::WWW::Mechanize::PSGI;
 use Time::Piece;
 use File::Slurp;
 use LWP::Protocol::PSGI;
 use LWP::UserAgent;
+use HTTP::CookieJar::LWP;
 use HTTP::Request::Common;
 use JSON::XS;
 
@@ -38,50 +38,27 @@ $dbh->do("INSERT INTO user (id, password, name) VALUES (null, '$auth', 'admin')"
 
 LWP::Protocol::PSGI->register($app, host => 'localhost');
 
-my $page;
-my $cookie;
-
-subtest 'login', sub {
-    my $mech = Test::WWW::Mechanize::PSGI->new(app => $app);
-    
-    $mech->get_ok('/');
-    $mech->content_contains('Please sign in');
-    $mech->submit_form_ok({
-        form_number => 1,
-        fields => {
-            id => 'admin',
-            password => 'password123456',
-        }
-    }, 'login form');
-    
-    $mech->content_contains('/static/gion.js', 'check javascript');
-    $cookie = $mech->cookie_jar;
-    $page = $mech->content;
-    isnt($page, ''); # XXX
-};
-
-my $csrf_token;
-
-subtest 'get csrf_token', sub {
-    HTML::Parser->new(start_h => [
-        sub {
-            my($self, $tag, $attr) = @_;
-            if ($tag eq 'meta' and defined $attr->{name} and $attr->{name} eq 'csrf-token') {
-                $csrf_token = $attr->{content};
-            }
-        },
-        'self,tagname,attr'
-    ])->parse($page);
-    isnt($csrf_token, ''); # XXX
-};
-
-my $ua = LWP::UserAgent->new;
-$ua->cookie_jar($cookie);
+my $jar = HTTP::CookieJar::LWP->new;
+my $ua = LWP::UserAgent->new(
+    cookie_jar => $jar,
+);
 
 my %headers = (
+    Origin             => 'http://localhost',
     'X-Requested-With' => 'XMLHttpRequest',
-    'X-CSRF-Token' => $csrf_token,
 );
+
+subtest 'login', sub {
+    my $req = POST 'http://localhost/api/login',
+        Content => [
+            id => 'admin',
+            password => 'password123456',
+        ],
+        %headers;
+    
+    my $res = $ua->request($req);
+    is($res->code, 200);
+};
 
 subtest 'api - examine_subscription', sub {
     my $req = POST 'http://localhost/api/examine_subscription',
@@ -269,10 +246,6 @@ subtest 'api - get/set numentry', sub {
     is_deeply $object1, $object2;
 };
 
-# TODO
-# get_social_service
-# delete_social_service
-
 subtest 'api - update_password - unmatch now', sub {
     my $req = POST 'http://localhost/api/update_password',
         Content => [
@@ -314,19 +287,6 @@ subtest 'api - update_password - success', sub {
     my $res = $ua->request($req);
     my $object = decode_json $res->content;
     is $object->{result}, 'update password';
-};
-
-subtest 'api - create_user', sub {
-    my $req = POST 'http://localhost/api/create_user',
-        Content => [
-            username => 'user1',
-            password => 'password',
-        ],
-        %headers;
-    
-    my $res = $ua->request($req);
-    my $object = decode_json $res->content;
-    is $object->{result}, 'User Added: user1';
 };
 
 done_testing;

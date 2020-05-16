@@ -1,6 +1,7 @@
-/* vim:set ts=2 sts=2 sw=2:*/
+/* vim:set ts=2 sts=2 sw=2 ft=javascript:*/
 <template>
   <div
+    v-if="$route.meta.anonymous ? false : true"
     class="navbar navbar-default navbar-fixed-top"
     role="navigation"
   >
@@ -9,7 +10,7 @@
         <button
           type="button"
           class="navbar-toggle"
-          @click="$root.navbar"
+          @click="navbar"
         >
           <span class="sr-only">Toggle navigation</span>
           <span class="icon-bar" />
@@ -20,36 +21,39 @@
       </div>
       <div
         class="navbar-collapse collapse"
-        :class="{ show: $root.navbarState }"
+        :class="{ show: navbarState }"
       >
         <ul
           v-for="item in items"
           :key="item.caption"
           class="nav navbar-nav"
         >
-          <li :class="{ active: $root.currentRoute === item.route }">
-            <a @click="$root.go(item.route)"><span :class="item.icon" /> {{ item.caption }}</a>
+          <li :class="{ active: $root.$route.path === item.route }">
+            <a @click="go(item.route)"><span
+              class="glyphicon"
+              :class="item.icon"
+            /> {{ item.caption }}</a>
           </li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
-          <li :class="{ active: $root.currentRoute === '#settings' }">
-            <a @click="$root.go('#settings')"><span class="glyphicon glyphicon-wrench" /> Settings</a>
+          <li :class="{ active: $root.$route.path === '/settings' }">
+            <a @click="go('/settings')"><span class="glyphicon glyphicon-wrench" /> Settings</a>
           </li>
           <li class="hidden-sm">
             <a
               style="cursor:pointer;"
-              @click="$root.helpModal=true"
+              @click="helpModal=true"
             >
               <i class="glyphicon glyphicon-question-sign" /> Help
             </a>
           </li>
-          <li><a href="/logout"><span class="glyphicon glyphicon-off" /> Logout</a></li>
+          <li><a @click="go('/logout')"><span class="glyphicon glyphicon-off" /> Logout</a></li>
         </ul>
       </div><!--/.navbar-collapse -->
     </div>
 
     <div
-      v-if="$root.helpModal"
+      v-if="helpModal"
       id="helpModal"
       class="modal show"
       tabindex="-1"
@@ -57,6 +61,15 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+              @click="helpModal=false"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
             <h4 class="modal-title">
               Help
             </h4>
@@ -98,7 +111,7 @@
           <div class="modal-footer">
             <button
               class="btn btn-default"
-              @click="$root.helpModal=false"
+              @click="helpModal=false"
             >
               Close
             </button>
@@ -141,47 +154,40 @@
 export default {
   data: function() {
     return {
-      items: [],
+      items: [
+        {
+          icon: 'glyphicon-pushpin',
+          caption: 'Pin List',
+          route: '/pin',
+        }, {
+          icon: 'glyphicon-inbox',
+          caption: 'Read entries',
+          route: '/entry',
+        }, {
+          icon: 'glyphicon-plus-sign',
+          caption: 'Add a new subscription',
+          route: '/add',
+        }, {
+          icon: 'glyphicon-list',
+          caption: 'Manage subscription',
+          route: '/subscription',
+        }
+      ],
+      navbarState: false,
+      helpModal: false,
     };
-  },
-  created: function() {
-    const vm = this;
-    const items = {
-      'entry': {
-        icon: 'inbox',
-        caption: 'Read entries'
-      },
-      'pin': {
-        icon: 'pushpin',
-        caption: 'Pin List'
-      },
-      'add': {
-        icon: 'plus-sign',
-        caption: 'Add a new subscription'
-      },
-      'subscription': {
-        icon: 'list',
-        caption: 'Manage subscription'
-      },
-    };
-    const lineup = this.defaultReader() ? ['entry', 'pin'] : ['pin', 'entry'];
-    lineup.concat(['add', 'subscription']).forEach(function(element) {
-      let item = items[element];
-      item.icon = `glyphicon glyphicon-${item.icon}`;
-      item.route = `#${element}`;
-      vm.items.push(item);
-    });
   },
   methods: {
-    defaultReader: function() {
-      return document.querySelector('meta[name=mode-nopin]').content === 'true';
-    }
+    navbar: function() {
+      this.navbarState = this.navbarState ? false : true;
+    },
+    go: function(to) {
+      this.navbarState = false;
+      if (this.$route.path !== to) {
+        this.$router.push(to);
+      }
+    },
   },
 }
 </script>
 
-<style scoped>
-.navbar-nav li {
-  cursor: pointer;
-}
-</style>

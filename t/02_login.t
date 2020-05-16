@@ -5,6 +5,10 @@ use lib "t/";
 use testenv;
 
 use HTTP::Request;
+use HTTP::Request::Common;
+use JSON;
+use JSON::XS;
+use LWP::Protocol::PSGI;
 use Plack::Test;
 use Plack::Util;
 use Test::More;
@@ -18,6 +22,7 @@ my $dbh = dbh();
 my $guard = config->local(test_config());
 
 my $app = Plack::Util::load_psgi('app.psgi');
+LWP::Protocol::PSGI->register($app, host => 'localhost');
 
 # generate user account.
 my $auth = Gion::Util::auth(
@@ -32,18 +37,27 @@ $dbh->do("INSERT INTO user (id, password, name) VALUES (null, '$auth', 'admin')"
 my $mech = Test::WWW::Mechanize::PSGI->new(app => $app);
 
 $mech->get_ok('/');
-$mech->content_contains('Please sign in');
-$mech->submit_form_ok({
-    form_number => 1,
-    fields      => {
+
+my %headers = (
+    'X-Requested-With' => 'XMLHttpRequest',
+);
+
+my $req = POST 'http://localhost/api/login',
+    Content => [
         id => 'admin',
         password => 'password123456',
-    }
-}, "login form");
+    ],
+    %headers;
 
-$mech->content_contains('/static/gion.js', 'check javascript');
-$mech->get_ok('/logout', 'logout ok');
-$mech->content_contains('Please sign in');
+my $ua = LWP::UserAgent->new;
+my $res = $ua->request($req);
+my $cookie = $res->header("Set-Cookie");
+ok(defined $cookie);
+my $object = decode_json $res->content;
+is $object->{authorization}, JSON::true;
+
+$mech->content_contains('/gion.js', 'check javascript');
+$mech->get_ok('/api/logout', 'logout ok');
 
 done_testing;
 
