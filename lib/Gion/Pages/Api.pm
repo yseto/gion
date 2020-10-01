@@ -447,25 +447,18 @@ sub dispatch_update_password {
 
     my $user = $self->user;
 
-    my $check_result = $user->check_password_digest(
-        password => encode_utf8($self->req->param('password_old')),
-    );
+    my %values = map { $_ => decode_utf8(scalar($self->req->param($_))) } qw/password password_old/;
+
+    my $check_result = $user->check_password_digest($values{password_old});
 
     return $self->json({ result => 'unmatch now password' })
       if !$check_result;
 
-    my $renew = $user->generate_password_digest(
-        encode_utf8($self->req->param('password'))
-    );
-
-    debugf(
-        "Update Password: %s, %s",
-        $renew,
-        $self->user_id,
-    );
+    debugf("Update Password: %s", $self->user_id);
 
     my $data = $self->data;
-    $data->update_user_password(password => $renew, id => $self->user_id);
+    my $digest = $user->generate_secret_digest($values{password});
+    $data->update_user_digest(id => $self->user_id, digest => $digest);
     $self->json({ result => 'update password' });
 }
 

@@ -6,7 +6,6 @@ use gion;
 CREATE TABLE IF NOT EXISTS `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(32) DEFAULT NULL,
-  `password` varchar(200) NOT NULL,
   `digest` varchar(200) NULL,
   `numentry` int(11) NOT NULL DEFAULT '0',
   `nopinlist` int(11) NOT NULL DEFAULT '0',

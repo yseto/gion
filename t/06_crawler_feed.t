@@ -296,7 +296,7 @@ __DATA__
 
 @@ table
 
-INSERT INTO user (id, password, name) VALUES (null, 'xxxxx', 'admin');
+INSERT INTO user (id, digest, name) VALUES (null, '$2a$10$cpg9xi4e.kfxmcHlbBahEOcG.U18tuB4jGUXN8fQIaUcg./9T0jWu', 'admin');
 
 LOCK TABLES `category` WRITE;
 INSERT INTO `category`

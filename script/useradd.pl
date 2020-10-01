@@ -24,14 +24,11 @@ unless (defined $data{user} || defined $data{password}) {
 }
 
 my $model = Gion::Model::User->new;
-my $digest = $model->generate_password_digest_with_username(
-    username => $data{user},
-    password => $data{password},
-);
+my $digest = $model->generate_secret_digest($data{password});
 
 my %sql = (
-    force => 'UPDATE user SET password = ? WHERE name = ?',
-    normal => 'INSERT INTO user (id,password,name) VALUES (null,?,?)',
+    force => 'UPDATE user SET digest = ? WHERE name = ?',
+    normal => 'INSERT INTO user (id, digest, name) VALUES (null, ?, ?)',
 );
 
 my $mode = defined $data{force} ? 'force' : 'normal';

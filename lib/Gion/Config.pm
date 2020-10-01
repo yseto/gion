@@ -13,10 +13,6 @@ use constant root => rel2abs(".");
 common +{
     appname => 'gion',
 
-    # for auth.
-    salt => "Gion::Util::Auth",
-    strech => 500,
-
     crawler => {
         agent => "Gion Crawler/0.1 (https://github.com/yseto/gion)",
         timeout => 10,

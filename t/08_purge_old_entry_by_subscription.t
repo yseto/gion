@@ -139,9 +139,8 @@ done_testing;
 __DATA__
 
 @@ table
-
-INSERT INTO user (id, password, name) VALUES (1, 'xxxxx', '1');
-INSERT INTO user (id, password, name) VALUES (2, 'xxxxx', '2');
+INSERT INTO user (id, digest, name) VALUES (1, '$2a$10$cpg9xi4e.kfxmcHlbBahEOcG.U18tuB4jGUXN8fQIaUcg./9T0jWu', '1');
+INSERT INTO user (id, digest, name) VALUES (2, '$2a$10$cpg9xi4e.kfxmcHlbBahEOcG.U18tuB4jGUXN8fQIaUcg./9T0jWu', '2');
 
 LOCK TABLES `category` WRITE;
 INSERT INTO `category`

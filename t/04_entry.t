@@ -27,16 +27,6 @@ my $guard = config->local(test_config());
 
 my $app = Plack::Util::load_psgi('app.psgi');
 
-# generate user account.
-my $user_model = Gion::Model::User->new;
-my $digest = $user_model->generate_password_digest_with_username(
-    username => "admin",
-    password => "password123456",
-);
-
-# register user.
-$dbh->do("INSERT INTO user (id, password, name) VALUES (null, '$digest', 'admin')");
-
 for my $stmt (split /;/, join('', <DATA>)) {
     next unless $stmt =~ /\S/;
     $dbh->do($stmt) or die $dbh->errstr;
@@ -297,6 +287,7 @@ subtest 'api - get_subscription', sub {
 done_testing;
 
 __DATA__
+INSERT INTO user (id, digest, name) VALUES (null, '$2a$10$cpg9xi4e.kfxmcHlbBahEOcG.U18tuB4jGUXN8fQIaUcg./9T0jWu', 'admin');
 
 LOCK TABLES `category` WRITE;
 INSERT INTO `category`
