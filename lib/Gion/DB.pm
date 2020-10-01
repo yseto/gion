@@ -12,11 +12,20 @@ sub new {
     my $class = shift;
 
     my $config = config->param('db');
-    Scope::Container::DBI->connect(
-        $config->{dsn}, $config->{username}, $config->{password},
+    my $dsn = $config->{dsn};
+    my %mysql_attr = (
+        mysql_enable_utf8mb4 => 1,
+    );
+    my %sqlite_attr = (
+        sqlite_use_immediate_transaction => 1,
+        sqlite_unicode => 1,
+    );
+
+    my $dbh = Scope::Container::DBI->connect(
+        $dsn, $config->{username}, $config->{password},
         {
             RootClass => 'DBIx::Sunny',
-            mysql_enable_utf8mb4 => 1,
+            ($dsn =~ /mysql/) ? %mysql_attr : %sqlite_attr,
         }
     );
 }

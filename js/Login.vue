@@ -1,9 +1,7 @@
 /* vim:set ts=2 sts=2 sw=2 ft=javascript:*/
 <template>
-  <div style="max-width:330px; padding:15px; margin:0 auto;">
-    <h3>
-      Gion
-    </h3>
+  <div style="max-width:330px; padding:80px 15px 0; margin:0 auto;">
+    <h3>Gion</h3>
     <input
       v-model="id"
       v-focus
@@ -45,9 +43,9 @@ export default {
         url: '/api/login',
         data: {
           id: vm.id,
-          password: vm.password, 
+          password: vm.password,
         }
-      }, function(){
+      }).then(() => {
         if (vm.$route.query.redirect) {
           vm.$router.push(vm.$route.query.redirect);
         } else {

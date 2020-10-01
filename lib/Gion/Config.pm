@@ -11,8 +11,6 @@ use File::Slurp qw(slurp);
 use constant root => rel2abs(".");
 
 common +{
-    appname => 'gion',
-
     crawler => {
         agent => "Gion Crawler/0.1 (https://github.com/yseto/gion)",
         timeout => 10,

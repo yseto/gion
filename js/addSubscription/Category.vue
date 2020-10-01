@@ -4,9 +4,9 @@
     <div class="col-md-8">
       <h4>Categories</h4>
       <div class="form-horizontal">
-        <div class="form-group">
+        <div class="row form-group">
           <label
-            class="col-sm-3 control-label"
+            class="col-sm-3 col-form-label"
             for="inputCategoryName"
           >Name</label>
           <div class="col-sm-6">
@@ -18,14 +18,17 @@
             >
           </div>
         </div>
-        <div class="form-group">
-          <div class="col-sm-9 col-sm-offset-3">
+        <div class="row form-group">
+          <div class="col-sm-3" />
+          <div class="col-sm-9">
             <button
               type="button"
-              class="btn btn-primary"
+              class="btn"
+              :class="success ? 'btn-outline-primary' : 'btn-primary'"
+              :disabled="!!!inputCategoryName"
               @click.prevent="registerCategory"
             >
-              Register
+              {{ success ? "Saved!..." : "Register" }}
             </button>
           </div>
         </div>
@@ -38,29 +41,31 @@
 export default {
   data: function() {
     return {
-      inputCategoryName: null
+      inputCategoryName: null,
+      success: false,
     };
   },
   methods: {
     // カテゴリの登録
     registerCategory: function() {
       const vm = this;
-      if (vm.inputCategoryName.length) {
-        vm.$root.agent({
-          url: '/api/register_category',
-          data: {
-            name: vm.inputCategoryName
-          },
-        }, function(data) {
-          if (data.result === "ERROR_ALREADY_REGISTER") {
-            alert("すでに登録されています。");
-          } else {
-            vm.$emit("fetchCategory");
-            alert("登録しました。");
-          }
-        });
-      }
-      return false;
+      vm.$root.agent({
+        url: '/api/register_category',
+        data: {
+          name: vm.inputCategoryName
+        },
+      }).then(data => {
+        if (data.result === "ERROR_ALREADY_REGISTER") {
+          alert("すでに登録されています。");
+        } else {
+          vm.$emit("fetchCategory");
+          vm.inputCategoryName = null;
+          vm.success = true;
+          setTimeout(function() {
+            vm.success = false;
+          }, 750);
+        }
+      });
     },
   },
 }

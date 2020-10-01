@@ -4,40 +4,38 @@
     <div class="row">
       <div class="col-sm-3">
         <PinList ref="pinList" />
+        <br>
         <CategoryList
           ref="categoryList"
           @contentUpdate="contentUpdate"
         />
+        <br>
       </div>
       <div class="col-sm-9">
         <ContentList
           ref="contentList"
           @categoryUpdate="categoryUpdate"
         />
+        <br>
       </div>
     </div>
 
-    <ul class="pager hidden-lg hidden-md">
-      <li class="previous">
+    <div class="d-lg-none d-md-none clearfix">
+      <div class="float-left">
         <a
-          class="btn btn-default"
+          class="btn btn-dark btn-sm"
           @click.prevent="categoryPrevious"
-        >&lt;&lt; Category Back</a>
-      </li>
-      <li class="next">
+        >&lt;&lt; Category</a>
+      </div>
+      <div class="float-right">
         <a
-          class="btn btn-default"
+          class="btn btn-dark btn-sm"
           @click.prevent="categoryNext"
-        >Category Next &gt;&gt;</a>
-      </li>
-    </ul>
-
-    <p class="clearfix hidden-lg hidden-md">
-      <a
-        class="btn btn-default pull-right"
-        @click="$root.returntop"
-      >Back to Top</a>
-    </p>
+        >Category &gt;&gt;</a>
+      </div>
+    </div>
+    <br>
+    <BackToTop />
   </div>
 </template>
 
@@ -45,12 +43,14 @@
 import PinList from './Reader/PinList.vue'
 import CategoryList from './Reader/CategoryList.vue'
 import ContentList from './Reader/ContentList.vue'
+import BackToTop from './components/BackToTop.vue'
 
 export default {
   components: {
     PinList,
     CategoryList,
     ContentList,
+    BackToTop,
   },
   destroyed: function() {
     document.removeEventListener('keypress', this.keypressHandler);
@@ -121,8 +121,10 @@ export default {
 
     // ピン立て
     togglePin: function() {
-      this.$refs.contentList.togglePin();
-      this.$refs.pinList.update();
+      const vm = this;
+      vm.$refs.contentList.togglePin().then(() => {
+        vm.$refs.pinList.update();
+      });
     },
   },
 };

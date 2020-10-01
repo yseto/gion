@@ -1,6 +1,8 @@
 package Gion::Preload;
 
 use DBD::mysql;
+# or
+#use DBD::SQLite;
 use IO::Socket::SSL;
 use Net::DNS;
 

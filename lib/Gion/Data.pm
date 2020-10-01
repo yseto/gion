@@ -31,6 +31,14 @@ enum 'Parser' => qw/1 2/;
 
 no Mouse::Util::TypeConstraints;
 
+sub engine_selector {
+    my ($self, $func, @attr) = @_;
+
+    my $type = ($self->dbh->connect_info->[0] =~ /dbi:mysql/i) ? 'mysql' : 'sqlite';
+    my $realfunc = "${func}__${type}";
+    $self->$realfunc(@attr);
+}
+
 #
 # category
 #
@@ -132,8 +140,10 @@ WHERE readflag = 0
 __SQL__
 );
 
+sub insert_entry { shift->engine_selector("insert_entry", @_) }
+
 __PACKAGE__->query(
-    'insert_entry',
+    'insert_entry__mysql',
     user_id => 'Natural',
     feed_id => 'Natural',
     serial => 'Natural',
@@ -142,6 +152,21 @@ __PACKAGE__->query(
     pubdate => 'Str',
     <<__SQL__
 INSERT IGNORE INTO entry
+(user_id, feed_id, serial, subscription_id, pubdate, readflag,  update_at)
+VALUES (?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+__SQL__
+);
+
+__PACKAGE__->query(
+    'insert_entry__sqlite',
+    user_id => 'Natural',
+    feed_id => 'Natural',
+    serial => 'Natural',
+    subscription_id => 'Natural',
+
+    pubdate => 'Str',
+    <<__SQL__
+INSERT OR IGNORE INTO entry
 (user_id, feed_id, serial, subscription_id, pubdate, readflag,  update_at)
 VALUES (?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
 __SQL__
@@ -262,7 +287,7 @@ __PACKAGE__->query(
     url => 'UrlLike',
     siteurl => 'UrlLike',
     title => 'Str',
-    "INSERT INTO feed (url, siteurl, title, http_status, pubdate, cache) VALUES (?, ?, ?, 0, NOW(), '{}')",
+    "INSERT INTO feed (url, siteurl, title, http_status, pubdate, cache) VALUES (?, ?, ?, 0, CURRENT_TIMESTAMP, '{}')",
 );
 
 __PACKAGE__->select_one(
@@ -400,8 +425,10 @@ __PACKAGE__->query(
     "UPDATE subscription SET category_id = ? WHERE feed_id = ? AND user_id = ?"
 );
 
+sub purge_old_entry_by_subscription { shift->engine_selector("purge_old_entry_by_subscription", @_) }
+
 __PACKAGE__->query(
-    'purge_old_entry_by_subscription',
+    'purge_old_entry_by_subscription__mysql',
     subscription_id => 'Natural',
     <<'__SQL__'
 DELETE
@@ -409,6 +436,24 @@ FROM entry
 WHERE subscription_id = :subscription_id
     AND readflag = 1
     AND update_at < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -1 DAY)
+    AND
+    pubdate NOT IN (SELECT pubdate FROM
+        (SELECT pubdate FROM entry
+            WHERE subscription_id = :subscription_id AND readflag = 1
+            ORDER BY pubdate DESC LIMIT 1
+        ) x )
+__SQL__
+);
+
+__PACKAGE__->query(
+    'purge_old_entry_by_subscription__sqlite',
+    subscription_id => 'Natural',
+    <<'__SQL__'
+DELETE
+FROM entry
+WHERE subscription_id = :subscription_id
+    AND readflag = 1
+    AND update_at < DATETIME('NOW', '-1 DAY')
     AND
     pubdate NOT IN (SELECT pubdate FROM
         (SELECT pubdate FROM entry
@@ -473,8 +518,10 @@ __PACKAGE__->query(
 # story
 #
 
+sub insert_story { shift->engine_selector("insert_story", @_) }
+
 __PACKAGE__->query(
-    'insert_story',
+    'insert_story__mysql',
     feed_id => 'Natural',
     serial => 'Natural',
     title => 'Str',
@@ -482,6 +529,21 @@ __PACKAGE__->query(
     url => 'Str',
     <<__SQL__
 INSERT IGNORE INTO story
+(feed_id, serial, title, description, url)
+VALUES
+(?, ?, ?, ?, ?)
+__SQL__
+);
+
+__PACKAGE__->query(
+    'insert_story__sqlite',
+    feed_id => 'Natural',
+    serial => 'Natural',
+    title => 'Str',
+    description => 'Str',
+    url => 'Str',
+    <<__SQL__
+INSERT OR IGNORE INTO story
 (feed_id, serial, title, description, url)
 VALUES
 (?, ?, ?, ?, ?)

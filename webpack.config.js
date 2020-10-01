@@ -1,7 +1,7 @@
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 module.exports = {
-  entry: './js/main.js',
+  entry: [ '@babel/polyfill', './js/main.js' ],
   output: {
     path: `${__dirname}/public/`,
     filename: 'gion.js'

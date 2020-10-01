@@ -19,7 +19,6 @@ sub new {
     my ($class, %attr) = @_;
 
     my $self = bless {
-        attr => \%attr,
         ua => new_ua(%attr),
     }, $class;
     $self->$_(undef) for qw/content location response code redirect_counter/;
@@ -29,7 +28,7 @@ sub new {
 sub new_ua {
     my (%attr) = @_;
 
-    my $resolver = $attr{resolver} || Net::DNS::Paranoid->new;
+    my $resolver = Net::DNS::Paranoid->new;
     Furl->new(
         headers => [
             'Accept-Encoding' => 'gzip',
@@ -93,7 +92,7 @@ sub get {
         # 301 は URL更新が必要
         if ($res->code eq '301') {
             # リダイレクト先が取得できるか評価する
-            my $redirect_check = new_ua(%{$self->{attr}});
+            my $redirect_check = new_ua();
             eval {
                 my $redirect = $redirect_check->get($location);
                 if (is_success($redirect->code)) {

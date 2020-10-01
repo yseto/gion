@@ -1,8 +1,10 @@
+package GionTest::Opml;
+
 use strict;
 use warnings;
-
-use lib "t/";
-use testenv;
+use utf8;
+use parent qw(Test::Class);
+use Test::More;
 
 use Encode;
 use Data::Section::Simple qw(get_data_section);
@@ -22,29 +24,46 @@ use lib "lib/";
 use Gion::Config;
 use Gion::Model::User;
 
-my $dbh = dbh();
-my $guard = config->local(test_config());
+sub setup : Test(startup) {
+    my $self = shift;
+    $self->{dbh} = Gion::DB->new;
+    my $app = Plack::Util::load_psgi('app.psgi');
+    $self->{app} = $app;
 
-my $app = Plack::Util::load_psgi('app.psgi');
+    my $dbh = $self->{dbh};
 
-for my $stmt (split /;/, get_data_section('table')) {
-    next unless $stmt =~ /\S/;
-    $dbh->do($stmt) or die $dbh->errstr;
+    for my $stmt (split /;/, get_data_section('table')) {
+        next unless $stmt =~ /\S/;
+        $dbh->do($stmt) or die $dbh->errstr;
+    }
+    LWP::Protocol::PSGI->register($app, host => 'localhost');
+    my $jar = HTTP::CookieJar::LWP->new;
+    my $ua = LWP::UserAgent->new(
+        cookie_jar => $jar,
+    );
+    $self->{ua} = $ua;
+    my %headers = (
+        Origin             => 'http://localhost',
+        'X-Requested-With' => 'XMLHttpRequest',
+    );
+    $self->{headers} = \%headers;
 }
 
-LWP::Protocol::PSGI->register($app, host => 'localhost');
+sub shutdown : Test(shutdown) {
+    my $self = shift;
+    my $dbh = $self->{dbh};
 
-my $jar = HTTP::CookieJar::LWP->new;
-my $ua = LWP::UserAgent->new(
-    cookie_jar => $jar,
-);
+    foreach (qw/user category feed subscription entry story/) {
+        diag("cleanup $_");
+        $dbh->do("DELETE FROM `$_`");
+    }
+}
 
-my %headers = (
-    Origin             => 'http://localhost',
-    'X-Requested-With' => 'XMLHttpRequest',
-);
+sub login : Test(setup => 1) {
+    my $self = shift;
+    my %headers = %{$self->{headers}};
+    my $ua = $self->{ua};
 
-subtest 'login', sub {
     my $req = POST 'http://localhost/api/login',
         Content => [
             id => 'admin',
@@ -54,93 +73,92 @@ subtest 'login', sub {
     
     my $res = $ua->request($req);
     is($res->code, 200);
-};
+}
 
-subtest 'api - get opml', sub {
-    my $req = POST 'http://localhost/api/opml_export',
-        %headers;
+sub test_app : Test(3) {
+    my $self = shift;
+    my %headers = %{$self->{headers}};
+    my $ua = $self->{ua};
+    my $dbh = $self->{dbh};
+
+    subtest 'api - get opml', sub {
+        my $req = POST 'http://localhost/api/opml_export',
+            %headers;
+        
+        my $res = $ua->request($req);
+        my $object = decode_json $res->content;
     
-    my $res = $ua->request($req);
-    my $object = decode_json $res->content;
-
-    is $object->{xml}, get_data_section('xml');
-};
-
-subtest 'api - get opml2', sub {
-    my $req = POST 'http://localhost/api/delete_it',
-        Content => [ subscription => 'entry', id => 23 ],
-        %headers;
+        is $object->{xml}, get_data_section('xml');
+    };
     
-    my $res = $ua->request($req);
-    my $object = decode_json $res->content;
-    is $object->{r}, 'OK';
-
-    my $req2 = POST 'http://localhost/api/opml_export',
-        %headers;
+    subtest 'api - get opml2', sub {
+        my $req = POST 'http://localhost/api/delete_it',
+            Content => [ subscription => 'entry', id => 23 ],
+            %headers;
+        
+        my $res = $ua->request($req);
+        my $object = decode_json $res->content;
+        is $object->{r}, 'OK';
     
-    my $res2 = $ua->request($req2);
-    my $object2 = decode_json $res2->content;
-
-    is $object2->{xml}, get_data_section('xml2');
-};
-
-subtest 'api - import opml', sub {
-    my $req = POST 'http://localhost/api/opml_import',
-        Content => [ xml => get_data_section('xml') ],
-        %headers;
+        my $req2 = POST 'http://localhost/api/opml_export',
+            %headers;
+        
+        my $res2 = $ua->request($req2);
+        my $object2 = decode_json $res2->content;
     
-    my $res = $ua->request($req);
-    my $object = decode_json $res->content;
-
-    is $object->{done}, 1;
-
-    my $req2 = POST 'http://localhost/api/opml_export',
-        %headers;
+        is $object2->{xml}, get_data_section('xml2');
+    };
     
-    my $res2 = $ua->request($req2);
-    my $object2 = decode_json $res2->content;
+    subtest 'api - import opml', sub {
+        my $req = POST 'http://localhost/api/opml_import',
+            Content => [ xml => get_data_section('xml') ],
+            %headers;
+        
+        my $res = $ua->request($req);
+        my $object = decode_json $res->content;
+    
+        is $object->{done}, 1;
+    
+        my $req2 = POST 'http://localhost/api/opml_export',
+            %headers;
+        
+        my $res2 = $ua->request($req2);
+        my $object2 = decode_json $res2->content;
+    
+        is $object2->{xml}, get_data_section('xml');
+    
+    };
+}
 
-    is $object2->{xml}, get_data_section('xml');
-
-};
-
-
-done_testing;
+1;
 
 __DATA__
 
 @@ table
 
-INSERT INTO user (id, digest, name) VALUES (null, '$2a$10$cpg9xi4e.kfxmcHlbBahEOcG.U18tuB4jGUXN8fQIaUcg./9T0jWu', 'admin');
+INSERT INTO user (id, digest, name) VALUES (1, '$2a$10$cpg9xi4e.kfxmcHlbBahEOcG.U18tuB4jGUXN8fQIaUcg./9T0jWu', 'admin');
 
-LOCK TABLES `category` WRITE;
 INSERT INTO `category`
 (`id`, `user_id`, `name`)
 VALUES
 (1,1,'category1'),
 (2,1,'category2')
 ;
-UNLOCK TABLES;
 
-LOCK TABLES `feed` WRITE;
 INSERT INTO `feed`
 (`id`, `url`, `siteurl`, `title`, `time`, `http_status`, `parser`, `pubdate`, `term`, `cache`, `next_serial`)
 VALUES
 (22,'http://www.example.com/feed.xml','http://www.example.com/','test feed','2017-01-01 12:34:56','200','1','2017-07-30 00:00:00','1','{}', 0),
 (23,'http://www.example.com/feed2.xml','http://www.example.com/','test feed','2017-01-01 12:34:56','200','1','2017-07-30 00:00:00','1','{}', 0)
 ;
-UNLOCK TABLES;
 
-LOCK TABLES `subscription` WRITE;
 INSERT INTO `subscription`
 (`id`, `category_id`, `feed_id`, `user_id`)
 VALUES
 (110,1,22,1),
 (111,2,23,1)
 ;
-UNLOCK TABLES;
 
-LOCK TABLES `entry` WRITE;
 INSERT INTO `entry`
 (`serial`, `pubdate`, `update_at`, `readflag`, `subscription_id`, `feed_id`, `user_id`)
 VALUES
@@ -156,9 +174,7 @@ VALUES
 (10,'2017-07-25 01:01:45','2017-07-25 01:15:01',0,111,23,1),
 (11,'2017-07-25 01:01:55','2017-07-25 01:15:01',0,111,23,1)
 ;
-UNLOCK TABLES;
 
-LOCK TABLES `story` WRITE;
 INSERT INTO `story`
 (`feed_id`, `serial`, `title`, `description`, `url` )
 VALUES
@@ -174,7 +190,6 @@ VALUES
 (23,10,'title - test10','test10','http://www.example.com/10011072961000.html'),
 (23,11,'title - test11','test11','http://www.example.com/10011072971000.html')
 ;
-UNLOCK TABLES;
 
 @@ xml
 <?xml version="1.0" encoding="UTF-8"?>

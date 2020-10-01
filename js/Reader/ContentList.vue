@@ -3,54 +3,48 @@
   <div>
     <div
       v-if="$store.getters.length === 0"
-      class="tw panel panel-default well"
+      class="tw card well"
     >
-      <p class="text-center">
+      <h5 class="text-center">
         No unreading entries.
-      </p>
+      </h5>
     </div>
     <div
       v-for="(item, index) in $store.getters.list"
       :key="index"
     >
       <div
-        class="tw panel panel-default"
-        :class="{ 'tw--active panel-info': index == $store.getters.selected }"
+        class="tw card"
+        :class="{ 'tw--active border-info': index == $store.getters.selected, 'tw--pinned' : item.readflag == 2 }"
       >
-        <h4
-          class="viewpage"
-          :class="{ 'bg-info' : item.readflag == 2 }"
-        >
+        <h5 class="viewpage">
           <a
             :href="item.url"
             target="blank"
             rel="noreferrer"
-            style="color: #333;"
+            class="text-dark"
           >
             <span v-if="item.title.length > 0">{{ item.title }}</span>
             <span v-else>[nothing title...]</span>
           </a>
-        </h4>
+        </h5>
         <p>{{ item.description }}</p>
-
-        <div>
-          <p
+        <div class="clearfix">
+          <span class="float-left">{{ item.date_epoch | epochToDateTime }} - {{ item.site_title }}</span>
+          <span
             v-if="item.readflag == 2"
-            class="pull-right visible-md visible-lg"
-          >
-            <span class="glyphicon glyphicon-ok" /> 
-            Pin!
-          </p>
-          <!-- //スマホ用ピン立て -->
-          <br class="hidden-md hidden-lg">
+            class="float-right d-none d-sm-none d-md-inline"
+          >&#x1f4cc;</span>
+        </div>
+        <div class="d-md-none d-lg-none">
+          <br>
           <button
-            class="hidden-md hidden-lg btn btn-info btn-sm btn-block"
+            class="btn btn-info btn-sm btn-block"
             @click="togglePin(index)"
           >
             Pin!
           </button>
         </div>
-        <p>{{ item.date_epoch | epochToDateTime }} - {{ item.site_title }}</p>
       </div>
     </div>
   </div>
@@ -110,10 +104,11 @@ export default {
         data: {
           category: categoryId,
         },
-      }, function(list) {
+      }).then(list => {
         vm.$store.commit('set', {list: list, index: 0});
-        vm.readIt();
         vm.$emit('categoryUpdate');
+      }).then(()=> {
+        vm.readIt();
       });
     },
 
@@ -143,13 +138,12 @@ export default {
           url: '/api/set_asread',
           jsonRequest: true,
           data: params,
-        }, function() {});
+        });
       }, 500);
-
     },
 
     // ピン立て
-    togglePin: function(index) {
+    async togglePin (index) {
       const vm = this;
 
       // スマホ対応
@@ -158,10 +152,10 @@ export default {
       }
 
       // サーバーにピン立てを通知する
-      vm.$root.agent({
+      await vm.$root.agent({
         url: '/api/set_pin',
         data: vm.$store.getters.serialData,
-      }, function(data) {
+      }).then(data => {
         vm.$store.commit('setReadflag', data.readflag);
       });
     },

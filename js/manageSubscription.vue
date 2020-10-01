@@ -1,65 +1,70 @@
 /* vim:set ts=2 sts=2 sw=2 ft=javascript:*/
 <template>
   <div class="container">
-    <div class="row">
-      <table
-        class="table table-condensed"
-        style="table-layout: fixed;"
-      >
-        <tbody>
-          <tr
-            v-for="(item, index) in lists"
-            :key="index"
-          >
-            <th v-if="item.type == 'title'">
-              {{ item.name }}
-              <span class="pull-right">
-                <button
-                  class="btn btn-danger btn-xs"
-                  @click="removeIt(item.id, 'category', item.name)"
-                >削除</button>
-              </span>
+    <table
+      class="table table-condensed"
+      style="table-layout: fixed;"
+    >
+      <tbody>
+        <div
+          v-for="category in subscription"
+          :key="category.id"
+        >
+          <tr class="row">
+            <th class="col-9 text-truncate">
+              <span>{{ category.name }}</span>
             </th>
-            <td
-              v-else
-              style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-            >
+            <td class="col-3 text-right">
+              <button
+                class="btn btn-danger btn-sm"
+                @click="removeIt(category.id, 'category', category.name)"
+              >
+                削除
+              </button>
+            </td>
+          </tr>
+          <tr
+            v-for="item in category.subscription"
+            :key="item.id"
+            class="row"
+          >
+            <td class="col-9 text-truncate">
               <a
-                class="pull-left btn btn-link btn-xs"
+                class="btn btn-link btn-sm"
                 :href="item.siteurl"
                 :title="item.title"
                 target="blank"
               >
-                <span class="visible-xs">{{ item.title }}</span><!-- cutting need -->
-                <span class="visible-sm visible-md visible-lg">{{ item.title }}</span>
                 <span
-                  v-if="item.http_status < -5 || item.http_status == '404'"
-                  class="badge"
-                >取得に失敗しました</span>
-              </a> 
-              <span class="pull-right">
-                <button
-                  class="btn btn-info btn-xs"
-                  @click="changeCategory(item.id, item.category_id)"
-                >移動</button>
-              &nbsp;
-                <button
-                  class="btn btn-danger btn-xs"
-                  @click="removeIt(item.id, 'entry', item.title)"
-                >削除</button>
-              </span>
+                  v-if="item.http_status >= '400'"
+                  class="badge badge-dark"
+                >取得に失敗</span>
+                <span>{{ item.title }}</span>
+              </a>
+            </td>
+            <td class="col-3 text-right">
+              <button
+                class="btn btn-info btn-sm"
+                @click="changeCategory(item.id, item.category_id)"
+              >
+                移動
+              </button>
+              <button
+                class="btn btn-danger btn-sm"
+                @click="removeIt(item.id, 'entry', item.title)"
+              >
+                削除
+              </button>
             </td>
           </tr>
-        </tbody>
-      </table>
-    </div><!--/row-->
+        </div>
+      </tbody>
+    </table>
 
-    <hr>
- 
     <div
-      v-if="categoryModal"
       id="categoryModal"
-      class="modal show"
+      :class="{ 'd-block': categoryModal }"
+      class="modal"
       tabindex="-1"
     >
       <div class="modal-dialog">
@@ -71,7 +76,7 @@
           </div>
           <div class="modal-body">
             <label
-              class="control-label"
+              class="col-form-label"
               for="selectCat"
             >Categories</label>
             <select
@@ -80,7 +85,7 @@
               placeholder="Choose Category"
             >
               <option
-                v-for="item in category"
+                v-for="item in categories"
                 :key="item.id"
                 :value="item.id"
               >
@@ -94,7 +99,7 @@
               @click="submit"
             >OK</a>
             <button
-              class="btn btn-default"
+              class="btn btn-light"
               @click="categoryModal=false"
             >
               Cancel
@@ -103,22 +108,21 @@
         </div>
       </div>
     </div>
-    <p class="clearfix hidden-lg hidden-md">
-      <a
-        class="btn btn-default pull-right"
-        @click="$root.returntop"
-      >Back to Top</a>
-    </p>
+    <BackToTop />
   </div><!--/.container-->
 </template>
 
 <script>
+import BackToTop from './components/BackToTop.vue'
+
 export default {
+  components: {
+    BackToTop,
+  },
   data: function() {
     return {
-      category: [],
+      categories: [],
       subscription: [],
-      lists: [],
       fieldCategory: null,
       fieldId: null,
       categoryModal: false
@@ -145,9 +149,7 @@ export default {
           subscription: type,
           id: id
         }
-      }, function() {
-        vm.fetchList();
-      });
+      }).then(() => { vm.fetchList() });
     },
     // カテゴリの変更
     submit: function() {
@@ -158,46 +160,16 @@ export default {
           id: vm.fieldId,
           category: vm.fieldCategory,
         },
-      }, function() {
+      }).then(() => {
         vm.categoryModal = false;
         vm.fetchList();
       });
     },
     fetchList: function() {
       var vm = this;
-      var tmp = [], list = {};
-
-      vm.$root.agent({
-        url: '/api/get_subscription'
-      }, function(data) {
-        vm.category = data.category;
-        vm.subscription = data.subscription;
-
-        vm.category.forEach(function(_, i) {
-          list[vm.category[i].id] = {
-            id: vm.category[i].id,
-            list: [],
-            name: vm.category[i].name
-          };
-        });
-        vm.subscription.forEach(function(_, i) {
-          list[vm.subscription[i].category_id].list.push(vm.subscription[i]);
-        });
-
-        // combined
-        Object.keys(list).forEach(function(i) {
-          tmp.push({
-            id: list[i].id,
-            name: list[i].name,
-            type: 'title',
-          });
-          list[i].list.forEach(function(_, j) {
-            var value = list[i].list[j];
-            value.type = 'item';
-            tmp.push(value);
-          });
-        }, list);
-        vm.lists = tmp;
+      vm.$root.agent({ url: '/api/get_subscription' }).then(data => {
+        vm.subscription = data;
+        vm.categories = data.map(x => { return { id: x.id, name: x.name } });
       });
     }
   }

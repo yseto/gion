@@ -3,31 +3,31 @@
   <div>
     <p>
       <a
-        class="btn btn-small btn-info"
+        class="btn btn-sm btn-info"
         @click.prevent="toggleVisible"
-      ><span class="glyphicon glyphicon-pushpin" /> Pin List</a>
-      <a
-        class="btn btn-small btn-default"
-        @click.prevent="clean"
-      ><span class="glyphicon glyphicon-remove" /> Remove All Pin</a>
+      >Pin List</a>
     </p>
-
     <div
       v-if="visibleState"
-      class="panel panel-default pin__list"
+      class="card pin__list"
     >
-      <div class="panel-heading">
+      <div class="card-header">
         Pin List <span class="badge badge-info">{{ list.length }}</span>
       </div>
-      <div
-        v-for="(item, index) in list"
-        :key="index"
-        class="list-group"
-      >
+      <div class="list-group">
         <a
+          v-for="(item, index) in list"
+          :key="index"
           class="list-group-item"
           :href="item.url"
         >{{ item.title }}</a>
+      </div>
+      <div class="card-footer text-center">
+        <a
+          class="btn btn-sm btn-outline-dark"
+          :class="{ disabled : list.length == 0}"
+          @click.prevent="clean"
+        >Remove All Pin</a>
       </div>
     </div>
   </div>
@@ -53,9 +53,7 @@ export default {
       }
       this.visibleState = false;
 
-      vm.$root.agent({
-        url: '/api/remove_all_pin',
-      }, function() {
+      vm.$root.agent({ url: '/api/remove_all_pin' }).then(() => {
         vm.list = [];
       });
     },
@@ -63,9 +61,7 @@ export default {
     update: function() {
       const vm = this;
       if (this.visibleState) {
-        vm.$root.agent({
-          url: '/api/get_pinlist',
-        }, function(data) {
+        vm.$root.agent({ url: '/api/get_pinlist' }).then(data => {
           vm.list = data;
         });
       }

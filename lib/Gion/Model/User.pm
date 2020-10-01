@@ -19,7 +19,7 @@ sub generate_secret_digest {
     my $self = shift;
     my $raw_password = shift;
 
-    my $bcrypt = Digest->new('Bcrypt', cost => 10, salt => rand_bits(16*8));
+    my $bcrypt = Digest->new('Bcrypt', cost => 8, salt => rand_bits(16*8));
     my $digest =
         $bcrypt->settings() .
         $bcrypt->add($raw_password)->bcrypt_b64digest;

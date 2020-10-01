@@ -4,23 +4,20 @@
     <Feed ref="feed" />
     <hr>
     <Category @fetchCategory="fetchCategory" />
-    <p class="clearfix hidden-lg hidden-md">
-      <a
-        class="btn btn-default pull-right"
-        @click="$root.returntop"
-      >Back to Top</a>
-    </p>
-  </div><!--/container-->
+    <BackToTop />
+  </div>
 </template>
 
 <script>
 import Feed from './addSubscription/Feed.vue'
 import Category from './addSubscription/Category.vue'
+import BackToTop from './components/BackToTop.vue'
 
 export default {
   components: {
     Feed,
-    Category
+    Category,
+    BackToTop,
   },
   methods: {
     fetchCategory: function() {

@@ -8,18 +8,23 @@
     <meta name="referrer" content="no-referrer">
     <style type="text/css">
       body {
-        padding-top: 60px;
-        padding-bottom: 40px;
         overflow-y: scroll;
+      }
+      .my-navigation {
+        margin-bottom:20px;
       }
       .tw {
         margin: 0 0 5px !important;
-        padding: 0 15px;
+        padding: 5px 15px 5px;
         box-sizing: border-box;
       }
       .tw--active {
         padding-left: 8px;
         border-left-width: 8px !important;
+      }
+      .tw--pinned {
+        background-image: linear-gradient(-45deg, transparent 25%, #f8f8f8 25%, #f8f8f8 50%, transparent 50%, transparent 75%, #f8f8f8 75%, #f8f8f8 );
+        background-size: 15px 15px;
       }
       .categories__list .list-group-item, .pin__list .list-group-item {
         padding: 4px 10px;
@@ -36,8 +41,11 @@
       .viewpage, .categories__list .list-group, .pin__list .list-group, .pin__list__page .list-group {
         overflow-wrap: break-word;
       }
+      #helpModal {
+        overflow-y: scroll;
+      }
     </style>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   </head>
   <body>
     <div id="app">

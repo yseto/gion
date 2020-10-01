@@ -95,6 +95,7 @@ DISTRIBUTIONS
       JSON::PP 0
       List::Util 1.33
       Path::Tiny 0.077
+      PkgConfig 0.14026
       Test2::API 1.302096
       Text::ParseWords 3.26
       perl 5.008001
@@ -109,8 +110,16 @@ DISTRIBUTIONS
       Alien::Build::Plugin::Build::SearchDep 0.35
       Alien::Build::Plugin::Prefer::BadVersion 1.05
       Alien::Build::Plugin::Probe::Vcpkg 0
+      Archive::Tar 0
+      Config 0
       ExtUtils::CBuilder 0
       ExtUtils::MakeMaker 6.52
+      HTML::LinkExtor 0
+      HTTP::Tiny 0.044
+      IO::Zlib 0
+      Sort::Versions 0
+      URI 0
+      URI::Escape 0
       perl 5.006
   Apache-LogFormat-Compiler-0.35
     pathname: K/KA/KAZEBURO/Apache-LogFormat-Compiler-0.35.tar.gz
@@ -234,6 +243,13 @@ DISTRIBUTIONS
       Class::Data::Inheritable 0.08
     requirements:
       ExtUtils::MakeMaker 0
+  Class-ErrorHandler-0.04
+    pathname: T/TO/TOKUHIROM/Class-ErrorHandler-0.04.tar.gz
+    provides:
+      Class::ErrorHandler 0.04
+    requirements:
+      ExtUtils::MakeMaker 0
+      perl 5.008_001
   Class-Inspector-1.31
     pathname: P/PL/PLICEASE/Class-Inspector-1.31.tar.gz
     provides:
@@ -294,6 +310,12 @@ DISTRIBUTIONS
       IO::WrapTie 0
       Test::More 0.32
       perl 5.008001
+  Clone-0.45
+    pathname: A/AT/ATOOMIC/Clone-0.45.tar.gz
+    provides:
+      Clone 0.45
+    requirements:
+      ExtUtils::MakeMaker 0
   Config-ENV-0.18
     pathname: S/SA/SATOH/Config-ENV-0.18.tar.gz
     provides:
@@ -803,6 +825,21 @@ DISTRIBUTIONS
       strict 0
       vars 0
       warnings 0
+  DateTime-Format-Flexible-0.32
+    pathname: T/TH/THINC/DateTime-Format-Flexible-0.32.tar.gz
+    provides:
+      DateTime::Format::Flexible 0.32
+      DateTime::Format::Flexible::lang undef
+      DateTime::Format::Flexible::lang::de undef
+      DateTime::Format::Flexible::lang::en undef
+      DateTime::Format::Flexible::lang::es undef
+    requirements:
+      DateTime 0
+      DateTime::Format::Builder 0.74
+      DateTime::TimeZone 0
+      ExtUtils::MakeMaker 0
+      List::MoreUtils 0
+      Module::Pluggable 0
   DateTime-Format-ISO8601-0.08
     pathname: J/JH/JHOBLITT/DateTime-Format-ISO8601-0.08.tar.gz
     provides:
@@ -822,6 +859,44 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       vars 0
+  DateTime-Format-Natural-1.10
+    pathname: S/SC/SCHUBIGER/DateTime-Format-Natural-1.10.tar.gz
+    provides:
+      DateTime::Format::Natural 1.10
+      DateTime::Format::Natural::Calc 1.44
+      DateTime::Format::Natural::Compat 0.07
+      DateTime::Format::Natural::Duration 0.06
+      DateTime::Format::Natural::Duration::Checks 0.04
+      DateTime::Format::Natural::Expand 0.03
+      DateTime::Format::Natural::Extract 0.11
+      DateTime::Format::Natural::Formatted 0.07
+      DateTime::Format::Natural::Helpers 0.06
+      DateTime::Format::Natural::Lang::Base 1.08
+      DateTime::Format::Natural::Lang::EN 1.68
+      DateTime::Format::Natural::Rewrite 0.06
+      DateTime::Format::Natural::Test 0.10
+      DateTime::Format::Natural::Utils 0.05
+      DateTime::Format::Natural::Wrappers 0.03
+    requirements:
+      Carp 0
+      Clone 0
+      Cwd 0
+      DateTime 0
+      DateTime::TimeZone 0
+      Exporter 0
+      File::Find 0
+      File::Spec 0
+      FindBin 0
+      Getopt::Long 0
+      List::MoreUtils 0
+      Module::Util 0
+      Params::Validate 1.15
+      Scalar::Util 0
+      Storable 0
+      Term::ReadLine 0
+      Test::MockTime 0
+      Test::More 0
+      boolean 0
   DateTime-Format-Strptime-1.77
     pathname: D/DR/DROLSKY/DateTime-Format-Strptime-1.77.tar.gz
     provides:
@@ -1536,6 +1611,19 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.006
+  Feed-Find-0.07
+    pathname: B/BT/BTROTT/Feed-Find-0.07.tar.gz
+    provides:
+      Feed::Find 0.07
+    requirements:
+      Class::ErrorHandler 0
+      ExtUtils::MakeMaker 6.42
+      Filter::Util::Call 0
+      HTML::Parser 0
+      LWP 0
+      Test::More 0
+      URI 0
+      perl 5.008001
   File-Copy-Recursive-0.45
     pathname: D/DM/DMUEY/File-Copy-Recursive-0.45.tar.gz
     provides:
@@ -2324,6 +2412,22 @@ DISTRIBUTIONS
       YAML::Tiny 1.38
       autodie 0
       perl 5.006
+  Module-Pluggable-5.2
+    pathname: S/SI/SIMONW/Module-Pluggable-5.2.tar.gz
+    provides:
+      Devel::InnerPackage 0.4
+      Module::Pluggable 5.2
+      Module::Pluggable::Object 5.2
+    requirements:
+      Exporter 5.57
+      ExtUtils::MakeMaker 0
+      File::Basename 0
+      File::Find 0
+      File::Spec 3.00
+      File::Spec::Functions 0
+      if 0
+      perl 5.00503
+      strict 0
   Module-Runtime-0.016
     pathname: Z/ZE/ZEFRAM/Module-Runtime-0.016.tar.gz
     provides:
@@ -2347,6 +2451,14 @@ DISTRIBUTIONS
       Text::ParseWords 0
       perl 5.008001
       version 0
+  Module-Util-1.09
+    pathname: M/MA/MATTLAW/Module-Util-1.09.tar.gz
+    provides:
+      Module::Util 1.09
+    requirements:
+      Module::Build 0.40
+      Test::More 0
+      perl v5.5.3
   Mouse-v2.5.10
     pathname: S/SK/SKAJI/Mouse-v2.5.10.tar.gz
     provides:
@@ -2694,6 +2806,14 @@ DISTRIBUTIONS
       strict 0
       warnings 0
       warnings::register 0
+  PkgConfig-0.24026
+    pathname: P/PL/PLICEASE/PkgConfig-0.24026.tar.gz
+    provides:
+      PkgConfig 0.24026
+    requirements:
+      ExtUtils::MakeMaker 6.56
+      Test::More 0.94
+      perl 5.006000
   Plack-1.0047
     pathname: M/MI/MIYAGAWA/Plack-1.0047.tar.gz
     provides:
@@ -2971,6 +3091,16 @@ DISTRIBUTIONS
       POSIX 0
       strict 0
       warnings 0
+  Sort-Versions-1.62
+    pathname: N/NE/NEILB/Sort-Versions-1.62.tar.gz
+    provides:
+      Sort::Versions 1.62
+    requirements:
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      perl 5.006
+      strict 0
+      warnings 0
   Specio-0.46
     pathname: D/DR/DROLSKY/Specio-0.46.tar.gz
     provides:
@@ -3128,6 +3258,29 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
+  Test-Class-0.50
+    pathname: E/ET/ETHER/Test-Class-0.50.tar.gz
+    provides:
+      Test::Class 0.50
+      Test::Class::Load 0.50
+      Test::Class::MethodInfo 0.50
+    requirements:
+      Attribute::Handlers 0.77
+      Carp 0
+      ExtUtils::MakeMaker 0
+      File::Find 0
+      File::Spec 0
+      MRO::Compat 0.11
+      Module::Runtime 0
+      Storable 2.04
+      Test::Builder 0.78
+      Test::Builder::Tester 1.02
+      Test::Simple 0.78
+      Try::Tiny 0
+      constant 0
+      perl 5.008001
+      strict 0
+      warnings 0
   Test-Deep-1.127
     pathname: R/RJ/RJBS/Test-Deep-1.127.tar.gz
     provides:
@@ -3233,6 +3386,29 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Test::Builder 0.12
       Test::Builder::Tester 1.04
+  Test-Mock-Guard-0.10
+    pathname: X/XA/XAICRON/Test-Mock-Guard-0.10.tar.gz
+    provides:
+      Test::Mock::Guard 0.10
+    requirements:
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      Class::Load 0.06
+      Exporter 5.63
+      ExtUtils::CBuilder 0
+      ExtUtils::MakeMaker 6.59
+      Module::Build 0.38
+      Test::More 0.96
+      perl 5.008001
+  Test-MockTime-0.17
+    pathname: D/DD/DDICK/Test-MockTime-0.17.tar.gz
+    provides:
+      Test::MockTime 0.17
+    requirements:
+      ExtUtils::MakeMaker 0
+      Test::More 0
+      Time::Local 0
+      Time::Piece 1.08
   Test-Name-FromLine-0.13
     pathname: S/SA/SATOH/Test-Name-FromLine-0.13.tar.gz
     provides:
@@ -3673,6 +3849,23 @@ DISTRIBUTIONS
       strict 0
       utf8 0
       warnings 0
+  URI-Fetch-0.13
+    pathname: N/NE/NEILB/URI-Fetch-0.13.tar.gz
+    provides:
+      URI::Fetch 0.13
+      URI::Fetch::Response 0.13
+    requirements:
+      Carp 0
+      Class::ErrorHandler 0
+      ExtUtils::MakeMaker 0
+      LWP::UserAgent 0
+      Storable 0
+      URI 0
+      base 0
+      constant 0
+      perl 5.008_001
+      strict 0
+      warnings 0
   Variable-Magic-0.62
     pathname: V/VP/VPIT/Variable-Magic-0.62.tar.gz
     provides:
@@ -3780,6 +3973,40 @@ DISTRIBUTIONS
       XML::LibXML 1.69
       XML::XPath 0
       perl 5.008001
+  XML-Feed-0.59
+    pathname: D/DA/DAVECROSS/XML-Feed-0.59.tar.gz
+    provides:
+      XML::Feed 0.59
+      XML::Feed::Content 0.59
+      XML::Feed::Enclosure 0.59
+      XML::Feed::Entry 0.59
+      XML::Feed::Entry::Format::Atom 0.59
+      XML::Feed::Entry::Format::RSS 0.59
+      XML::Feed::Format::Atom 0.59
+      XML::Feed::Format::RSS 0.59
+      XML::Feed::Util 0.59
+    requirements:
+      Class::ErrorHandler 0
+      DateTime 0
+      DateTime::Format::Flexible 0
+      DateTime::Format::ISO8601 0
+      DateTime::Format::Mail 0
+      DateTime::Format::Natural 0
+      DateTime::Format::W3CDTF 0
+      Feed::Find 0
+      HTML::Entities 0
+      HTML::TokeParser 0
+      LWP::UserAgent 0
+      List::Util 0
+      Module::Pluggable 0
+      Scalar::Util 0
+      Test::More 0
+      URI 0
+      URI::Fetch 0
+      XML::Atom 0.38
+      XML::LibXML 1.66
+      XML::RSS 1.47
+      perl v5.10.0
   XML-LibXML-2.0205
     pathname: S/SH/SHLOMIF/XML-LibXML-2.0205.tar.gz
     provides:
@@ -3869,6 +4096,29 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       LWP::UserAgent 0
       perl 5.00405
+  XML-RSS-1.61
+    pathname: S/SH/SHLOMIF/XML-RSS-1.61.tar.gz
+    provides:
+      XML::RSS 1.61
+      XML::RSS::Private::Output::Base 1.61
+      XML::RSS::Private::Output::Roles::ImageDims 1.61
+      XML::RSS::Private::Output::Roles::ModulesElems 1.61
+      XML::RSS::Private::Output::V0_9 1.61
+      XML::RSS::Private::Output::V0_91 1.61
+      XML::RSS::Private::Output::V1_0 1.61
+      XML::RSS::Private::Output::V2_0 1.61
+    requirements:
+      Carp 0
+      DateTime::Format::Mail 0
+      DateTime::Format::W3CDTF 0
+      ExtUtils::MakeMaker 0
+      HTML::Entities 0
+      Module::Build 0.28
+      XML::Parser 0
+      perl 5.008
+      strict 0
+      vars 0
+      warnings 0
   XML-RSS-LibXML-0.3105
     pathname: D/DM/DMAKI/XML-RSS-LibXML-0.3105.tar.gz
     provides:
@@ -3986,6 +4236,13 @@ DISTRIBUTIONS
       perl 5.008001
       strict 0
       warnings 0
+  boolean-0.46
+    pathname: I/IN/INGY/boolean-0.46.tar.gz
+    provides:
+      boolean 0.46
+    requirements:
+      ExtUtils::MakeMaker 0
+      perl 5.008001
   common-sense-3.75
     pathname: M/ML/MLEHMANN/common-sense-3.75.tar.gz
     provides:

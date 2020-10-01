@@ -13,7 +13,8 @@ sub prepare_router {
     $router->connect('/api/logout',         { controller => 'Gion::Pages::Login', action => 'logout' });
     $router->connect('/api/batch/:action',  { controller => 'Gion::Pages::BatchApi' });
     $router->connect('/api/:action',        { controller => 'Gion::Pages::Api' });
-    $router->connect('/*',                  { controller => 'Gion::Pages::Index', action => 'index' });
+# TODO js routing
+#   $router->connect('/*',                  { controller => 'Gion::Pages::Index', action => 'index' });
 }
 
 1;

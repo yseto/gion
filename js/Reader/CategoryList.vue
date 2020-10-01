@@ -1,8 +1,8 @@
 /* vim:set ts=2 sts=2 sw=2 ft=javascript:*/
 <template>
-  <div class="panel panel-default categories__list">
-    <div class="panel-heading">
-      <span class="glyphicon glyphicon-list" />Categories
+  <div class="card categories__list">
+    <div class="card-header">
+      Categories
     </div>
     <div class="list-group">
       <a 
@@ -11,7 +11,7 @@
         class="list-group-item"
         :class="{ active: index == $store.getters.selected }"
         @click.prevent="$store.commit('setIndex', index); $emit('contentUpdate');"
-      >{{ item.name }} <span class="badge hidden-sm">{{ item.count }}</span></a>
+      >{{ item.name }} <span class="badge badge-light d-sm-none d-md-inline">{{ item.count }}</span></a>
     </div>
   </div>
 </template>
@@ -23,9 +23,7 @@ export default {
   store,
   created: function() {
     const vm = this;
-    vm.$root.agent({
-      url: '/api/get_category',
-    }, function(list) {
+    vm.$root.agent({ url: '/api/get_category' }).then(list => {
       vm.$store.commit('set', { list: list, index: 0});
       vm.$emit("contentUpdate");
     });
@@ -58,9 +56,7 @@ export default {
     },
     update: function() {
       const vm = this;
-      vm.$root.agent({
-        url: '/api/get_category',
-      }, function(list) {
+      vm.$root.agent({ url: '/api/get_category' }).then(list => {
         let updated = false;
 
         // 表示を更新する

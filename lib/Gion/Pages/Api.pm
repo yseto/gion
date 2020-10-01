@@ -112,18 +112,27 @@ sub dispatch_examine_subscription {
 
     my ($success, $resource);
     if ($validator->is_valid) {
-        ($success, $resource) = $self->examine_url;
+        try {
+            ($success, $resource) = $self->examine_url;
+        } catch {
+            $success = 0;
+        };
     }
 
-    if ($success) {
-        my ($parser_type, $result) = preview_feed($resource->{url});
-        if ($parser_type) {
-            $resource->{parser_type}  = $parser_type;
-            $resource->{preview_feed} = $result;
-        }
+    if (!$success) {
+        $self->json({ title => '', url => '', preview_feed => undef });
+        return;
     }
 
-    $self->json($success ? $resource : { title => '', url => '', parser_type => 0, preview_feed => undef });
+    my %payload = (%$resource, preview_feed => undef);
+
+    if (my $result = $resource->{url} && preview_feed($resource->{url})) {
+        $payload{preview_feed} = $result;
+    } else {
+        $payload{url} = undef;
+    }
+
+    $self->json(\%payload);
 }
 
 sub examine_url {
@@ -171,12 +180,11 @@ sub examine_url {
 
     # ref. http://blog.livedoor.jp/dankogai/archives/51568463.html
     my $tmp = $doc->findvalue('/html/head/link[@type="application/rss+xml"][1]/@href');
-    my $resource = $tmp ? $tmp : $doc->findvalue('/html/head/link[@type="application/atom+xml"][1]/@href');
+    my $feed_url = $tmp ? $tmp : $doc->findvalue('/html/head/link[@type="application/atom+xml"][1]/@href');
 
-    return 0 unless $resource;
     return 1, {
         title => $title,
-        url   => URI->new_abs( $resource, $page_url )->as_string
+        url   => $feed_url ? URI->new_abs( $feed_url, $page_url )->as_string : undef,
     };
 }
 
@@ -261,6 +269,23 @@ sub dispatch_set_numentry {
     $self->json({ r => "OK" });
 }
 
+sub dispatch_get_categories {
+    my $self = shift;
+
+    my $data = $self->data;
+    my @categories = map {
+        {
+            id => number $_->{id},
+            name => string $_->{name},
+        }
+    }
+    sort { $a->{name} cmp $b->{name} }
+    @{$data->category(user_id => $self->user_id)};
+
+    $self->json(\@categories);
+}
+
+# category_and_unread_entry_count ignore non available entry category
 sub dispatch_get_category {
     my $self = shift;
 
@@ -360,12 +385,6 @@ sub dispatch_get_subscription {
     my $self = shift;
 
     my $data = $self->data;
-    my @category = map {
-        {
-            id => number $_->{id},
-            name => string $_->{name},
-        }
-    } @{$data->category(user_id => $self->user_id)};
 
     my @subscription = map {
         {
@@ -377,10 +396,20 @@ sub dispatch_get_subscription {
         }
     } @{$data->subscription_for_user(user_id => $self->user_id)};
 
-    $self->json({
-        category => \@category,
-        subscription => \@subscription
-    });
+    my @category_and_subscription = map {
+        {
+            id => number $_->{id},
+            name => string $_->{name},
+            subscription => [do {
+                my $category_id = $_->{id};
+
+                sort { $a->{title} cmp $b->{title} }
+                grep { $category_id == $_->{category_id} } @subscription;
+            }],
+        }
+    } @{$data->category(user_id => $self->user_id)};
+
+    $self->json(\@category_and_subscription);
 }
 
 sub dispatch_get_pinlist {
@@ -414,12 +443,14 @@ sub dispatch_set_pin {
     my %values = map { $_ => decode_utf8(scalar($self->req->param($_))) } qw/feed_id serial/;
 
     my $data = $self->data;
+    my $txn = $data->dbh->txn_scope;
     $data->update_entry(
         readflag => $readflag,
         user_id => $self->user_id,
         serial => $values{serial},
         feed_id => $values{feed_id},
     );
+    $txn->commit;
     $self->json({
         readflag => number $readflag,
     });
@@ -585,28 +616,12 @@ sub preview_feed {
     my $feed_model = Gion::Crawler::Feed->new;
 
     my @data;
-    my $parser_type = 0;
     try {
-        @data = $feed_model->parse_rss($ua->content);
+        @data = $feed_model->parse($ua->content);
     } catch {
-        goto FEED_IS_ATOM;
+        warnf $_;
     };
-    $parser_type = 1;
-    goto RESULT;
 
-FEED_IS_ATOM:
-    try {
-        @data = $feed_model->parse_atom($ua->content);
-    } catch {
-        goto ERROR;
-    };
-    $parser_type = 2;
-    goto RESULT;
-
-ERROR:
-        return;
-
-RESULT:
     my @result;
     my $scrubber = HTML::Scrubber->new;
 
@@ -620,7 +635,7 @@ RESULT:
         push @result, \%entry;
         last if scalar(@result) == $limit;
     }
-    return $parser_type, \@result;
+    return \@result;
 }
 
 1;

@@ -27,22 +27,16 @@ use Gion::Data;
 use Gion::DB;
 
 use Carp;
-
-use Date::Parse;
-use DateTime;
-use DateTime::Format::ISO8601;
-use DateTime::Format::Mail;
-use DateTime::Format::W3CDTF;
-
 use Encode;
-use HTTP::Date ();
 use JSON::XS;
 use Log::Minimal;
 use Time::Piece;
 use Try::Tiny;
 use URI;
-use XML::Atom::Feed;
+use XML::Feed;
 use XML::RSS::LibXML;
+
+$XML::Feed::Format::RSS::PREFERRED_PARSER = "XML::RSS::LibXML";
 
 sub data { Gion::Data->new(dbh => Gion::DB->new) }
 
@@ -177,94 +171,39 @@ sub set_cache {
 # parse a feed
 #
 
-sub parse_rss {
-    my ($self, $feed_content) = @_;
-
-    my $rss = XML::RSS::LibXML->new(
-        libxml_opts => +{
-            # default on XML::RSS::LibXML
-            recover => 1,
-            load_ext_dtd => 0,
-
-            # parser error : internal error: Huge input lookup
-            set_options => +{
-                huge => 1,
-            },
-        },
-    );
-    try {
-        $rss->parse($feed_content);
-    } catch {
-        croak('error');
-    };
- 
-    my $ns_dc = 'http://purl.org/dc/elements/1.1/';
-    my @data;
-
-    foreach (@{$rss->{items}}) {
-        my $dt;
-        if (defined $_->{pubDate}) {
-            $dt = from_feed_datetime($_->{pubDate});
-        } elsif (defined $_->{$ns_dc}{date}) {
-            $dt = from_feed_datetime($_->{$ns_dc}{date});
-        } else {
-            $dt = localtime;
-        }
-
-        my $url  = $_->{link};
-        if (!$url or $url eq '') {
-            $url = $_->{guid};    # URLがない場合は、GUIDを代用
-        }
-
-        if ($url eq '') {
-            next;   # 空の場合は登録できない
-        }
-
-        if (ref($url) eq 'XML::RSS::LibXML::MagicElement') {
-            $url = $url->toString;
-        }
-
-        #相対パスだと修正する
-        if ( $url !~ /^https?:/ ) {
-            $url = URI->new_abs($url, $self->url)->as_string;
-        }
-
-        my $entry_model = Gion::Crawler::Entry->new(
-            title       => $_->{title},
-            description => $_->{description},
-            pubdate     => $dt,
-            url         => $url,
-        );
-        push @data, $entry_model;
+sub _unwrap_decode_utf8 {
+    my $str = shift;
+    if (ref($str) eq 'XML::RSS::LibXML::MagicElement') {
+        $str = $str->toString;
     }
-
-    unless (@data) {
-        croak('error');
-    }
-
-    @data;
+    $str = decode_utf8($str) unless (utf8::is_utf8($str));
+    $str;
 }
 
-sub parse_atom {
+sub parse {
     my ($self, $feed_content) = @_;
 
-    my $atom = XML::Atom::Feed->new(\$feed_content);
+    my $feed = XML::Feed->parse(\$feed_content) or croak(XML::Feed->errstr);
     my @data;
-    my @entry = $atom->entries;
+    for my $entry ($feed->entries) {
+        my $dt  = $entry->modified ? $entry->modified : $entry->issued;
+        my $tp = (defined $dt) ?
+            Time::Piece->new($dt->epoch) : Time::Piece->new;
 
-    foreach (@entry) {
-        my $dt  = from_feed_datetime($_->updated ? $_->updated : $_->published);
-        my $url = $_->link->href;
+        my $url = $entry->link;
 
         #相対パスだと修正する
         if ( $url !~ /^https?:/ ) {
             $url = URI->new_abs($url, $self->url)->as_string;
         }
 
+        # see XML::Feed::Entry::Format::RSS summary
+        $entry->{description_is_summary} = 1;
+
         my $entry_model = Gion::Crawler::Entry->new(
-            title       => decode_utf8($_->title),
-            description => decode_utf8($_->summary),
-            pubdate     => $dt,
+            title       => _unwrap_decode_utf8($entry->title),
+            description => _unwrap_decode_utf8($entry->summary->body),
+            pubdate     => $tp,
             url         => $url,
         );
         push @data, $entry_model;
@@ -320,47 +259,6 @@ sub update_term {
         $term = 2;
     }
     return $term;
-}
-
-# すごく汚い日付のパース
-sub from_feed_datetime {
-    my $t = shift;
-    my $dt;
-
-    eval {
-        $dt = DateTime::Format::Mail->parse_datetime($t)
-            unless defined $dt;
-    };
-
-    eval {
-        $dt = DateTime::Format::W3CDTF->parse_datetime($t)
-            unless defined $dt;
-    };
-
-    eval {
-        $dt = DateTime::Format::ISO8601->parse_datetime($t)
-            unless defined $dt;
-    };
-
-    eval {
-        $dt = DateTime->from_epoch(
-            epoch => HTTP::Date::str2time($t)
-        )
-            unless defined $dt;
-    };
-
-    eval {
-        $dt = DateTime->from_epoch(
-            epoch => Date::Parse::str2time($t)
-        )
-            unless defined $dt;
-    };
-
-    if (defined $dt) {
-        return Time::Piece->new( $dt->epoch() );
-    }
-
-    Time::Piece->new();
 }
 
 1;

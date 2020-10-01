@@ -78,8 +78,8 @@ new Vue({
     returntop: function() {
       window.scrollTo(0, 0);
     },
-    agent: function(args, then) {
-      return _agent(args, then, TokenStore);
+    agent: function(args) {
+      return _agent(args, TokenStore);
     },
   },
   router,

@@ -6,9 +6,7 @@
 export default {
   created: function() {
     const vm = this;
-    vm.$root.agent({
-      url: '/api/get_numentry',
-    }, function(res){
+    vm.$root.agent({ url: '/api/get_numentry' }).then(res => {
       const next = res.nopinlist === true ? '/entry' : '/pin';
       vm.$router.push(next);
     });

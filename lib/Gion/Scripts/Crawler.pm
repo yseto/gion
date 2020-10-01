@@ -16,7 +16,6 @@ use Gion::DB;
 use Encode;
 use Getopt::Long qw(GetOptionsFromArray);
 use HTTP::Status qw(:constants :is);
-use HTTP::Date qw(str2time);
 use Log::Minimal;
 use Scope::Container;
 use Try::Tiny;
@@ -138,50 +137,13 @@ sub crawl_per_feed {
     # https://stackoverflow.com/questions/1016910/how-can-i-strip-invalid-xml-characters-from-strings-in-perl
     $content =~ s/[^\x09\x0A\x0D\x20-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]//go;
 
-    # 保存されている設定を元にパースする
     try {
-        if      ($feed_model->parser == 1) {
-            @data = $feed_model->parse_rss($content);
-        } elsif ($feed_model->parser == 2) {
-            @data = $feed_model->parse_atom($content);
-        }
+        @data = $feed_model->parse($content);
     } catch {
         $onerror = 1;
     };
 
-    # パーサーの設定がない場合
-    if ($feed_model->parser == 0) {
-        my $parser_type = 0;
-PARSE_RSS:
-        try {
-            @data = $feed_model->parse_rss($content);
-        } catch {
-            goto PARSE_ATOM; # RSS でないので ATOM としてパース
-        };
-        $parser_type = 1;
-        goto SAVE_PARSER;
-
-PARSE_ATOM:
-        try {
-            @data = $feed_model->parse_atom($content);
-        } catch {
-            goto PARSE_FAIL; # パース失敗として処理
-        };
-        $parser_type = 2;
-        goto SAVE_PARSER;
-
-SAVE_PARSER:
-        # パーサ種類を保存
-        $feed_model->update_parser(parser => $parser_type);
-        goto PARSE_SUCCESS;
-
-PARSE_FAIL:
-        $onerror = 1;
-    }
-PARSE_SUCCESS:
-
-    # パースに RSS 、 ATOM いずれも失敗した場合、設定を初期化
-    # 次回のクロール時にクロールする
+    # パースに RSS 、 ATOM いずれも失敗した場合、次回のクロール時にクロールする
     if ($onerror) {
         $feed_model->catch_parse_error(
             response => $ua->response,
@@ -195,28 +157,20 @@ PARSE_SUCCESS:
     # 日付を取得する
     my $latest = from_mysql_datetime($feed_model->pubdate);
 
-    # Last-Modified を取得
-    # UserAgent の戻り値では、 If-Modified-Since として返却される
-    my $last_modified = str2time($ua->response->{'If-Modified-Since'});
-
+    # last_modified は feed_model->pubdate 更新のため
+    my $last_modified = $latest->epoch;
     my $import_counter = 0;
 
     # フィードのエントリを日付順 新 -> 古 にする
     @data = sort { $b->pubdate_epoch <=> $a->pubdate_epoch } @data;
 
     for my $entry (@data) {
-
-        # If-Modified-Since が取得できなかった場合、RSSのフィードから得る
-        unless ($last_modified) {
-            $last_modified = $entry->pubdate_epoch;
-        }
-
         # 新しいもののみを取り込む XXX デバッグ時は以下を抑止
         next if $entry->pubdate_epoch <= $latest->epoch;
         # 遠い未来のエントリは取り込まない
         next if $self->{tolerance_time} <= $entry->pubdate_epoch;
 
-        # フィードのデータから最終更新時間を更新する
+        # フィードの記事データからフィードの最終更新時間を更新する
         if ($entry->pubdate_epoch > $last_modified) {
             $last_modified = $entry->pubdate_epoch;
         }

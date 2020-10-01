@@ -8,9 +8,7 @@ import TokenStore from './components/TokenStore.js'
 export default {
   mounted: function() {
     const vm = this;
-    vm.$root.agent({
-      url: '/api/logout',
-    }, function(){
+    vm.$root.agent({ url: '/api/logout' }).then(() => {
       TokenStore.commit("logout");
       vm.$router.push("/login");
     });

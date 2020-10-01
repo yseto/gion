@@ -4,14 +4,14 @@
     <div class="col-md-8">
       <h4>Subscription</h4>
       <div class="form-horizontal">
-        <div class="form-group">
+        <div class="row form-group">
           <label
-            class="col-sm-3 control-label"
+            class="col-sm-3 col-form-label"
             for="inputURL"
           >URL(Web Page)</label>
           <div class="col-sm-6">
             <input
-              v-model="field.url"
+              v-model="url"
               type="text"
               placeholder="URL"
               class="form-control"
@@ -23,43 +23,46 @@
               class="btn btn-info"
               @click.prevent="feedDetail"
             >Get Detail</a>
-            <span
+            <div
               v-if="searchState"
-              class="glyphicon glyphicon-pencil"
-            />
+              class="spinner-border spinner-border-sm"
+              role="status"
+            >
+              <span class="sr-only">Loading...</span>
+            </div>
           </div>
         </div>
-        <div class="form-group">
+        <div class="row form-group">
           <label
-            class="col-sm-3 control-label"
+            class="col-sm-3 col-form-label"
             for="inputTitle"
           >Title</label>
           <div class="col-sm-6">
             <input
-              v-model="field.title"
+              v-model="title"
               type="text"
               placeholder="Title"
               class="form-control"
             >
           </div>
         </div>
-        <div class="form-group">
+        <div class="row form-group">
           <label
-            class="col-sm-3 control-label"
+            class="col-sm-3 col-form-label"
             for="inputRSS"
           >URL(Subscription)</label>
           <div class="col-sm-6">
             <input
-              v-model="field.rss"
+              v-model="rss"
               type="text"
               placeholder="RSS"
               class="form-control"
             >
           </div>
         </div>
-        <div class="form-group">
+        <div class="row form-group">
           <label
-            class="col-sm-3 control-label"
+            class="col-sm-3 col-form-label"
             for="selectCat"
           >Categories</label>
           <div class="col-sm-6">
@@ -69,7 +72,7 @@
               placeholder="Choose Category"
             >
               <option
-                v-for="item in list"
+                v-for="item in categories"
                 :key="item.id"
                 :value="item.id"
               >
@@ -78,34 +81,36 @@
             </select>
           </div>
         </div>
-        <div class="form-group">
-          <div class="col-sm-6 col-sm-offset-3">
+        <div class="row form-group">
+          <div class="col-sm-3" />
+          <div class="col-sm-6">
             <button
               type="button"
-              class="btn btn-primary"
+              class="btn"
+              :class="success ? 'btn-outline-primary' : 'btn-primary'"
+              :disabled="!canRegister"
               @click.prevent="registerFeed"
             >
-              Register
+              {{ success ? "Saved!..." : "Register" }}
             </button>
-            <span v-if="successFeed">Thanks! add your request.</span>
           </div>
         </div>
       </div>
     </div>
     <div class="col-md-4">
       <div
-        v-if="field.preview_feed"
-        class="panel panel-default previewFeed"
+        v-if="previewFeed"
+        class="card previewFeed"
       >
-        <div class="panel-heading">
+        <div class="card-header">
           Preview
         </div>
-        <ul
-          v-for="item in field.preview_feed"
-          :key="item.title"
-          class="list-group"
-        >
-          <li class="list-group-item">
+        <ul class="list-group">
+          <li
+            v-for="item in previewFeed"
+            :key="item.title"
+            class="list-group-item"
+          >
             {{ item.title }}<br>{{ item.date }}
           </li>
         </ul>
@@ -118,41 +123,59 @@
 export default {
   data: function() {
     return {
-      list: [],
+      categories: [],
       searchState: false,
-      field: {},
-      successFeed: false,
+
+      url: null,
+      title: null,
+      rss: null,
+
+      previewFeed: null,
+      success: false,
       category: null,
     };
+  },
+  computed: {
+    canRegister: function() {
+      return this.url && this.url.match(/^https?:/g) &&
+      this.rss && this.rss.match(/^https?:/g) &&
+      this.title &&
+      this.category;
+    },
   },
   created: function() {
     this.fetchList();
   },
   methods: {
+    clear: function() {
+      const vm = this;
+      vm.url = null;
+      vm.title = null;
+      vm.rss = null;
+      setTimeout(function() {
+        vm.success = false;
+      }, 750);
+    },
     fetchList: function() {
       const vm = this;
-      vm.$root.agent({
-        url: '/api/get_subscription',
-      }, function(data) {
-        vm.list = data.category;
-        if (data.category.length > 0) {
-          vm.category = data.category[0].id;
+      vm.$root.agent({ url: '/api/get_categories' }).then(data => {
+        vm.categories = data;
+        if (data.length > 0) {
+          vm.category = data[0].id;
         }
       });
     },
-
     registerFeed: function() {
       const vm = this;
       vm.$root.agent({
         url: '/api/register_subscription',
         data: {
-          'url': vm.field.url,
-          'rss': vm.field.rss,
-          'title': vm.field.title,
-          'parser_type': vm.field.parser_type,
+          'url': vm.url,
+          'rss': vm.rss,
+          'title': vm.title,
           'category': vm.category,
         },
-      }, function(data) {
+      }).then(data => {
         if (data === null) {
           alert('Failure: Get information.\n please check url... :(');
           return false;
@@ -161,37 +184,35 @@ export default {
           alert("すでに登録されています。");
           return false;
         }
-        vm.successFeed = true;
-        vm.field = {};
+        vm.success = true;
+        vm.clear();
       });
     },
     // ページの詳細を取得する
     feedDetail: function() {
       const vm = this;
-      if (vm.field.url === undefined) {
+      if (!vm.url) {
         return false;
       }
-      if (vm.field.url.match(/^https?:/g) === null) {
+      if (vm.url.match(/^https?:/g) === null) {
         return false;
       }
 
-      vm.successFeed = false;
       vm.searchState = true;
 
       vm.$root.agent({
         url: '/api/examine_subscription',
         data: {
-          url: vm.field.url
+          url: vm.url
         },
-      }, function(data) {
+      }).then(data => {
         if (data === null) {
           alert('Failure: Get information.\n please check url... :(');
           return false;
         }
-        vm.field.rss = data.url;
-        vm.field.title = data.title;
-        vm.field.preview_feed = data.preview_feed;
-        vm.field.parser_type = data.parser_type;
+        vm.rss = data.url;
+        vm.title = data.title;
+        vm.previewFeed = data.preview_feed;
         setTimeout(function() {
           vm.searchState = false;
         }, 500);

@@ -5,8 +5,10 @@ requires 'Crypt::JWT', '== 0.029';
 requires 'Data::Entropy::Algorithms', '== 0.007';
 requires 'Date::Parse', '== 2.33';
 requires 'DateTime', '== 1.52';
+requires 'DateTime::Format::Flexible', '== 0.32';
 requires 'DateTime::Format::ISO8601', '== 0.08';
 requires 'DateTime::Format::Mail', '== 0.403';
+requires 'DateTime::Format::Natural', '== 1.10';
 requires 'DateTime::Format::W3CDTF', '== 0.07';
 requires 'DBD::mysql', '== 4.050';
 requires 'DBIx::Sunny', '== 0.9992';
@@ -42,6 +44,7 @@ requires 'Try::Tiny', '== 0.30';
 requires 'URI', '== 1.76';
 requires 'WWW::Form::UrlEncoded::XS', '== 0.26';
 requires 'XML::Atom', '== 0.42';
+requires 'XML::Feed', '== 0.59';
 requires 'XML::LibXML', '== 2.0205';
 requires 'XML::RSS::LibXML', '== 0.3105';
 
@@ -51,4 +54,6 @@ on 'test' => sub {
     requires 'Test::mysqld', '== 1.0013';
     requires 'Test::WWW::Mechanize::PSGI', '== 0.39';
     requires 'Data::Section::Simple', '== 0.07';
+    requires 'Test::Class', '== 0.50';
+    requires 'Test::Mock::Guard', '== 0.10';
 };
