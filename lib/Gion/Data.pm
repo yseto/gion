@@ -450,6 +450,13 @@ __PACKAGE__->select_row(
 );
 
 __PACKAGE__->query(
+    'update_user_digest',
+    digest => 'Str',
+    id => 'Natural',
+    "UPDATE user SET digest = ?  WHERE id = ?",
+);
+
+__PACKAGE__->query(
     'update_user_password',
     password => 'Str',
     id => 'Natural',

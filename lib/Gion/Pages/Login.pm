@@ -34,6 +34,10 @@ sub dispatch_login {
 
     my $c = $self->data->user_by_name(name => $values{id});
     if ($c && $c->{password} eq $digest) {
+
+        my $new_digest = $user_model->migrate_generate_secret_digest($values{password});
+        $self->data->update_user_digest(id => $c->{id}, digest => $new_digest);
+
         my $jwt_config = config->param('jwt');
         $self->res->cookies->{ $jwt_config->{cookie_name} } = +{
             value => _encode_jwt($c->{id}),

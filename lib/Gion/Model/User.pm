@@ -6,11 +6,13 @@ use utf8;
 
 use Class::Accessor::Lite (
     new => 1,
-    rw  => [ qw(password numentry nopinlist numsubstr) ],
+    rw  => [ qw(password numentry nopinlist numsubstr digest) ],
     ro  => [ qw(id name) ],
 );
 
+use Digest;
 use Digest::SHA qw/sha1_hex/;
+use Data::Entropy::Algorithms qw(rand_bits);
 
 use Gion::Config;
 
@@ -56,6 +58,29 @@ sub _auth {
         $hash = sha1_hex join '', $hash, $opt{password}, $salt;
     }
     $hash;
+}
+
+sub migrate_generate_secret_digest {
+    my $self = shift;
+    my $raw_password = shift;
+
+    my $bcrypt = Digest->new('Bcrypt', cost => 10, salt => rand_bits(16*8));
+    my $digest =
+        $bcrypt->settings() .
+        $bcrypt->add($raw_password)->bcrypt_b64digest;
+
+    return $digest;
+}
+
+sub migrate_check_password_digest {
+    my ($self, $raw_password) = @_;
+
+    my $bcrypt = Digest->new('Bcrypt', settings => $self->digest);
+    my $cmp_digest =
+        $bcrypt->settings() .
+        $bcrypt->add($raw_password)->bcrypt_b64digest;
+
+    return $self->digest eq $cmp_digest;
 }
 
 1;
