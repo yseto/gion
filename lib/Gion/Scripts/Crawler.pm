@@ -4,51 +4,52 @@ use strict;
 use warnings;
 use utf8;
 
-use Gion;
 use Gion::Config;
 use Gion::Crawler::Entry;
 use Gion::Crawler::Feed;
 use Gion::Crawler::Subscription;
 use Gion::Crawler::Time;
 use Gion::Crawler::UserAgent;
+use Gion::Data;
+use Gion::DB;
 
+use Encode;
 use Getopt::Long qw(GetOptionsFromArray);
 use HTTP::Status qw(:constants :is);
 use HTTP::Date qw(str2time);
+use Log::Minimal;
+use Scope::Container;
 use Try::Tiny;
+
+sub data { Gion::Data->new(dbh => Gion::DB->new) }
 
 sub main_script {
     my ($class, @argv) = @_;
 
-    #DBへ接続
-    my $db = Gion->cli_dbh;
+    my $container = start_scope_container();
+    my $data = $class->data;
 
     # 指定取得などのオプション読み込み
     my $eid;
     my $term;
     GetOptionsFromArray(\@argv,
         'e=i{,}' => \@$eid,
-        'silent' => \(my $silent),
         'term=i' =>\$term,
     );
 
     #取得先を取得
     my $list;
     if (@$eid) {
-        $list = $db->select_all(
-            'SELECT * FROM feed WHERE id IN :entry_id',
-            { entry_id => $eid }
-        );
+        $list = $data->feed_by_id_range(id => $eid);
     } elsif ($term) {
-        $list = $db->select_all('SELECT * FROM feed WHERE term = ?', $term);
+        $list = $data->feed_by_term(term => $term);
     } else {
-        $list = $db->select_all('SELECT * FROM feed');
+        $list = $data->feed;
     }
 
     bless {
+        scope_container => $container,
         list => $list,
-        silent => $silent,
-        db => $db,
         tolerance_time => (time + 86400*7),
     }, $class;
 }
@@ -56,30 +57,27 @@ sub main_script {
 sub main_proclet {
     my ($class, $term) = @_;
 
-    #DBへ接続
-    my $db = Gion->cli_dbh;
-
-    my $list = $db->select_all('SELECT * FROM feed WHERE term = ?', $term);
+    my $container = start_scope_container();
+    my $data = $class->data;
 
     bless {
-        list => $list,
-        silent => 0,
-        db => $db,
+        scope_container => $container,
+        list => $data->feed_by_term(term => $term),
         tolerance_time => (time + 86400*7),
     }, $class;
 }
 
 sub main_api {
-    my ($class, $db, %args) = @_;
+    my ($class, %args) = @_;
 
-    my $sql = ($args{term}) ? "term = ?" : "id = ?";
-    my $val = ($args{term}) ? $args{term} : $args{id};
-    my $list = $db->select_all("SELECT * FROM feed WHERE $sql", $val);
+    my $data = $class->data;
+
+    my $list = ($args{term}) ?
+        $data->feed_by_term(term => $args{term}) :
+        [ $data->feed_by_id(id => $args{id}) ];
 
     bless {
         list => $list,
-        silent => 0,
-        db => $db,
         tolerance_time => (time + 86400*7),
     }, $class;
 }
@@ -98,12 +96,10 @@ sub crawl_per_feed {
     my $ua_config = config->param('crawler');
     my $ua = Gion::Crawler::UserAgent->new(%$ua_config);
 
-    my $db = $self->{db};
+    my $data = $self->data;
+    my $txn = $data->dbh->txn_scope;
 
-    my $feed_model = Gion::Crawler::Feed->new(
-        db => $db,
-        verbose => $self->{silent} ? 0 : 1,
-    );
+    my $feed_model = Gion::Crawler::Feed->new;
 
     # モデルに読み込み
     $feed_model->load(%$feed);
@@ -115,6 +111,7 @@ sub crawl_per_feed {
     # 結果が得られない場合、次の対象を処理する
     if (is_error($ua->code)) {
         $feed_model->catch_error(response => $ua->response);
+        $txn->commit;
         return;
     }
 
@@ -123,24 +120,30 @@ sub crawl_per_feed {
         $feed_model->catch_redirect(location => $ua->location);
     }
 
-    $feed_model->logger('%3d %4d %s',
-        $ua->code, $feed_model->id, $feed_model->title);
+    debugf('%3d %4d %s',
+        $ua->code, $feed_model->id, encode_utf8($feed_model->title));
 
     # 304 Not Modified の場合更新しない、次の対象を処理する
     if ($ua->code eq '304') {
         $feed_model->catch_notmodified(response => $ua->response);
+        $txn->commit;
         return;
     }
 
     my $onerror = 0;
     my @data;
 
+    my $content = $ua->content;
+    # XML 文書に含まれてはいけない文字を除去する
+    # https://stackoverflow.com/questions/1016910/how-can-i-strip-invalid-xml-characters-from-strings-in-perl
+    $content =~ s/[^\x09\x0A\x0D\x20-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]//go;
+
     # 保存されている設定を元にパースする
     try {
         if      ($feed_model->parser == 1) {
-            @data = $feed_model->parse_rss($ua->content);
+            @data = $feed_model->parse_rss($content);
         } elsif ($feed_model->parser == 2) {
-            @data = $feed_model->parse_atom($ua->content);
+            @data = $feed_model->parse_atom($content);
         }
     } catch {
         $onerror = 1;
@@ -151,7 +154,7 @@ sub crawl_per_feed {
         my $parser_type = 0;
 PARSE_RSS:
         try {
-            @data = $feed_model->parse_rss($ua->content);
+            @data = $feed_model->parse_rss($content);
         } catch {
             goto PARSE_ATOM; # RSS でないので ATOM としてパース
         };
@@ -160,7 +163,7 @@ PARSE_RSS:
 
 PARSE_ATOM:
         try {
-            @data = $feed_model->parse_atom($ua->content);
+            @data = $feed_model->parse_atom($content);
         } catch {
             goto PARSE_FAIL; # パース失敗として処理
         };
@@ -184,6 +187,7 @@ PARSE_SUCCESS:
             response => $ua->response,
             code => $ua->code
         );
+        $txn->commit;
         return;
     }
 
@@ -220,14 +224,15 @@ PARSE_SUCCESS:
         # 取り込み対象となるため、次回取得対象としてマーク
         $import_counter++;
 
-        my $subscription_model = Gion::Crawler::Subscription->new(db => $db);
+        my $subscription_model = Gion::Crawler::Subscription->new;
 
         # 購読リストを取得する
-        my $subscriptions = $db->select_all('SELECT * FROM subscription WHERE feed_id = ?',
-            $feed_model->id);
+        my $subscriptions = $data->subscription_by_feed_id_for_crawler(
+            feed_id => $feed_model->id
+        );
 
         my $serial = $feed_model->get_next_serial;
-        $feed_model->logger('GENERATE serial:%d', $serial);
+        debugf('GENERATE serial:%d', $serial);
 
         for my $subscription (@$subscriptions) {
             # モデルに読み込み
@@ -249,7 +254,7 @@ PARSE_SUCCESS:
                     serial          => $serial,
                 );
 
-                $feed_model->logger('INSERT user_id:%4d feed_id:%d serial:%d',
+                debugf('INSERT user_id:%4d feed_id:%d serial:%d',
                     $subscription_model->user_id,
                     $subscription_model->feed_id,
                     $serial,
@@ -268,6 +273,7 @@ PARSE_SUCCESS:
         last_modified => $last_modified,
         $import_counter ? (term => 1) : (),
     );
+    $txn->commit;
 }
 
 1;

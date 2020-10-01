@@ -8,9 +8,8 @@ use feature q(say);
 use Getopt::Long qw(GetOptionsFromArray :config posix_default no_ignore_case gnu_compat);
 
 use lib 'lib/';
-use Gion;
-use Gion::Config;
-use Gion::Util;
+use Gion::DB;
+use Gion::Model::User;
 
 my %data;
 GetOptionsFromArray(\@ARGV,
@@ -24,10 +23,9 @@ unless (defined $data{user} || defined $data{password}) {
     exit();
 }
 
-my $auth = Gion::Util::auth(
-    salt => config->param('salt'),
-    strech => config->param('strech'),
-    id => $data{user},
+my $model = Gion::Model::User->new;
+my $digest = $model->generate_password_digest_with_username(
+    username => $data{user},
     password => $data{password},
 );
 
@@ -37,8 +35,8 @@ my %sql = (
 );
 
 my $mode = defined $data{force} ? 'force' : 'normal';
-my $db = Gion->cli_dbh;
-$db->query($sql{$mode}, $auth, $data{user} );
+my $db = Gion::DB->new;
+$db->query($sql{$mode}, $digest, $data{user} );
 
 my $user_id = $db->last_insert_id;
 

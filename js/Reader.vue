@@ -62,31 +62,31 @@ export default {
   methods: {
     keypressHandler: function(e) {
       e.preventDefault();
-      switch (e.keyCode || e.which) {
-      case 97:
+      switch (e.code) {
+      case "KeyA":
         this.categoryPrevious();
-        break; // A
-      case 115:
+        break;
+      case "KeyS":
         this.categoryNext();
-        break; // S
-      case 111:
+        break;
+      case "KeyO":
         this.$refs.pinList.toggleVisible();
-        break; // O
-      case 112:
+        break;
+      case "KeyP":
         this.togglePin();
-        break; // P
-      case 114:
+        break;
+      case "KeyR":
         this.contentUpdate();
-        break; // R
-      case 107:
+        break;
+      case "KeyK":
         this.contentPrevious();
-        break; // K
-      case 106:
+        break;
+      case "KeyJ":
         this.contentNext();
-        break; // J
-      case 118:
+        break;
+      case "KeyV":
         this.itemView();
-        break; // V
+        break;
       }
     },
 

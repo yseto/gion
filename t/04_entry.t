@@ -19,8 +19,8 @@ use JSON;
 use JSON::XS;
 
 use lib "lib/";
-use Gion::Util;
 use Gion::Config;
+use Gion::Model::User;
 
 my $dbh = dbh();
 my $guard = config->local(test_config());
@@ -28,15 +28,14 @@ my $guard = config->local(test_config());
 my $app = Plack::Util::load_psgi('app.psgi');
 
 # generate user account.
-my $auth = Gion::Util::auth(
-    salt => config->param('salt'),
-    strech => config->param('strech'),
-    id => 'admin',
-    password => 'password123456',
+my $user_model = Gion::Model::User->new;
+my $digest = $user_model->generate_password_digest_with_username(
+    username => "admin",
+    password => "password123456",
 );
 
 # register user.
-$dbh->do("INSERT INTO user (id, password, name) VALUES (null, '$auth', 'admin')");
+$dbh->do("INSERT INTO user (id, password, name) VALUES (null, '$digest', 'admin')");
 
 for my $stmt (split /;/, join('', <DATA>)) {
     next unless $stmt =~ /\S/;
@@ -111,7 +110,6 @@ subtest 'api - get_entry / specify category', sub {
         {
             'date_epoch' => 1500944515,
             'description' => 'test11',
-            'raw_url' => 'http://www.example.com/10011072971000.html',
             'readflag' => 0,
             'site_title' => 'test feed',
             'title' => 'title - test11',
@@ -122,7 +120,6 @@ subtest 'api - get_entry / specify category', sub {
         {
             'date_epoch' => 1500944505,
             'description' => 'test10',
-            'raw_url' => 'http://www.example.com/10011072961000.html',
             'readflag' => 0,
             'site_title' => 'test feed',
             'title' => 'title - test10',
@@ -133,7 +130,6 @@ subtest 'api - get_entry / specify category', sub {
         {
             'date_epoch' => 1500944500,
             'description' => 'test09',
-            'raw_url' => 'http://www.example.com/10011072911000.html',
             'readflag' => 0,
             'site_title' => 'test feed',
             'title' => 'title - test09',
@@ -205,8 +201,8 @@ subtest 'api - get_entry / specify category after set_asread', sub {
         %headers;
     
     my $res_read = $ua->request($req_read);
-    my $object = decode_json $res_read->content;
-    is $object->{result}, JSON::true;
+    my $object2 = decode_json $res_read->content;
+    is $object2->{result}, JSON::true;
 };
 
 subtest 'api - get_entry / specify category nothing entries', sub {
@@ -303,28 +299,36 @@ done_testing;
 __DATA__
 
 LOCK TABLES `category` WRITE;
-INSERT INTO `category` VALUES
+INSERT INTO `category`
+(`id`, `user_id`, `name`)
+VALUES
 (1,1,'category1'),
 (2,1,'category2')
 ;
 UNLOCK TABLES;
 
 LOCK TABLES `feed` WRITE;
-INSERT INTO `feed` VALUES 
+INSERT INTO `feed`
+(`id`, `url`, `siteurl`, `title`, `time`, `http_status`, `parser`, `pubdate`, `term`, `cache`, `next_serial`)
+VALUES
 (22,'http://www.example.com/feed.xml','http://www.example.com/','test feed','2017-01-01 12:34:56','200','1','2017-07-30 00:00:00','1','{}', 0),
 (23,'http://www.example.com/feed2.xml','http://www.example.com/','test feed','2017-01-01 12:34:56','200','1','2017-07-30 00:00:00','1','{}', 0)
 ;
 UNLOCK TABLES;
 
 LOCK TABLES `subscription` WRITE;
-INSERT INTO `subscription` VALUES
+INSERT INTO `subscription`
+(`id`, `category_id`, `feed_id`, `user_id`)
+VALUES
 (110,1,22,1),
 (111,2,23,1)
 ;
 UNLOCK TABLES;
 
 LOCK TABLES `entry` WRITE;
-INSERT INTO `entry` VALUES 
+INSERT INTO `entry`
+(`serial`, `pubdate`, `update_at`, `readflag`, `subscription_id`, `feed_id`, `user_id`)
+VALUES
 (1, '2017-07-24 22:22:22','2017-07-24 22:30:01',1,110,22,1),
 (2, '2017-07-25 01:01:00','2017-07-25 01:15:01',0,110,22,1),
 (3, '2017-07-25 01:01:10','2017-07-25 01:15:01',0,110,22,1),
@@ -340,7 +344,9 @@ INSERT INTO `entry` VALUES
 UNLOCK TABLES;
 
 LOCK TABLES `story` WRITE;
-INSERT INTO `story` VALUES 
+INSERT INTO `story`
+(`feed_id`, `serial`, `title`, `description`, `url` )
+VALUES
 (22,1, 'title - test01','test01','http://www.example.com/10011072671000.html'),
 (22,2, 'title - test02','test02','http://www.example.com/10011072731000.html'),
 (22,3, 'title - test03','test03','http://www.example.com/10011072771000.html'),

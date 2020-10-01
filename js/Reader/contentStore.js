@@ -31,7 +31,7 @@ export default new Vuex.Store({
     },
     url: state => {
       const item = state.list[state.selected];
-      return item.raw_url;
+      return item.url;
     },
     selected: state => {
       return state.selected;

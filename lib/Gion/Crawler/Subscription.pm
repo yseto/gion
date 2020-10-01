@@ -12,12 +12,15 @@ use Class::Accessor::Lite (
         feed_id
         user_id
     ) ],
-    ro => [ qw(db) ],
 );
 
 use Gion::Crawler::Time;
+use Gion::Data;
+use Gion::DB;
 
 use Carp;
+
+sub data { Gion::Data->new(dbh => Gion::DB->new) }
 
 sub load {
     my ($self, %attr) = @_;
@@ -27,19 +30,11 @@ sub load {
 sub latest_entry {
     my $self = shift;
 
-    my $latest_entry_pubdate = $self->db->select_one('
-        SELECT pubdate
-        FROM entry
-        WHERE subscription_id = ?
-            AND readflag = 1
-        ORDER BY pubdate DESC
-        LIMIT 1
-    ',
-        $self->id
-    );
+    my $data = $self->data;
+    my $pubdate = $data->latest_entry_pubdate_by_subscription(id => $self->id);
 
-    return unless $latest_entry_pubdate;
-    from_mysql_datetime($latest_entry_pubdate);
+    return unless $pubdate;
+    from_mysql_datetime($pubdate);
 }
 
 1;

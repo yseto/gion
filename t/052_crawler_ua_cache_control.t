@@ -3,72 +3,17 @@ use warnings;
 use utf8;
 
 use lib "t/";
+use resolver;
 use testenv (); # no mysql, no memd
 
-use Test::More;
-use Test::TCP;
 use Plack::Builder;
 use Plack::Loader;
 use Plack::Middleware::ConditionalGET;
+use Test::More;
+use Test::TCP;
 
 use lib "lib/";
 use Gion::Crawler::UserAgent;
-
-
-subtest 'get 200', sub {
-    my $ua = Gion::Crawler::UserAgent->new;
-    $ua->get('https://httpstat.us/200');
-
-    is $ua->code, 200;
-    is $ua->content, '';
-    is $ua->location, undef;
-    is_deeply $ua->response, {};
-};
-
-subtest 'get 301', sub {
-    my $ua = Gion::Crawler::UserAgent->new;
-    $ua->get('https://httpstat.us/301');
-
-    is $ua->code, 200;
-    is $ua->location, 'https://httpstat.us';
-    is_deeply $ua->response, {};
-};
-
-subtest 'get 302', sub {
-    my $ua = Gion::Crawler::UserAgent->new;
-    $ua->get('https://httpstat.us/302');
-
-    is $ua->code, 200;
-    is $ua->location, undef;
-    is_deeply $ua->response, {};
-};
-
-subtest 'get 304', sub {
-    my $ua = Gion::Crawler::UserAgent->new;
-    $ua->get('https://httpstat.us/304');
-
-    is $ua->code, 304;
-    is $ua->location, undef;
-    is_deeply $ua->response, {};
-};
-
-subtest 'get 404', sub {
-    my $ua = Gion::Crawler::UserAgent->new;
-    $ua->get('https://httpstat.us/404');
-
-    is $ua->code, 404;
-    is $ua->location, undef;
-    is_deeply $ua->response, {};
-};
-
-subtest 'get 503', sub {
-    my $ua = Gion::Crawler::UserAgent->new;
-    $ua->get('https://httpstat.us/503');
-
-    is $ua->code, 503;
-    is $ua->location, undef;
-    is_deeply $ua->response, {};
-};
 
 my $app = sub {
     my $env = shift;
@@ -78,7 +23,7 @@ my $app = sub {
         'ETag' => '686897696a7c876b7e',
     ], [ 'something' ] ];
 };
- 
+
 my $builder = Plack::Builder->new;
 $builder->add_middleware('ConditionalGET');
 
@@ -96,8 +41,10 @@ my $server = Test::TCP->new(
 my $port = $server->port;
 my $base = "http://127.0.0.1:$port";
 
+my $resolver = resolver->new;
+
 subtest 'get 304/200', sub {
-    my $ua = Gion::Crawler::UserAgent->new;
+    my $ua = Gion::Crawler::UserAgent->new(resolver => $resolver);
     $ua->get($base);
     is $ua->content, 'something';
     is $ua->code, 200;
@@ -108,7 +55,7 @@ subtest 'get 304/200', sub {
 };
 
 subtest 'get 304/200 not full match', sub {
-    my $ua = Gion::Crawler::UserAgent->new;
+    my $ua = Gion::Crawler::UserAgent->new(resolver => $resolver);
     $ua->get($base,
         'If-Modified-Since' => 'Wed, 02 Aug 2017 00:00:00 GMT',
     );
@@ -121,7 +68,7 @@ subtest 'get 304/200 not full match', sub {
 };
 
 subtest 'get 304/full match', sub {
-    my $ua = Gion::Crawler::UserAgent->new;
+    my $ua = Gion::Crawler::UserAgent->new(resolver => $resolver);
     $ua->get($base,
         'If-Modified-Since' => 'Wed, 02 Aug 2017 00:00:00 GMT',
         'If-None-Match' => '686897696a7c876b7e',

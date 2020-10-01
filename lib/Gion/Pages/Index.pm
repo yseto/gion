@@ -1,10 +1,10 @@
-package Gion::Index;
+package Gion::Pages::Index;
 
 use strict;
 use warnings;
 use utf8;
 
-use parent qw/Gion::Base/;
+use parent qw/Gion::Pages::Base/;
 
 use Gion::Config;
 

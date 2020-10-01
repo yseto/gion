@@ -42,13 +42,6 @@
                   <label><input
                     v-model="checked"
                     type="checkbox"
-                    value="noreferrer"
-                  >リファラを抑制する</label>
-                </div>
-                <div class="checkbox">
-                  <label><input
-                    v-model="checked"
-                    type="checkbox"
                     value="nopinlist"
                   >ログインしたらすぐにエントリ一覧を表示する</label>
                 </div>
@@ -189,9 +182,6 @@ export default {
     vm.$root.agent({
       url: '/api/get_numentry',
     }, function(data) {
-      if (data.noreferrer) {
-        vm.checked.push('noreferrer');
-      }
       if (data.nopinlist) {
         vm.checked.push('nopinlist');
       }
@@ -206,7 +196,6 @@ export default {
         url: '/api/set_numentry',
         data: {
           numentry: vm.numentry,
-          noreferrer: (vm.checked.indexOf('noreferrer') >= 0) ? 1 : 0,
           nopinlist: (vm.checked.indexOf('nopinlist') >= 0) ? 1 : 0,
           numsubstr: vm.numsubstr,
         },

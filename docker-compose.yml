@@ -6,7 +6,7 @@ services:
 #   volumes:
 #     - "./:/app"
 #   command: carton exec -- plackup -r app.psgi
-    command: carton exec -- script/process.pl
+    command: script/boot.sh
     environment:
       PLACK_ENV: portable
     ports:

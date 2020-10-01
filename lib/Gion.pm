@@ -8,12 +8,12 @@ use parent qw/Pulltoy::Dispatcher/;
 
 sub prepare_router {
     my ($self, $router) = @_;
-    $router->connect('/',                   { controller => 'Gion::Index', action => 'index' });
-    $router->connect('/api/login',          { controller => 'Gion::Login', action => 'login' });
-    $router->connect('/api/logout',         { controller => 'Gion::Login', action => 'logout' });
-    $router->connect('/api/batch/:action',  { controller => 'Gion::BatchApi' });
-    $router->connect('/api/:action',        { controller => 'Gion::Api' });
-    $router->connect('/*',                  { controller => 'Gion::Index', action => 'index' });
+    $router->connect('/',                   { controller => 'Gion::Pages::Index', action => 'index' });
+    $router->connect('/api/login',          { controller => 'Gion::Pages::Login', action => 'login' });
+    $router->connect('/api/logout',         { controller => 'Gion::Pages::Login', action => 'logout' });
+    $router->connect('/api/batch/:action',  { controller => 'Gion::Pages::BatchApi' });
+    $router->connect('/api/:action',        { controller => 'Gion::Pages::Api' });
+    $router->connect('/*',                  { controller => 'Gion::Pages::Index', action => 'index' });
 }
 
 1;

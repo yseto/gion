@@ -19,11 +19,12 @@ use Class::Accessor::Lite (
         cache
         next_serial
     ) ],
-    ro => [ qw(db verbose) ],
 );
 
 use Gion::Crawler::Entry;
 use Gion::Crawler::Time;
+use Gion::Data;
+use Gion::DB;
 
 use Carp;
 
@@ -36,11 +37,14 @@ use DateTime::Format::W3CDTF;
 use Encode;
 use HTTP::Date ();
 use JSON::XS;
+use Log::Minimal;
 use Time::Piece;
 use Try::Tiny;
 use URI;
 use XML::Atom::Feed;
 use XML::RSS::LibXML;
+
+sub data { Gion::Data->new(dbh => Gion::DB->new) }
 
 sub load {
     my ($self, %attr) = @_;
@@ -52,12 +56,14 @@ sub catch_error {
     my ($self, %attr) = @_;
     $self->set_cache($attr{response});
 
-    $self->db->query(
-        'UPDATE feed SET http_status = 404, term = 4, cache = ? WHERE id = ?',
-        $self->cache,
-        $self->id,
+    my $data = $self->data;
+    $data->update_feed(
+        http_status => 404,
+        term => 4,
+        cache => $self->cache,
+        id => $self->id,
     );
-    $self->logger('404 %4d %s', $self->id, $self->title);
+    warnf('404 %4d %s', $self->id, encode_utf8($self->title));
     $self->http_status(404);
     $self->term(4);
 }
@@ -66,12 +72,10 @@ sub catch_error {
 sub catch_redirect {
     my ($self, %attr) = @_;
     
-    $self->db->query(
-        'UPDATE feed SET url = ? WHERE id = ?',
-        $attr{location},
-        $self->id,
-    );
-    $self->logger('301 %s -> %s', $self->url, $attr{location});
+    my $data = $self->data;
+    $data->update_feed_url(url => $attr{location}, id => $self->id);
+
+    infof('301 %s -> %s', $self->url, $attr{location});
     $self->url($attr{location});
 }
 
@@ -85,11 +89,12 @@ sub catch_notmodified {
     }
 
     my $term = update_term(from_mysql_datetime($self->pubdate)->epoch);
-    $self->db->query(
-        'UPDATE feed SET http_status = 304, term = ?, cache = ? WHERE id = ?',
-        $term,
-        $self->cache,
-        $self->id,
+    my $data = $self->data;
+    $data->update_feed(
+        http_status => 304,
+        term => $term,
+        cache => $self->cache,
+        id => $self->id,
     );
 
     $self->http_status(304);
@@ -101,16 +106,15 @@ sub catch_parse_error {
     my ($self, %attr) = @_;
     $self->set_cache($attr{response});
 
-    $self->logger('ERR %4d %s', $self->id, $self->title);
+    warnf('ERR %4d %s', $self->id, encode_utf8($self->title));
 
-    $self->db->query('
-        UPDATE feed SET http_status = ?, parser = 0, term = 1, cache = ?
-        WHERE id = ?
-    ', 
-        $attr{code},
-        $self->cache,
-        $self->id,
+    my $data = $self->data;
+    $data->update_feed_parser_error(
+        http_status => $attr{code},
+        cache => $self->cache,
+        id => $self->id,
     );
+
     $self->parser(0);
     $self->term(1);
     $self->http_status($attr{code});
@@ -129,14 +133,14 @@ sub update_feed_info {
         $attr{term} = update_term($attr{last_modified});
     }
 
-    $self->db->query(
-        'UPDATE feed SET http_status = ?, pubdate = ?, term = ?, cache = ?
-        WHERE id = ?',
-        $attr{code},
-        $pubdate,
-        $attr{term},
-        $self->cache,
-        $self->id,
+    my $data = $self->data;
+    $data->update_feed_info(
+        http_status => $attr{code},
+        pubdate => $pubdate,
+        term => $attr{term},
+        cache => $self->cache,
+
+        id => $self->id,
     );
     $self->http_status($attr{code});
     $self->pubdate($pubdate);
@@ -146,11 +150,8 @@ sub update_feed_info {
 # パーサーの設定を更新
 sub update_parser {
     my ($self, %attr) = @_;
-    $self->db->query(
-        'UPDATE feed SET parser = ? WHERE id = ?',
-        $attr{parser},
-        $self->id,
-    );
+    my $data = $self->data;
+    $data->update_feed_parser(parser => $attr{parser}, id => $self->id);
     $self->parser($attr{parser});
 }
 
@@ -179,7 +180,18 @@ sub set_cache {
 sub parse_rss {
     my ($self, $feed_content) = @_;
 
-    my $rss = XML::RSS::LibXML->new;
+    my $rss = XML::RSS::LibXML->new(
+        libxml_opts => +{
+            # default on XML::RSS::LibXML
+            recover => 1,
+            load_ext_dtd => 0,
+
+            # parser error : internal error: Huge input lookup
+            set_options => +{
+                huge => 1,
+            },
+        },
+    );
     try {
         $rss->parse($feed_content);
     } catch {
@@ -208,6 +220,10 @@ sub parse_rss {
             next;   # 空の場合は登録できない
         }
 
+        if (ref($url) eq 'XML::RSS::LibXML::MagicElement') {
+            $url = $url->toString;
+        }
+
         #相対パスだと修正する
         if ( $url !~ /^https?:/ ) {
             $url = URI->new_abs($url, $self->url)->as_string;
@@ -218,8 +234,6 @@ sub parse_rss {
             description => $_->{description},
             pubdate     => $dt,
             url         => $url,
-
-            db          => $self->db,
         );
         push @data, $entry_model;
     }
@@ -252,8 +266,6 @@ sub parse_atom {
             description => decode_utf8($_->summary),
             pubdate     => $dt,
             url         => $url,
-
-            db          => $self->db,
         );
         push @data, $entry_model;
     }
@@ -268,23 +280,19 @@ sub parse_atom {
 sub get_next_serial {
     my $self = shift;
 
-    my $handler = $self->db;
-    $handler->txn(sub {
-        my $dbh = shift;
-        $dbh->query('UPDATE feed SET next_serial = next_serial + 1 WHERE id = ?', $self->id);
-    });
-    $self->db->select_one('SELECT next_serial FROM feed WHERE id = ?', $self->id);
+    my $data = $self->data;
+    my $txn = $data->dbh->txn_scope;
+
+    $data->update_next_serial(id => $self->id);
+    my $serial = $data->get_next_serial(id => $self->id);
+
+    $txn->commit;
+    return $serial;
 }
 
 #
 # util
 #
-
-sub logger {
-    my ($self, $tmpl, @args) = @_;
-    return unless $self->verbose;
-    print STDERR encode_utf8(sprintf("$tmpl\n", @args));
-}
 
 sub update_term {
     my $epoch = shift;

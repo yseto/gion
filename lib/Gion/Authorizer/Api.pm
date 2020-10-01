@@ -9,6 +9,7 @@ use parent qw/Gion::Authorizer::Origin/;
 use Cookie::Baker::XS qw(crush_cookie);
 use Crypt::JWT qw(decode_jwt);
 use File::Slurp;
+use Log::Minimal;
 use Try::Tiny;
 
 use Gion::Config;
@@ -16,7 +17,7 @@ use Gion::Config;
 sub authorize {
     my ($self, $page) = @_;
 
-    my $cookies_hashref = crush_cookie($page->req->header('Cookie'));
+    my $cookies_hashref = crush_cookie($page->req->header('Cookie') || "");
 
     my $jwt_config = config->param('jwt');
     my $decoded;
@@ -50,7 +51,7 @@ sub _decode_jwt {
             accepted_enc => $jwt_config->{enc},
         );
     } catch {
-        warn $_;
+        warnf "decode_jwt error: %s", $_;
     };
     return $decoded;
 }

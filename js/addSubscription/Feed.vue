@@ -135,7 +135,9 @@ export default {
         url: '/api/get_subscription',
       }, function(data) {
         vm.list = data.category;
-        vm.category = data.category[0].id;
+        if (data.category.length > 0) {
+          vm.category = data.category[0].id;
+        }
       });
     },
 

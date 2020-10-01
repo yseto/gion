@@ -1,36 +1,48 @@
-package Gion::Login;
+package Gion::Pages::Login;
 
 use strict;
 use warnings;
 use utf8;
 
-use parent qw/Gion::Base/;
-
-use Gion::Config;
-use Gion::Util;
+use parent qw/Gion::Pages::Base/;
 
 use Crypt::JWT qw(encode_jwt);
 use Encode;
 use JSON;
 use JSON::XS;
 
+use Gion::Config;
+use Gion::Model::User;
+
 sub dispatch_login {
     my $self = shift;
-    my $db = $self->dbh;
 
-    my $auth = Gion::Util::auth(
-        id => encode_utf8($self->req->param('id')),
-        password => encode_utf8($self->req->param('password')),
+    my $validator = FormValidator::Lite->new($self->req);
+    $validator->check(
+        id => [ 'NOT_NULL' ],
+        password => [ 'NOT_NULL' ],
+    );
+    return $self->bad_request if $validator->has_error;
+
+    my %values = map { $_ => decode_utf8(scalar($self->req->param($_))) } qw/id password/;
+
+    my $user_model = Gion::Model::User->new;
+    my $digest = $user_model->generate_password_digest_with_username(
+        username => $values{id},
+        password => $values{password},
     );
 
-    if ( my $c = $db->select_row('SELECT * FROM user WHERE password = ?', $auth) ) {
+    my $c = $self->data->user_by_name(name => $values{id});
+    if ($c && $c->{password} eq $digest) {
         my $jwt_config = config->param('jwt');
         $self->res->cookies->{ $jwt_config->{cookie_name} } = +{
             value => _encode_jwt($c->{id}),
             httponly => 1,
+            expires => time + 24 * 60 * 60,
         };
 
-        $db->query('UPDATE user SET last_login = CURRENT_TIMESTAMP WHERE id = ?', $c->{id});
+        $self->data->update_user_last_login(id => $c->{id});
+
         $self->res->code(200);
         $self->res->body(encode_json({authorization => JSON::true}));
         return;

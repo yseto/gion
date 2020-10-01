@@ -14,9 +14,9 @@ use Test::mysqld;
 use Time::Piece;
 
 use lib "lib/";
-use Gion::Base;
 use Gion::Config;
 use Gion::Crawler::Feed;
+use Gion::DB;
 
 my $dbh = dbh();
 my $guard = config->local(test_config());
@@ -26,12 +26,9 @@ for my $stmt (split /;/, get_data_section('table')) {
     $dbh->do($stmt) or die $dbh->errstr;
 }
 
-my $db = Gion::Base->new({})->dbh;
+my $db = Gion::DB->new;
 
-my $feed_model = Gion::Crawler::Feed->new(
-    db => $db,
-    verbose => 1,
-);
+my $feed_model = Gion::Crawler::Feed->new(verbose => 1);
 
 subtest 'load', sub {
     my $feed = $db->select_row('SELECT * FROM feed WHERE id = 22');
@@ -302,21 +299,27 @@ __DATA__
 INSERT INTO user (id, password, name) VALUES (null, 'xxxxx', 'admin');
 
 LOCK TABLES `category` WRITE;
-INSERT INTO `category` VALUES
+INSERT INTO `category`
+(`id`, `user_id`, `name`)
+VALUES
 (1,1,'category1'),
 (2,1,'category2')
 ;
 UNLOCK TABLES;
 
 LOCK TABLES `feed` WRITE;
-INSERT INTO `feed` VALUES 
+INSERT INTO `feed`
+(`id`, `url`, `siteurl`, `title`, `time`, `http_status`, `parser`, `pubdate`, `term`, `cache`, `next_serial`)
+VALUES
 (22,'http://www.example.com/feed.xml','http://www.example.com/','test feed','2017-01-01 12:34:56','200','1','2017-07-30 00:00:00','1','{}', 0),
 (23,'http://www.example.com/feed2.xml','http://www.example.com/','test feed','2017-01-01 12:34:56','200','1','2017-07-30 00:00:00','1','{}', 0)
 ;
 UNLOCK TABLES;
 
 LOCK TABLES `subscription` WRITE;
-INSERT INTO `subscription` VALUES
+INSERT INTO `subscription`
+(`id`, `category_id`, `feed_id`, `user_id`)
+VALUES
 (110,1,22,1),
 (111,2,23,1)
 ;

@@ -10,104 +10,127 @@ use utf8;
 
 #  http://stackoverflow.com/questions/8886026/mysql-delete-all-but-latest-x-records
 
-use Gion;
-use Gion::Config;
+use Scope::Container;
 
-*main_proclet = \&main_and_db;
-*main_script = \&main_and_db;
+use Gion::Data;
+use Gion::DB;
 
-sub main_api {
-    my ($class, $db) = @_;
-    main($db);
-}
-
-sub main_and_db {
-    my $db = Gion->cli_dbh;
-    main($db);
-}
+*main_proclet = \&main;
+*main_script = \&main;
+*main_api = \&main;
 
 sub main {
-my $db = shift;
+    my $container = start_scope_container();
+    my $dbh = Gion::DB->new;
+    my $data = Gion::Data->new(dbh => $dbh);
 
-my $count;
-my %cmp;
-
-$cmp{olde} = $db->select_one('SELECT COUNT(*) FROM entry');
-$cmp{olds} = $db->select_one('SELECT COUNT(*) FROM story');
-
-my $rs = $db->select_all('SELECT id FROM subscription');
-
-for (@$rs) {
-    my $id = $_->{id};
-    $db->query("
-        DELETE
-        FROM entry
-        WHERE subscription_id = ?
-            AND readflag = 1
-            AND update_at < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -1 DAY)
-            AND
-            pubdate NOT IN (SELECT pubdate FROM
-                (SELECT pubdate FROM entry
-                    WHERE subscription_id = ?  AND readflag = 1
-                    ORDER BY pubdate DESC LIMIT 1
-                ) x )
-    ", $id, $id);
-    # print $id . "\n";
+    start_message($dbh);
+    purge_old_entry_by_subscription($data);
+    remove_entry($dbh);
+    remove_feed($dbh);
+    remove_story($dbh);
+    finish_message($dbh);
 }
 
-my $entry = $db->select_all("SELECT subscription_id FROM entry;");
-for (@$entry) {
-    my $count = $db->select_one(
-        "SELECT COUNT(*) FROM subscription WHERE id = ?",
-        $_->{subscription_id},
-    );
+sub start_message {
+    my $dbh = shift;
 
-    unless ($count > 0) {
-        $db->query(
-            "DELETE FROM entry WHERE subscription_id = ?",
+    print  "before\n";
+    printf "entry %d\n", $dbh->select_one('SELECT COUNT(*) FROM entry');
+    printf "story %d\n", $dbh->select_one('SELECT COUNT(*) FROM story');
+}
+
+sub purge_old_entry_by_subscription {
+    my $data = shift;
+
+    my $rs = $data->subscription;
+
+    for (@$rs) {
+        my $txn = $data->dbh->txn_scope;
+        $data->purge_old_entry_by_subscription(subscription_id => $_->{id});
+        $txn->commit;
+    }
+}
+
+
+sub remove_entry {
+    my $dbh = shift;
+
+    my $entry = $dbh->select_all("SELECT subscription_id FROM entry;");
+    for (@$entry) {
+        my $txn = $dbh->txn_scope;
+
+        my $count = $dbh->select_one(
+            "SELECT COUNT(*) FROM subscription WHERE id = ?",
             $_->{subscription_id},
         );
+    
+        unless ($count > 0) {
+            $dbh->query(
+                "DELETE FROM entry WHERE subscription_id = ?",
+                $_->{subscription_id},
+            );
+        }
+
+        $txn->commit;
     }
 }
 
-my $feed = $db->select_all("SELECT * FROM feed;");
-for (@$feed) {
-    my $count = $db->select_one(
-        "SELECT COUNT(*) FROM subscription WHERE feed_id = ?",
-        $_->{id},
-    );
-    unless ($count > 0) {
-        printf "remove subscription: %s\n", $_->{siteurl};
-        $db->query(
-            "DELETE FROM feed WHERE id = ?",
+sub remove_feed {
+    my $dbh = shift;
+
+    my $feed = $dbh->select_all("SELECT * FROM feed;");
+    for (@$feed) {
+        my $txn = $dbh->txn_scope;
+
+        my $count = $dbh->select_one(
+            "SELECT COUNT(*) FROM subscription WHERE feed_id = ?",
             $_->{id},
         );
+        unless ($count > 0) {
+            # printf "remove subscription: %s\n", $_->{siteurl};
+            $dbh->query(
+                "DELETE FROM feed WHERE id = ?",
+                $_->{id},
+            );
+        }
+
+        $txn->commit;
     }
 }
 
-my $story = $db->select_all("SELECT feed_id, serial, url FROM story");
-for (@$story) {
-    my $count = $db->select_one(
-        "SELECT COUNT(*) FROM entry WHERE feed_id = ? AND serial = ?",
-        $_->{feed_id},
-        $_->{serial},
-    );
-    unless ($count > 0) {
-        printf "remove story: %s\n", $_->{url};
-        $db->query(
-            "DELETE FROM story WHERE feed_id = ? AND serial = ?",
+sub remove_story {
+    my $dbh = shift;
+
+    my $story = $dbh->select_all("SELECT feed_id, serial, url FROM story");
+    for (@$story) {
+        my $txn = $dbh->txn_scope;
+
+        my $count = $dbh->select_one(
+            "SELECT COUNT(*) FROM entry WHERE feed_id = ? AND serial = ?",
             $_->{feed_id},
             $_->{serial},
         );
+        unless ($count > 0) {
+            # printf "remove story: %s\n", $_->{url};
+            $dbh->query(
+                "DELETE FROM story WHERE feed_id = ? AND serial = ?",
+                $_->{feed_id},
+                $_->{serial},
+            );
+        }
+
+        $txn->commit;
     }
 }
 
-$cmp{e} = $db->select_one('SELECT COUNT(*) FROM entry');
-$cmp{s} = $db->select_one('SELECT COUNT(*) FROM story');
+sub finish_message {
+    my $dbh = shift;
 
-printf "entry %d -> %d \n", $cmp{olde}, $cmp{e};
-printf "story %d -> %d \n", $cmp{olds}, $cmp{s};
-
+    print  "after\n";
+    printf "entry %d\n", $dbh->select_one('SELECT COUNT(*) FROM entry');
+    printf "story %d\n", $dbh->select_one('SELECT COUNT(*) FROM story');
 }
 
 1;
+

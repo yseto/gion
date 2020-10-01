@@ -11,15 +11,26 @@ Class::Accessor::Lite->mk_accessors(qw{
 });
 
 use Furl;
+use HTTP::Status qw(:constants :is);
 use Net::DNS::Paranoid;
 use URI;
 
 sub new {
     my ($class, %attr) = @_;
 
-    my $resolver = Net::DNS::Paranoid->new;
+    my $self = bless {
+        attr => \%attr,
+        ua => new_ua(%attr),
+    }, $class;
+    $self->$_(undef) for qw/content location response code redirect_counter/;
+    $self;
+}
 
-    my $ua = Furl->new(
+sub new_ua {
+    my (%attr) = @_;
+
+    my $resolver = $attr{resolver} || Net::DNS::Paranoid->new;
+    Furl->new(
         headers => [
             'Accept-Encoding' => 'gzip',
             Connection => 'close'
@@ -32,12 +43,6 @@ sub new {
         max_redirects => 0,
         %attr,
     );
-
-    my $self = bless {
-        ua => $ua,
-    }, $class;
-    $self->$_(undef) for qw/content location response code redirect_counter/;
-    $self;
 }
 
 sub add_redirect_counter {
@@ -87,7 +92,20 @@ sub get {
         }
         # 301 は URL更新が必要
         if ($res->code eq '301') {
-            $self->location($location);
+            # リダイレクト先が取得できるか評価する
+            my $redirect_check = new_ua(%{$self->{attr}});
+            eval {
+                my $redirect = $redirect_check->get($location);
+                if (is_success($redirect->code)) {
+                    $self->location($location);
+                }
+            };
+            # リダイレクト先のパスがおかしい場合に拾う
+            if ($@) {
+                $self->code(400);
+                $self->response({});
+                return;
+            }
         }
 
         # リダイレクトループを検出する

@@ -17,8 +17,8 @@ use HTTP::Request::Common;
 use JSON::XS;
 
 use lib "lib/";
-use Gion::Util;
 use Gion::Config;
+use Gion::Model::User;
 
 my $dbh = dbh();
 my $guard = config->local(test_config());
@@ -26,15 +26,14 @@ my $guard = config->local(test_config());
 my $app = Plack::Util::load_psgi('app.psgi');
 
 # generate user account.
-my $auth = Gion::Util::auth(
-    salt => config->param('salt'),
-    strech => config->param('strech'),
-    id => 'admin',
-    password => 'password123456',
+my $user_model = Gion::Model::User->new;
+my $digest = $user_model->generate_password_digest_with_username(
+    username => "admin",
+    password => "password123456",
 );
 
 # register user.
-$dbh->do("INSERT INTO user (id, password, name) VALUES (null, '$auth', 'admin')");
+$dbh->do("INSERT INTO user (id, password, name) VALUES (null, '$digest', 'admin')");
 
 LWP::Protocol::PSGI->register($app, host => 'localhost');
 

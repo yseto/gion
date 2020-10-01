@@ -15,8 +15,8 @@ use Test::More;
 use Test::WWW::Mechanize::PSGI;
 
 use lib "lib/";
-use Gion::Util;
 use Gion::Config;
+use Gion::Model::User;
 
 my $dbh = dbh();
 my $guard = config->local(test_config());
@@ -25,14 +25,13 @@ my $app = Plack::Util::load_psgi('app.psgi');
 LWP::Protocol::PSGI->register($app, host => 'localhost');
 
 # generate user account.
-my $auth = Gion::Util::auth(
-    salt => config->param('salt'),
-    strech => config->param('strech'),
-    id => "admin",
+my $user_model = Gion::Model::User->new;
+my $digest = $user_model->generate_password_digest_with_username(
+    username => "admin",
     password => "password123456",
 );
 
-$dbh->do("INSERT INTO user (id, password, name) VALUES (null, '$auth', 'admin')");
+$dbh->do("INSERT INTO user (id, password, name) VALUES (null, '$digest', 'admin')");
 
 my $mech = Test::WWW::Mechanize::PSGI->new(app => $app);
 

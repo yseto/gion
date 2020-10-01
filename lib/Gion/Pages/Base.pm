@@ -1,4 +1,4 @@
-package Gion::Base;
+package Gion::Pages::Base;
 
 use strict;
 use warnings;
@@ -6,22 +6,16 @@ use utf8;
 
 use parent qw/Pulltoy/;
 
-use Gion::Config;
-
-use DBIx::Handler::Sunny;
 use JSON::XS;
+
 use Pulltoy::Authorizer;
+
+use Gion::Data;
+use Gion::DB;
 
 sub create_authorizer { Pulltoy::Authorizer->new(shift) }
 
-sub dbh {
-    $_[0]->{dbh} //= do {
-        my $conf = config->param('db');
-        DBIx::Handler::Sunny->new($conf->{dsn}, $conf->{username}, $conf->{password}, {
-            mysql_enable_utf8mb4 => 1,
-        });
-    };
-}
+sub data { Gion::Data->new(dbh => Gion::DB->new) }
 
 sub json {
     my ($self, $vars) = @_;

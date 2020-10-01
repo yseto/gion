@@ -22,7 +22,6 @@ common +{
         timeout => 10,
     },
 
-    redirector => 'https://www.google.com/url?sa=D&q=',
     batch_token => 'batch_token-batch_token-batch_token',
 
     jwt => +{
