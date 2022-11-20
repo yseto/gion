@@ -1,6 +1,13 @@
+# Deprecated.
+
+moved to https://github.com/yseto/gion-go
+
+---
+
 # Gion
 
 A RSS Reader for Web Browser ( PC, Tablet, Mobile )
+
 
 ## Feature
 
